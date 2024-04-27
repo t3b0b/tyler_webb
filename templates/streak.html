@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+    .strak-main {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        gap: 30px;
+    }
+    .streak-container-wrapper {
+        margin-left: 30px;
+        flex: 0 0 60%; /* Ingen växt, ingen krympning och baserad på 70% av förälderns bredd */
+        max-width: 60%;
+        display: flex;
+        justify-content: flex-start; /* Centrerar barnhorisontellt */
+    }
+
+    .streak-container {
+        margin-top: 20px;
+        flex-grow: 3; /* Ger streck-containern förmågan att växa */
+        flex-shrink: 1;
+        flex-basis: 70%; /* Startbredd innan flex-grow tillämpas */
+        width: 70%; /* Om du inte vill använda flex-grow och shrink */
+    }
+
+    .prioritet-box {
+        flex-grow: 2; /* Ger prioritet-boxen förmågan att växa */
+        flex-shrink: 1;
+        flex-basis: 20%; /* Startbredd innan flex-grow tillämpas */
+        width: 20%; /* Om du inte vill använda flex-grow och shrink */
+    }
+
+    .streak-box {
+        border: 1px solid #000;
+        padding: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        max-height: 20px; /* Exempel på en minsta höjd */
+        /* height: 100px; Om du vill ha en fast höjd istället */
+    }
+
+    .streak-input {
+        width: 45%; /* Ange en bredde så att det finns plats för två sidan om varandra */
+        margin: 0; /* Ta bort alla ytterligare marginaler */
+    }
+
+/* Om du vill att de ska vara centrerade */
+    .streak-detail {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .streak-box select {
+        width: 100%; /* Fyller hela bredden av sin container */
+        margin: 10px 0; /* Lägger till marginal ovanför och under */
+    }
+    #new-streak-button {
+        width: 100%; /* Fyller hela bredden av sin container */
+        /* Använd övrig styling så att knappen matchar dina andra containers */
+    }
+
+    #new-streak-form input,
+    #new-streak-form select,
+    #new-streak-form button {
+        width: 100%; /* Fyller hela bredden av sin container */
+         /* Ger utrymme inuti inmatningsfälten och knappen */
+        /* Använd ytterligare styling om nödvändigt */
+    }
+</style>
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+{% block body %}
+<div class="strak-main">
+    <div class="streak-container-wrapper">
+        <div class="streak-container">
+            <!-- Exempel på hur du kan använda en Jinja2 loop för att skapa en container för varje streak -->
+            {% for streak in streaks %}
+            <div class="streak-box">
+                <div class="streak-detail streak-input">
+                    <h3 disabled> {{ streak.name }} </h3>
+                </div>
+                <div class="streak-detail streak-input">
+                    <h3 disabled> {{ streak.count }} </h3>
+                </div>
+            </div>
+            {% endfor %}
+            <div class="streak-box">
+                <button id="new-streak-button" onclick="expandNewStreakForm()">Ny Streak</button>
+            </div>
+        <!-- Dold form för att lägga till ny streak, initialt gömd och visas när knappen klickas -->
+            <form method="POST" id="new-streak-form" style="display: none;">
+                <input type="text" placeholder="Streak Namn" name="streakName">
+                <input type="text" value="{{ todayDate }}" name="streakStart">
+                <select name="streakPriority">
+                    <option value="high">Hög</option>
+                    <option value="medium">Medel</option>
+                    <option value="low">Låg</option>
+                </select>
+                <input type="text" placeholder="Streak Villkor" name="streakConditions">
+                <input type="submit" value="Save">Save</input>
+                <button type="button" onclick="cancelNewStreakForm()">Avbryt</button>
+            </form>
+        </div>
+    </div>
+    <div class="prioritet-box">
+        <h2>Prioritet</h2>
+        <p>Hej</p>
+    </div>
+ </div>
+    <script>
+function expandNewStreakForm() {
+    document.getElementById('new-streak-button').style.display = 'none';
+    document.getElementById('new-streak-form').style.display = 'block';
+}
+
+function cancelNewStreakForm() {
+    document.getElementById('new-streak-form').style.display = 'none';
+    document.getElementById('new-streak-button').style.display = 'block';
+}
+
+</script>
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>{{ sida }}</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    .calendar-container {
+        padding: 1em; /* Lägg till marginal runt kalendern */
+        max-width: 80%; /* Maxbredd för kalendern */
+        height: 600px;
+        margin: auto; /* Centrerar kalendern */
+    }
+    .calendar-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed; /* Säkerställer jämn kolumnbredd */
+    }
+    .calendar-table th {
+        background-color: #e7e6d2;
+        border: 1px solid #505050;
+        color: #333;
+        padding: 5px; /* Minskar höjden på veckodagarna */
+        text-align: center;
+    }
+    .calendar-table th.month-header {
+        background-color: #fdf5c1;
+        font-size: 28px; /* Ökar storleken på texten för månadsnamnet */
+        font-weight: bold; /* Gör texten fet */
+        text-align: center;
+        padding: 20px;
+        grid-column: span 7;
+    }
+    .calendar-table td {
+        border: 1px solid #505050;
+        padding: 30px;
+        text-align: center;
+        vertical-align: top;
+    }
+    .calendar-table td:not(:empty) {
+        background-color: #fff;
+    }
+        .other-month {
+        background-color: #f0f0f0; /* En gråare nyans för dagar som inte tillhör den aktuella månaden */
+        color: #ccc; /* Grå textfärg */
+    }
+
+    .calendar-table td.clickable {
+        cursor: pointer;
+        background-color: #fff; /* Vit bakgrund för dagar som tillhör den aktuella månaden */
+    }
+    @media (max-width: 600px) {
+    .calendar-table td {
+        height: 15vw; /* Eller ett annat värde som passar mobila enheter */
+    }
+}
+</style>
+{% endblock head %}
+
+{% block body %}
+{% block header %}
+<!-- Din header kommer att ärvas från base.html -->
+{% endblock header %}
+{% block main %}
+<div class="calendar-container">
+    <table class="calendar-table">
+        <thead>
+            <tr>
+                <th class="month-header" colspan="7">{{ month_name }} {{ year }}</th>
+            </tr>
+            <tr>
+                <th>Måndag</th>
+                <th>Tisdag</th>
+                <th>Onsdag</th>
+                <th>Torsdag</th>
+                <th>Fredag</th>
+                <th>Lördag</th>
+                <th>Söndag</th>
+            </tr>
+        </thead>
+        <tbody>
+                {% for week in weeks %}
+                <tr>
+                    {% for day in week %}
+                    <td class="{{ 'clickable' if day.current_month else 'other-month' }}"
+                        onclick="onDateClick('{{ day.date }}')">
+                        {{ day.day }}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>
+function onDateClick(date) {
+    // Här kan du lägga till vad som ska hända när en datumruta klickas
+    // till exempel, visa en popup, ladda en sida, etc.
+    alert("Datum valt: " + date);
+}
+</script>
+{% endblock main %}
+{% endblock body %}

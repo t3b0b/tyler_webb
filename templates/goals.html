@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <style>
+    .goals-main {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        gap: 30px;
+    }
+    .goals-container-wrapper {
+        margin-left: 30px;
+        flex: 0 0 70%; /* Ingen växt, ingen krympning och baserad på 70% av förälderns bredd */
+        max-width: 60%;
+        display: flex;
+        justify-content: flex-start; /* Centrerar barnhorisontellt */
+    }
+
+    .goals-container {
+        margin-top: 20px;
+        flex-grow: 3; /* Ger streck-containern förmågan att växa */
+        flex-shrink: 1;
+        flex-basis: 70%; /* Startbredd innan flex-grow tillämpas */
+        width: 70%; /* Om du inte vill använda flex-grow och shrink */
+    }
+    .goals-box {
+        border: 1px solid #000;
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        max-height: 50px; /* Exempel på en minsta höjd */
+        /* height: 100px; Om du vill ha en fast höjd istället */
+    }
+    .goals-box select {
+        width: 100%; /* Fyller hela bredden av sin container */
+        margin: 10px 0; /* Lägger till marginal ovanför och under */
+    }
+    #new-goal-button {
+        width: 100%; /* Fyller hela bredden av sin container */
+        /* Använd övrig styling så att knappen matchar dina andra containers */
+    }
+    .prioritet-box {
+    flex-grow: 2; /* Ger prioritet-boxen förmågan att växa */
+    flex-shrink: 1;
+    flex-basis: 20%; /* Startbredd innan flex-grow tillämpas */
+    width: 20%; /* Om du inte vill använda flex-grow och shrink */
+}
+
+    #new-goal-button input,
+    #new-goal-form select,
+    #new-goal-form button {
+        width: 100%; /* Fyller hela bredden av sin container */
+         /* Ger utrymme inuti inmatningsfälten och knappen */
+        /* Använd ytterligare styling om nödvändigt */
+
+    </style>
+{% endblock head %}
+
+{% block body %}
+<div class="goals-main">
+    <div class="goals-container-wrapper">
+        <div class="goals-container">
+        <div class="goals-box">
+            {% for goal in goals %}
+                <div class="goals-detail">
+                    <h3 disabled> {{ goal.name }} </h3>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="goals-box">
+            <button id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
+        </div>
+        <form method="POST" id="new-goal-form" style="display: none;">
+            <input type="text" placeholder="Goal Name" name="goalName">
+            <input type="text" value="{{ todayDate }}" name="goalStart">
+            <select name="goalMeasurement">
+                <option value="time">Time</option>
+                <option value="amount">Amount</option>
+            </select>
+            <button type="submit" value="Save"></button>
+            <button type="button" onclick="cancelNewGoalForm()">Avbryt</button>
+        </form>
+        </div>
+    </div>
+    <div class="prioritet-box">
+        <h2>Prioritet</h2>
+        <p>Hej</p>
+    </div>
+</div>
+<script>
+function expandNewGoalForm() {
+    document.getElementById('new-goal-button').style.display = 'none';
+    document.getElementById('new-goal-form').style.display = 'block';
+}
+
+function cancelNewGoalForm() {
+    document.getElementById('new-goal-form').style.display = 'none';
+    document.getElementById('new-goal-button').style.display = 'block';
+}
+</script>
+{% endblock body %}
