@@ -1,10 +1,19 @@
-from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, render_template
-from flask import request, redirect, url_for
+#region Imports
+from flask import (Flask, render_template, flash,
+                   request, redirect, url_for)
+from flask_login import (login_user, logout_user, UserMixin,
+                         current_user, login_required)
+from models import db, User, BloggPost, Streak, Goals
+from blueprints.auth import auth_bp
+from blueprints.pmg import pmg_bp
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from flask_mail import Mail, Message
 import sqlite3
 import pandas as pd
+# endregion
+
+#region Appconfig
 
 app = Flask(__name__)
 
@@ -15,57 +24,18 @@ app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = "pmg.automatic.services@gmail.com"
 app.config['MAIL_PASSWORD'] = "gygfvycgvmjybgse"
-#app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+db.init_app(app)
 mail = Mail(app)
-connection = sqlite3.connect("instance/tylerobri.db")
-
+with app.app_context():
+    db.create_all()
+#endregion
 def readinfo(filename):
     with open(filename, "r", encoding="utf-8") as f:
         return f.read()
 
-
-class User(db.Model):
-    _id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    password = db.Column(db.String(30), nullable=False)
-    def __repr__(self):
-        return f"{self.name}, {self.password}"
-class BloggPost(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    author = db.Column(db.String(50), nullable=False)
-    title = db.Column(db.String(100), nullable=False)
-    content = db.Column(db.Text, unique=False, nullable=False)
-    date = db.Column(db.String(30), unique=False, nullable=False, default=datetime.utcnow)
-    def __repr__(self):
-        return f"{self.author}, {self.topic}, {self.sub_topic}, {self.title}, {self.content},{self.date}"
-
-class Streak(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    priority = db.Column(db.String(20), nullable=False)
-    count = db.Column(db.Integer, nullable=False)
-    best = db.Column(db.Integer, nullable=False)
-    condition = db.Column(db.String(80),nullable=False)
-    lastReg = db.Column(db.String(50), nullable=False)
-    dayOne = db.Column(db.String(50), nullable=False)
-    def __repr__(self):
-        return f"{self.name}, {self.priority}, {self.count}, {self.best}, {self.condition}, {self.lastReg}, {self.dayOne} "
-
-class Goals(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    def __repr__(self):
-        return f"{self.name}"
-
-
-myUser = User(name="Tyler O'Brien", password='K6SM4x12')
-
-with app.app_context():
-    db.create_all()
-    db.session.add(myUser)
-    db.session.commit()
+#region Userless
 @app.route('/')
 def home():
     sida="Hem"
@@ -91,77 +61,15 @@ def blogg():
 
     return render_template('blogg.html',sida=sida,header=sida,orden=orden)
 
+# endregion
 
-@app.route('/pmgloggin',methods=['GET', 'POST'])
-def loggin():
-    return render_template('pmg-loggin.html')
+#region Login/Out
+app.register_blueprint(auth_bp, url_prefix='/auth')
 
-@app.route('/streak',methods=['GET', 'POST'])
-def streak():
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    sida="Mina Streaks"
-    myStreaks = Streak.query.all()
-    print(myStreaks)
-    if request.method == 'POST':
-        Streak_name = request.form['streakName']
-        Streak_dayOne = request.form['streakStart']
-        Streak_priority = request.form['streakPriority']
-        Streak_condition = request.form['streakConditions']
-        newStreak = Streak(name=Streak_name, priority=Streak_priority, count=1,
-                           best=1,condition=Streak_condition, lastReg=Streak_dayOne,
-                           dayOne=Streak_dayOne)
+#endregion
 
-        db.session.add(newStreak)
-        db.session.commit()
-        return redirect(url_for('streak'),sida=sida,header=sida,todayDate=current_date,streaks=myStreaks)
-    return render_template('streak.html',sida=sida,header=sida,todayDate=current_date,streaks=myStreaks)
+app.register_blueprint(pmg_bp, url_prefix='/pmg')
 
-@app.route('/goals',methods=['GET', 'POST'])
-def goals():
-    myGoals = Goals.query.all()
-    sida = "Mina Mål"
-    return render_template('goals.html',sida=sida,header=sida, goals=myGoals)
-
-@app.route('/myday')
-def myday():
-    sida = "Min Dag"
-    return render_template('myday.html',sida=sida,header=sida)
-
-@app.route('/month')
-def month():
-    # Det nuvarande året och månaden
-    year = datetime.now().year
-    month = datetime.now().month
-
-    # Första dagen i månaden och månadens namn
-    first_day_of_month = datetime(year, month, 1)
-    month_name = first_day_of_month.strftime('%B')
-
-    # Skapa en lista som representerar dagarna i månaden, inklusive föregående och nästkommande månad
-    days = []
-    # Föregående månad
-    previous_month_day = first_day_of_month - timedelta(days=1)
-    while previous_month_day.weekday() != 6:  # Söndag är 6 i weekday() funktionen
-        days.insert(0, {'day': previous_month_day.day, 'date': previous_month_day, 'current_month': False})
-        previous_month_day -= timedelta(days=1)
-
-    # Aktuell månad
-    current_day = first_day_of_month
-    while current_day.month == month:
-        days.append({'day': current_day.day, 'date': current_day, 'current_month': True})
-        current_day += timedelta(days=1)
-
-    # Nästkommande månad
-    while len(days) % 7 != 0:
-        days.append({'day': current_day.day, 'date': current_day, 'current_month': False})
-        current_day += timedelta(days=1)
-
-    # Dela upp dagarna i veckor
-    weeks = [days[i:i + 7] for i in range(0, len(days), 7)]
-
-    # Titeln och headern för sidan
-    sida = "Min Månad"
-    return render_template('month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida)
 
 if __name__ == '__main__':
     app.run(debug=True)
