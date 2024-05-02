@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, request
-from models import User, db,Streak,BloggPost,Goals
+from models import User, db, Streak, BloggPost, Goals, Activity
 from datetime import datetime, timedelta
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates')
 
@@ -18,20 +18,36 @@ def streak():
         newStreak = Streak(name=Streak_name, priority=Streak_priority, count=1,
                            best=1,condition=Streak_condition, lastReg=Streak_dayOne,
                            dayOne=Streak_dayOne)
-
         db.session.add(newStreak)
         db.session.commit()
         return redirect(url_for('streak'),sida=sida,header=sida,todayDate=current_date,streaks=myStreaks)
     return render_template('streak.html',sida=sida,header=sida,todayDate=current_date,streaks=myStreaks)
 
+
 @pmg_bp.route('/goals',methods=['GET', 'POST'])
 def goals():
     myGoals = Goals.query.all()
     sida = "Mina Mål"
+    if request.method == 'POST':
+        if 'addGoal' in request.form['action']:
+            goal_name = request.form['goalName']
+            newGoal = Goals(name=goal_name)
+            db.session.add(newGoal)
+            db.session.commit()
+            return redirect(url_for('pmg.goals', sida=sida, header=sida, goals=myGoals))
+        elif 'addActivity' in request.form['action']:
+            goal_id= request.form['goalId']
+            activity_name = request.form['activity-name']
+            activity_measurement = request.form['activity-measurement']
+            newActivity = Activity(goal_id=goal_id,name=activity_name, measurement=activity_measurement)
+            db.session.add(newActivity)
+            db.session.commit()
+            return redirect(url_for('pmg.goals',sida=sida,header=sida, goals=myGoals))
     return render_template('goals.html',sida=sida,header=sida, goals=myGoals)
 
 @pmg_bp.route('/myday')
 def myday():
+    current_date = datetime.now().strftime("%Y-%m-%d")
     sida = "Min Dag"
     return render_template('myday.html',sida=sida,header=sida)
 
@@ -70,4 +86,26 @@ def month():
     # Titeln och headern för sidan
     sida = "Min Månad"
     return render_template('month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida)
+
+@pmg_bp.route('/journal', methods=['GET', 'POST'])
+def journal():
+    from main import readinfo
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    sida = "Blogg"
+    orden = readinfo('orden.txt')
+    orden = orden.split('\n')
+
+    if request.method == 'POST':
+        post_author = user = User.query.filter_by(User.username).first()
+        post_ord = request.form['post-ord']
+        post_text = request.form['blogg-content']
+        post_date = current_date
+
+        newPost = BloggPost(author=post_author, title=post_ord,
+                            content=post_text, date=post_date)
+        db.session.add(newPost)
+        db.session.commit()
+
+    return render_template('journal.html', sida=sida, header=sida, orden=orden)
+
 # endregion

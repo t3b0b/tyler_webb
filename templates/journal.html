@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <style>
+      .blogg-container {
+          display: flex;
+          flex-direction: column; /* Elementen staplas vertikalt */
+          justify-content: flex-start; /* Starta från toppen av container */
+          align-items: center; /* Centrera elementen horisontellt */
+          width: 100%; /* Se till att containern tar upp hela bredd */
+          max-width: 1200px; /* Eller vilken maxbredd du föredrar */
+          margin: 0 auto; /* Centrera containern på sidan */
+          height: auto; /* Justera höjden efter innehållet */
+      }
+
+      label, textarea, button {
+          width: 70vw; /* Bredd på både select och textarea */
+          margin: 20px; /* Ger lite utrymme mellan select och textarea */
+      }
+
+      textarea {
+          font-size: 12px;
+          height: 60vh; /* Gör textarea hög så den täcker majoriteten av skärmen */
+          padding: 12px 20px; /* Lite intern padding för att texten inte ska vara direkt vid kanten */
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          resize: vertical; /* Tillåter användaren att ändra höjden på textarea */
+      }
+      label {
+          font-family: 'Arial', sans-serif;
+          font-size: x-large;
+          font-weight: bold;
+      }
+    .ordet {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 20px;
+        width: 100%;
+    }
+    .ordet input {
+        margin-left: 20px;
+        height: 30px;
+        font-family: 'Arial', sans-serif;
+        font-size: larger;
+        font-weight: bold;
+    }
+
+      button {
+          width: 100px;
+      }
+
+    .edit-icon {
+        width: 20px;
+        cursor: pointer;
+        margin-right: 20px;
+    }
+
+    .hidden {
+        display: none;
+    }
+    </style>
+{% endblock head %}
+
+{% block body %}
+
+<div class="blogg-container">
+    <form method="POST">
+        <div class="ordet">
+            <label id="ordet-label" name="post-ord"> {{ orden|random }} </label>
+            <input type="text" id="ordet-input" class="hidden" name="post-ord" value="{{ orden|random }}">
+            <div class="img-plus">
+                <img src="{{ url_for('static', filename='images/plus-icon-större.png') }}" class="edit-icon" onclick="editTitle()" alt="Redigera" />
+            </div>
+        </div>
+        <div class="blogg-container">
+            <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
+        </div>
+        <div class="btn">
+            <button type="submit">Skicka</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function editTitle() {
+    var label = document.getElementById('ordet-label');
+    var input = document.getElementById('ordet-input');
+    label.classList.add('hidden'); // Gömmer label
+    input.classList.remove('hidden'); // Visar input-fält
+    input.focus(); // Sätter fokus på input-fält
+}
+</script>
+
+{% endblock body %}

@@ -1,8 +1,8 @@
 #region Imports
 from flask import (Flask, render_template, flash,
                    request, redirect, url_for)
-from flask_login import (login_user, logout_user, UserMixin,
-                         current_user, login_required)
+from flask_login import LoginManager
+
 from models import db, User, BloggPost, Streak, Goals
 from blueprints.auth import auth_bp
 from blueprints.pmg import pmg_bp
@@ -26,6 +26,11 @@ app.config['MAIL_USERNAME'] = "pmg.automatic.services@gmail.com"
 app.config['MAIL_PASSWORD'] = "gygfvycgvmjybgse"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+# Inställningar för LoginManager, som standardvy för inloggning
+login_manager.login_view = 'auth.login'
+
 db.init_app(app)
 mail = Mail(app)
 with app.app_context():
@@ -34,32 +39,14 @@ with app.app_context():
 def readinfo(filename):
     with open(filename, "r", encoding="utf-8") as f:
         return f.read()
-
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 #region Userless
 @app.route('/')
 def home():
     sida="Hem"
     return render_template('home.html',sida=sida,header="Tyler O'Brien")
-
-@app.route('/blogg',methods=['GET', 'POST'])
-def blogg():
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    sida="Blogg"
-    ord=readinfo('orden.txt')
-    orden=ord.split('\n')
-
-    if request.method=='POST':
-        post_author="Tyler O'Brien"
-        post_ord = request.form['post-ord']
-        post_text = request.form['blogg-content']
-        post_date = current_date
-
-        newPost = BloggPost(author=post_author, title=post_ord,
-                            content=post_text,date=post_date)
-        db.session.add(newPost)
-        db.session.commit()
-
-    return render_template('blogg.html',sida=sida,header=sida,orden=orden)
 
 # endregion
 

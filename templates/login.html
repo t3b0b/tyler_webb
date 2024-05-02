@@ -47,21 +47,20 @@
 <form method="POST">
     <div class="loggin-box">
         <h3>Log In</h3>
-        <input id="username" name="username" placeholder="Username" </input>
-        <input id="user-password" name="password" placeholder="Password" </input>
+        <input type="text" id="username" name="username" placeholder="Username" </input>
+        <input type="password" id="user-password" name="password" placeholder="Password" </input>
 
         <div class="loggin-btn">
-            <button type="button" onclick="newMemberReg()">Create Account</button>
+            <button type="button"><a href="/auth/register">Create Account</a></button>
             <button type="submit">Logg In</button>
         </div>
 
-        <li><a href="pmg-login.html">Forgot Password</a></li>
+        <li><a href="login.html">Forgot Password</a></li>
     </div>
 </form>
 <script>
 function newMemberReg() {
-    document.getElementById('new-streak-button').style.display = 'none';
-    document.getElementById('new-streak-form').style.display = 'block';
+
 }
 </script>
 {% endblock body %}

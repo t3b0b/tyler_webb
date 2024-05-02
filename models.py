@@ -8,9 +8,10 @@ db = SQLAlchemy()
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
     def __repr__(self):
-        return f'<User {self.username}>'
+        return f'{self.username}, {self.email}, {self.password}'
 
 class BloggPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -36,6 +37,16 @@ class Streak(db.Model):
 class Goals(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
+    activities = db.relationship('Activity', backref='goal', lazy=True)
     def __repr__(self):
         return f"{self.name}"
+
+class Activity(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    measurement = db.Column(db.String(20), nullable=False)
+    goal_id = db.Column(db.Integer, db.ForeignKey(Goals.id), nullable=False)
+
+    def __repr__(self):
+        return f'{self.name}, {self.measurement}, {self.goal_id}'
 # endregion

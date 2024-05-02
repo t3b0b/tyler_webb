@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-    <meta name="viewport" content="width=device-width", initial-scale="1.0">
+    <meta name="viewport" content="width=device-width" initial-scale="1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <title> {{ sida }} </title>
@@ -14,13 +14,19 @@
             <h1> {{ header }} </h1>
             <nav>
                 <ul>
-                    <li><a href='/'>Hem</a></li>
-                    <li><a href='/auth/login'>PMG</a></li>
-                    <!--<li><a href="/pmg/streak">Streak</a></li>
-                    <li><a href="/pmg/goals">Mål</a></li>
-                    <li><a href="/pmg/myday">Min Dag</a></li>
-                    <li><a href="/pmg/month">Månad</a></li>-->
-                    <li><a href="/blogg">Blogg</a></li>
+                    {% if current_user.is_authenticated %}
+                        <li><a href="/pmg/month">Kalender</a></li>
+                        <li><a href="/pmg/myday">Dag</a></li>
+                        <li><a href="/pmg/streak">Streak</a></li>
+                        <li><a href="/pmg/goals">Mål</a></li>
+                        <li><a href="/pmg/journal">Journal</a></li>
+                        <li><a href="/pmg/settings">Inställningar</a></li>
+                        <li><a href="/auth/logout">Logga ut</a></li>
+                    {% else %}
+                        <li><a href='/'>Hem</a></li>
+                        <li><a href='/auth/login'>PMG</a></li>
+                        <li><a href='/auth/blog'>Blog</a></li>
+                    {% endif %}
                 </ul>
             </nav>
         </div>

@@ -6,7 +6,6 @@
         display: flex;
         flex-direction: row;
         width: 100%;
-        gap: 30px;
     }
     .streak-container-wrapper {
         margin-left: 30px;
@@ -22,13 +21,6 @@
         flex-shrink: 1;
         flex-basis: 70%; /* Startbredd innan flex-grow tillämpas */
         width: 70%; /* Om du inte vill använda flex-grow och shrink */
-    }
-
-    .prioritet-box {
-        flex-grow: 2; /* Ger prioritet-boxen förmågan att växa */
-        flex-shrink: 1;
-        flex-basis: 20%; /* Startbredd innan flex-grow tillämpas */
-        width: 20%; /* Om du inte vill använda flex-grow och shrink */
     }
 
     .streak-box {
@@ -65,7 +57,7 @@
     #new-streak-form select,
     #new-streak-form button {
         width: 100%; /* Fyller hela bredden av sin container */
-         /* Ger utrymme inuti inmatningsfälten och knappen */
+        padding: 10px/* Ger utrymme inuti inmatningsfälten och knappen */
         /* Använd ytterligare styling om nödvändigt */
     }
 </style>
@@ -79,6 +71,7 @@
     <div class="streak-container-wrapper">
         <div class="streak-container">
             <!-- Exempel på hur du kan använda en Jinja2 loop för att skapa en container för varje streak -->
+            {% if streaks %}
             {% for streak in streaks %}
             <div class="streak-box">
                 <div class="streak-detail streak-input">
@@ -89,6 +82,7 @@
                 </div>
             </div>
             {% endfor %}
+            {% endif %}
             <div class="streak-box">
                 <button id="new-streak-button" onclick="expandNewStreakForm()">Ny Streak</button>
             </div>
@@ -106,10 +100,6 @@
                 <button type="button" onclick="cancelNewStreakForm()">Avbryt</button>
             </form>
         </div>
-    </div>
-    <div class="prioritet-box">
-        <h2>Prioritet</h2>
-        <p>Hej</p>
     </div>
  </div>
     <script>

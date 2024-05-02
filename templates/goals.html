@@ -2,94 +2,120 @@
 
 {% block head %}
     <style>
-    .goals-main {
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        gap: 30px;
-    }
-    .goals-container-wrapper {
-        margin-left: 30px;
-        flex: 0 0 70%; /* Ingen växt, ingen krympning och baserad på 70% av förälderns bredd */
-        max-width: 60%;
-        display: flex;
-        justify-content: flex-start; /* Centrerar barnhorisontellt */
-    }
+        .goals-main {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centrerar barn vertikalt i mitten */
+            margin-top: 40px; /* 40px marginal från toppen */
+            width: 100%;
+        }
+        .toggle-button {
+            background: none;
+            border: none;
+            color: #000000; /* Röd färg */
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .goals-container-wrapper {
+            width: 70%; /* Justerar bredden på hela målcontainern */
+            display: flex;
+            flex-direction: column; /* Stackar barn vertikalt */
+            align-items: center; /* Centrerar barn i mitten */
+        }
+        form {padding: 10px}
+        .activity {
+            margin-left: 70px;
+            padding: 5px;
+        }
+        .goals-box {
+            border: 1px solid #000;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column; /* Se till att detta är inställt på 'column' */
+            align-items: flex-start; /* Ändra från center till flex-start för att linjera innehåll till vänster */
+            height: auto;
+            min-height: 50px;
+        }
+        #new-goal-form, #new-goal-form * {
+            width: 100%; /* Fyller hela bredden av sin container */
+            margin: 5px 0; /* Lägger till marginal ovanför och under varje element */
+        }
 
-    .goals-container {
-        margin-top: 20px;
-        flex-grow: 3; /* Ger streck-containern förmågan att växa */
-        flex-shrink: 1;
-        flex-basis: 70%; /* Startbredd innan flex-grow tillämpas */
-        width: 70%; /* Om du inte vill använda flex-grow och shrink */
-    }
-    .goals-box {
-        border: 1px solid #000;
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 10px;
-        display: flex;
-        justify-content: space-between;
-        max-height: 50px; /* Exempel på en minsta höjd */
-        /* height: 100px; Om du vill ha en fast höjd istället */
-    }
-    .goals-box select {
-        width: 100%; /* Fyller hela bredden av sin container */
-        margin: 10px 0; /* Lägger till marginal ovanför och under */
-    }
-    #new-goal-button {
-        width: 100%; /* Fyller hela bredden av sin container */
-        /* Använd övrig styling så att knappen matchar dina andra containers */
-    }
-    .prioritet-box {
-    flex-grow: 2; /* Ger prioritet-boxen förmågan att växa */
-    flex-shrink: 1;
-    flex-basis: 20%; /* Startbredd innan flex-grow tillämpas */
-    width: 20%; /* Om du inte vill använda flex-grow och shrink */
-}
+        #new-goal-form button {
+            padding: 8px; /* Ger extra utrymme inuti knappen */
+        }
 
-    #new-goal-button input,
-    #new-goal-form select,
-    #new-goal-form button {
-        width: 100%; /* Fyller hela bredden av sin container */
-         /* Ger utrymme inuti inmatningsfälten och knappen */
-        /* Använd ytterligare styling om nödvändigt */
+        button {
+            cursor: pointer; /* Gör muspekaren till en pekare när den hovrar över knappar */
+        }
 
+        input[type="text"], select {
+            padding: 8px;
+            margin: 5px 0; /* Samma vertikalt utrymme för alla inmatningsfält */
+        }
     </style>
 {% endblock head %}
 
 {% block body %}
 <div class="goals-main">
     <div class="goals-container-wrapper">
-        <div class="goals-container">
-        <div class="goals-box">
+        {% if goals %}
             {% for goal in goals %}
-                <div class="goals-detail">
-                    <h3 disabled> {{ goal.name }} </h3>
+            <div class="goals-box">
+                <div style="display: flex; align-items: center; width: 100%;">
+                    <button class="toggle-button" onclick="toggleActivities(this)">▼</button>
+                    <h3 style="margin-left: 10px;">{{ goal.name }}</h3>
                 </div>
+                <div class="activity-list" style="display: none;">
+                    {% for activity in goal.activities %}
+                    <div class="activity">{{ activity.name }}</div>
+                    {% endfor %}
+                    <button onclick="showAddActivityForm(event, this)">Add Activity</button>
+                    <form method="POST" id="add-activity-form" style="display: none;">
+                        <input type="hidden" name="goalId" value="{{ goal.id }}">
+                        <input type="text" name="activity-name" placeholder="Activity Name" required>
+                        <select id="new-goal-activity" name="activity-measurement">
+                            <option value="tid">Tid</option>
+                            <option value="antal">Antal</option>
+                        </select>
+                        <button type="submit" name="action" value="addActivity">Save Activity</button>
+                        <button type="button" onclick="hideAddActivityForm(event, this)">Cancel</button>
+                    </form>
+                </div>
+            </div>
             {% endfor %}
-        </div>
-        <div class="goals-box">
-            <button id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
-        </div>
+        {% endif %}
+        <button id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
         <form method="POST" id="new-goal-form" style="display: none;">
             <input type="text" placeholder="Goal Name" name="goalName">
-            <input type="text" value="{{ todayDate }}" name="goalStart">
-            <select name="goalMeasurement">
-                <option value="time">Time</option>
-                <option value="amount">Amount</option>
-            </select>
-            <button type="submit" value="Save"></button>
-            <button type="button" onclick="cancelNewGoalForm()">Avbryt</button>
+            <button type="submit" name="action" value="addGoal">Save</button>
+            <button type="button" onclick="cancelNewGoalForm()">Cancel</button>
         </form>
-        </div>
-    </div>
-    <div class="prioritet-box">
-        <h2>Prioritet</h2>
-        <p>Hej</p>
     </div>
 </div>
 <script>
+function toggleActivities(button) {
+    event.stopPropagation(); // Förhindra bubbling av event till högre element
+    var goalsBox = button.closest('.goals-box'); // Hämta närmaste mållåda
+    var activityList = goalsBox.querySelector('.activity-list'); // Hämta aktivitetslistan
+    activityList.style.display = activityList.style.display === 'none' ? 'block' : 'none'; // Visa eller dölj aktivitetslistan
+    button.textContent = activityList.style.display === 'none' ? '▼' : '▲'; // Ändra pilens riktning
+}
+function showAddActivityForm(event, button) {
+    event.stopPropagation(); // Stoppa event-bubbling
+    var form = button.nextElementSibling;
+    form.style.display = 'block';
+    button.style.display = 'none';
+}
+
+function hideAddActivityForm(event, button) {
+    event.stopPropagation(); // Stoppa event-bubbling
+    var form = button.parentElement;
+    form.style.display = 'none';
+    form.previousElementSibling.style.display = 'block'; // Visa "Add Activity"-knappen igen
+}
 function expandNewGoalForm() {
     document.getElementById('new-goal-button').style.display = 'none';
     document.getElementById('new-goal-form').style.display = 'block';
