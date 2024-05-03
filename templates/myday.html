@@ -2,10 +2,69 @@
 
 {% block head %}
     <style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+    .container {
+        display: flex;
+        justify-content: space-around;
+        padding: 20px;
+        box-sizing: border-box;
+    }
 
+    .goals, .streaks {
+        width: 30%;
+        border: 1px solid #ccc;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    .circle {
+        width: 20%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3em;
+    }
+
+    .circle span {
+        display: inline-block;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        border: 1px solid black;
+        line-height: 200px;
+        text-align: center;
+    }
     </style>
 {% endblock head %}
 
 {% block body %}
-
+<div class="container">
+    <div class="goals">
+        <h2>Goals</h2>
+        <form>
+            <label>goal name: <input type="text"> XX min</label>
+            <label>goal name: <input type="text"> XX min</label>
+            <button type="submit">Starta Aktivitet</button>
+        </form>
+    </div>
+    <div class="circle">
+        <span>XXX</span>
+    </div>
+    <div class="streaks">
+        <h2>Streaks</h2>
+        <div class="streak">
+            <label>Streak condition <button>Yes</button><button>No</button></label>
+        </div>
+        <div class="streak">
+            <label>Streak condition <button>Yes</button><button>No</button></label>
+        </div>
+        <div class="streak">
+            <label>Streak condition <button>Yes</button><button>No</button></label>
+        </div>
+    </div>
+</div>
 {% endblock body %}

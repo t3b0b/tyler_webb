@@ -6,11 +6,7 @@ from flask_login import LoginManager
 from models import db, User, BloggPost, Streak, Goals
 from blueprints.auth import auth_bp
 from blueprints.pmg import pmg_bp
-from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timedelta
 from flask_mail import Mail, Message
-import sqlite3
-import pandas as pd
 # endregion
 
 #region Appconfig
@@ -28,13 +24,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-# Inställningar för LoginManager, som standardvy för inloggning
 login_manager.login_view = 'auth.login'
 
 db.init_app(app)
 mail = Mail(app)
 with app.app_context():
     db.create_all()
+
 #endregion
 def readinfo(filename):
     with open(filename, "r", encoding="utf-8") as f:
@@ -42,12 +38,16 @@ def readinfo(filename):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
 #region Userless
 @app.route('/')
 def home():
     sida="Hem"
     return render_template('home.html',sida=sida,header="Tyler O'Brien")
-
+@app.route('/blog')
+def blog():
+    sida="Blogg"
+    render_template('blog.html',sida=sida,header=sida,)
 # endregion
 
 #region Login/Out
@@ -59,4 +59,4 @@ app.register_blueprint(pmg_bp, url_prefix='/pmg')
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0",port=5000,debug=True)

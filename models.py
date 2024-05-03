@@ -49,4 +49,14 @@ class Activity(db.Model):
 
     def __repr__(self):
         return f'{self.name}, {self.measurement}, {self.goal_id}'
+
+class Score(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    Goal = db.Column(db.Integer, db.ForeignKey(Goals.id))
+    Activity = db.Column(db.Integer, db.ForeignKey(Activity.id), nullable=False)
+    Date = db.Column(db.DateTime, nullable=False)
+    Time = db.Column(db.Integer, nullable=False)
+    def __repr__(self):
+        return f'{self.Goal}, {self.Activity}, {self.Date}, {self.Time}'
+
 # endregion

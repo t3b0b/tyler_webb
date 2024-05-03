@@ -121,3 +121,30 @@ footer {
 .top-bar-menu nav > ul > li:hover > .sub-menu {
     display: block;
     list-style-type: none;
+.sub-menu {
+    display: flex;
+    background-color: burlywood;
+    margin: 0;
+    width: max-content 1200px;
+    height: 40px;
+    border-bottom: 2px solid #ccc;
+    text-align: center;
+}
+.sub-menu > nav > ul {
+    display: flex;
+    justify-content: center;
+    list-style-type: none;
+    vertical-align: middle;
+    text-decoration: none;
+}
+.sub-menu a {
+    display: flex;
+    padding-left: 20px;
+    color: #f9f9f9;
+    font-size: 16px;
+    font-weight: bold;
+    position: relative;
+}
+.sub-menu a:hover {
+    color: black;
+}

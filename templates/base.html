@@ -15,8 +15,8 @@
             <nav>
                 <ul>
                     {% if current_user.is_authenticated %}
+                        <li><a href="/pmg/myday">Start</a></li>
                         <li><a href="/pmg/month">Kalender</a></li>
-                        <li><a href="/pmg/myday">Dag</a></li>
                         <li><a href="/pmg/streak">Streak</a></li>
                         <li><a href="/pmg/goals">Mål</a></li>
                         <li><a href="/pmg/journal">Journal</a></li>
@@ -25,18 +25,25 @@
                     {% else %}
                         <li><a href='/'>Hem</a></li>
                         <li><a href='/auth/login'>PMG</a></li>
-                        <li><a href='/auth/blog'>Blog</a></li>
+                        <li><a href='/auth/blog'>Blogg</a></li>
                     {% endif %}
                 </ul>
             </nav>
         </div>
     </header>
+    <div class="sub-menu">
+        <nav>
+            <ul>
+                {% if sub_menu %}
+                    {% for item in sub_menu %}
+                    <li><a href="{{ item.choice }}">{{ item.text }}</a></li>
+                    {% endfor %}
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
     {% block body %}
-        <main>
-            {% block main %}
-            <!-- Huvudinnehåll -->
-            {% endblock %}
-            </main>
+
     {% endblock %}
 </body>
 </html>

@@ -53,6 +53,11 @@ def myday():
 
 @pmg_bp.route('/month')
 def month():
+    sub_menu = [
+        {'choice': '/pmg/month', 'text': 'Månad'},
+        {'choice': '/pmg/week', 'text': 'Vecka'},
+        {'choice': '/pmg/myday', 'text': 'Dag'}
+    ]
     # Det nuvarande året och månaden
     year = datetime.now().year
     month = datetime.now().month
@@ -85,7 +90,7 @@ def month():
 
     # Titeln och headern för sidan
     sida = "Min Månad"
-    return render_template('month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida)
+    return render_template('month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida, sub_menu=sub_menu)
 
 @pmg_bp.route('/journal', methods=['GET', 'POST'])
 def journal():
@@ -108,4 +113,10 @@ def journal():
 
     return render_template('journal.html', sida=sida, header=sida, orden=orden)
 
+@pmg_bp.route('/settings')
+def settings():
+    sida = 'Inställningar'
+
+
+    return render_template('settings.html', sida=sida, header=sida)
 # endregion
