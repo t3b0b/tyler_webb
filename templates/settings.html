@@ -5,11 +5,26 @@
     body {
         font-family: Arial, sans-serif;
     }
+    .main-section{
+        display: flex;
+        flex-direction: row;
+        gap: 40px;
+    }
+    .ord-section {
+        display: flex;
+        flex-direction: column;
+        margin-left: 40px;
+        justify-content: center;
+    }
+    .timer-section {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
     .nytt-ord-form {
         margin-bottom: 20px;
     }
     input[type="text"] {
-        width: 13%;
         padding: 8px;
         margin-right: 5px; /* Lägg till marginal mellan fältet och knappen */
     }
@@ -26,7 +41,7 @@
     .min-ord-lista {
         background-color: #f4f4f4;
         border: 1px solid #ccc;
-        width: 20%;
+        width: 100%
         max-width: 300px;
         padding: 0 10px 0 10px;
     }
@@ -42,19 +57,32 @@
 {% endblock head %}
 
 {% block body %}
-<div class="nytt-ord-form">
-    <form method="post">
-        <h3>Mina Ord:</h3>
-        <input type="text" id="nytt-ord" name="nytt-ord" placeholder="Skriv ett ord här">
-        <button type="submit">Lägg till</button>
-    </form>
+<div class="main-section">
+    <div class="ord-section">
+        <div class="nytt-ord-form">
+            <form method="post">
+                <h3>Mina Ord:</h3>
+                <input type="text" id="nytt-ord" name="nytt-ord" placeholder="Skriv ett ord här">
+                <button type="submit">Lägg till</button>
+            </form>
+        </div>
+        <div class="min-ord-lista">
+            <ul id="ord-lista">
+                {% for word in my_words %}
+                    <li><strong>{{ word }}</strong></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="timer-section">
+        <h3>Timer:</h3>
+        <label for="standard-intervall">Standard intervall:</label>
+        <select id="standard-intervall" class="timer-input">
+            <option value="5">5 minuter</option>
+            <option value="10">10 minuter</option>
+            <option value="15">15 minuter</option>
+            <option value="20">20 minuter</option>
+        </select>
+    </div>
 </div>
-<div class="min-ord-lista">
-    <ul id="ord-lista">
-        {% for word in my_words %}
-            <li><strong>{{ word }}</strong></li>
-        {% endfor %}
-    </ul>
-</div>
-
 {% endblock body %}

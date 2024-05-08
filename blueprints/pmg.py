@@ -100,8 +100,7 @@ def month():
     sub_menu = [
         {'choice': '/pmg/month', 'text': 'Månad'},
         {'choice': '/pmg/week', 'text': 'Vecka'},
-        {'choice': '/pmg/myday', 'text': 'Dag'},
-        {'choice': '/pmg/timer', 'text': 'Timer'}
+        {'choice': '/pmg/myday', 'text': 'Dag'}
     ]
     # Det nuvarande året och månaden
     year = datetime.now().year
@@ -160,6 +159,11 @@ def journal():
 
 @pmg_bp.route('/settings',methods=['GET','POST'])
 def settings():
+    sub_menu = [
+        {'choice': '/pmg/settings', 'text': 'Journal'},
+        {'choice': '/pmg/settings', 'text': 'Timer'},
+        {'choice': '/pmg/settings', 'text': 'Konto'}
+    ]
     sida = 'Inställningar'
     myWords=MyWords.query.all()
     if request.method == 'POST':
