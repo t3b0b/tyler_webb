@@ -1,70 +1,276 @@
 {% extends 'base.html' %}
 
 {% block head %}
-    <style>
-    body, html {
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-    }
-    .container {
-        display: flex;
-        justify-content: space-around;
-        padding: 20px;
-        box-sizing: border-box;
-    }
+<style>
+    html, body {
+    height: 100%; /* Gör att HTML och body tar upp hela sidans höjd */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column; /* Lägger innehållet i en vertikal stapel */
+    font-family: Arial, sans-serif;
+}
+.container {
+    display: flex;
+    flex: 1 0 auto; /* Tar upp tillgängligt utrymme */
+    gap: 50px;
+    justify-content: space-around;
+    padding: 20px;
+    box-sizing: border-box;
+    flex-wrap: wrap; /* Ser till att innehåll kan rymmas på mindre skärmar */
+}
+.goals, .streaks{
+    flex: 1; /* Ger flexibilitet till varje kolumn */
+    align-self: start; /* Startar innehåll vid toppen av containern */
+    margin: 10px; /* Ger utrymme runt blocken */
+    padding: 20px;
+    box-sizing: border-box;
+    border: 1px solid #ccc; /* Ramborder */
+}
+.circle {
+    flex: none; /* Förhindrar att cirkeln växer eller krymper */
+    width: 210px;
+    height: 210px;
+    align-self: center; /* Centrerar cirkeln i flex-container */
+}
+.circle span {
+    width: 100%;
+    height: 200px;
+    font-size: 38px;
+    font-weight: bold;
+    border-radius: 50%;
+    border: 1px solid black;
+    line-height: 200px;
+    text-align: center;
+    display: block;
+}
+.sub-header {
+    width: 100%; /* Tar full bredd */
+    display: flex;
+    margin-left: 30px;
+}
+.sub-header-text {
+    font-size: 20px;
+}
+.button-center {
+    width: 100%; /* Tar full bredd */
+    display: flex;
+    justify-content: center;
+    margin-top: auto; /* Skjuter automatiskt innehållet till botten */
+    margin-bottom: 20px;
+}
+.list-item {
+    display: flex;
+    flex-direction: row;
+    width: 80%; /* Ökar bredden på select-elementen */
+    border: solid 1px #505050;
+    padding: 10px; /* Lägger till lite padding för bättre utseende */
+}
+.list-item label {
+    font-size: 1.2em; /* Ökar fontstorleken */
+    font-weight: bold;
+    align-self: center;
+}
+.streak-icon {
+    display: flex;
+    flex-direction: row;
+    gap: 50px;
+    margin-left: 220px;
+}
+.streak-icon img {
+    width: 30px;
+    height: 30px;
+}
+.select-style {
+    margin: 0 auto; /* Centrerar elementet horisontellt */
+    display: block; /* Block-nivå-element tar upp hela radens bredd */
+    font-size: 1.2em; /* Ökar fontstorleken */
+}
+.repetitions{
+    align-self: center;
+}
+.button-style {
+    width: 30%; /* Bredden på knappen */
+    padding: 15px 20px; /* Padding runt texten i knappen */
+    margin: 20px auto; /* Marginal ovanför/under och centrerar horisontellt */
+    display: block; /* Gör knappen till ett block-nivå-element */
+    font-size: 1.2em; /* Ökar fontstorleken */
+    cursor: pointer; /* Ändrar muspekaren till en pekare när den hovrar över knappen */
+    background-color: #007BFF; /* Bakgrundsfärg på knappen */
+    color: white; /* Textfärg på knappen */
+    border: none; /* Tar bort ramen runt knappen */
+    border-radius: 5px; /* Rundade hörn */
+}
 
-    .goals, .streaks {
-        width: 30%;
-        border: 1px solid #ccc;
-        padding: 20px;
-        box-sizing: border-box;
-    }
-
-    .circle {
-        width: 20%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 3em;
-    }
-
-    .circle span {
-        display: inline-block;
-        width: 200px;
-        height: 200px;
-        border-radius: 50%;
-        border: 1px solid black;
-        line-height: 200px;
-        text-align: center;
-    }
     </style>
 {% endblock head %}
 
 {% block body %}
+<div class="sub-header">
+    <h2 class="sub-header-text"> {{ current_date }} </h2>
+</div>
 <div class="container">
     <div class="goals">
         <h2>Goals</h2>
-        <form>
-            <label>goal name: <input type="text"> XX min</label>
-            <label>goal name: <input type="text"> XX min</label>
-            <button type="submit">Starta Aktivitet</button>
-        </form>
+        {% if my_score %}
+        <ul>
+            {% for score in my_score %}
+            <li>
+                <strong>Mål:</strong> {{ score.goal_name }}
+                <strong>Aktivitet:</strong> {{ score.activity_name }}
+                <strong>Poäng:</strong> {{ score.Time }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
     </div>
     <div class="circle">
-        <span>XXX</span>
+        {% if total_score %}
+            <span>{{ total_score }}</span>
+        {% else %}
+            <span>0</span>
+        {% endif %}
     </div>
     <div class="streaks">
         <h2>Streaks</h2>
-        <div class="streak">
-            <label>Streak condition <button>Yes</button><button>No</button></label>
-        </div>
-        <div class="streak">
-            <label>Streak condition <button>Yes</button><button>No</button></label>
-        </div>
-        <div class="streak">
-            <label>Streak condition <button>Yes</button><button>No</button></label>
-        </div>
+        {% for streak in my_streaks %}
+            <div class="list-item">
+                <label class="streak-style"> {{ streak.condition }}</label>
+                    <div class="streak-icon">
+                        <img src="{{ url_for('static', filename='images/check.png') }}" onclick="count()">
+                        <img src="{{ url_for('static', filename='images/kryss.png') }}" onclick="retry()">
+                    </div>
+            </div>
+        {% endfor %}
     </div>
 </div>
+<div class="repetitions" style="display: none">
+    <h2 id="repetitons">0</h2>
+</div>
+<div id="complete-form" style="display: none" class="list-item">
+    <form method="POST">
+        <input type="" id="gID" name="gID"></input>
+        <input type="text" id="aID" name="aID"></input>
+        <input type="text" id="aDate" name="aDate" value='{{ current_date }}'></input>
+        <input type="text"id="score" name="score"></input>
+        <button type="submit" id="save-btn">Save</button>
+    </form>
+</div>
+<div id="activityForm" style="display: none;">
+    <select id="goalSelect" class="select-style">
+        <option value="----"></option>
+        {% for goal in my_goals %}
+        <option value="{{ goal.id }}">{{ goal.name }}</option>
+        {% endfor %}
+    </select>
+   <select id="activitySelect" class="select-style">
+        <!-- Aktiviteter kommer att laddas här -->
+    </select>
+    <select id="timeSelect" class="select-style">
+        <option value="0.1">6 s</option>
+        <option value="5">5 min</option>
+        <option value="10">10 min</option>
+        <option value="15">15 min</option>
+    </select>
+   <button onclick="startTimerFromSelection()" class="button-style">Starta</button>
+</div>
+<div class="button-center">
+    <button id="stopButton" class="button-style" style="display: none; background-color: red">Stop</button>
+    <button id="continueButton" class="button-style" style="display: none; background-color: green">Continue</button>
+</div>
+</form>
+</div>
+<div class="button-center">
+    <button id ="startaAktivitet" class="button-style" type="submit">Starta Aktivitet</button>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#goalSelect').change(function() {
+        var goalId = $(this).val();
+        $.ajax({
+            url: '/pmg/get_activities/' + goalId,
+            type: 'GET',
+            success: function(response) {
+                var activitySelect = $('#activitySelect');
+                activitySelect.empty(); // Rensa befintliga optioner
+                $.each(response, function(index, activity) {
+                    activitySelect.append($('<option>').val(activity.id).text(activity.name));
+                });
+            },
+            error: function(error) {
+                console.log('Error:', error);
+            }
+        });
+    });
+});
+</script>
+<script>
+var interval;
+var ogIntervall = 0;
+var repetitions = 1;
+var activity = 0;
+var goal = 0;
+function startTimer(duration, display) {
+    document.getElementById('activityForm').style.display = 'none'
+    clearInterval(interval);  // Rensar tidigare intervaller för att förhindra dubbla timers
+    var timer = duration, minutes, seconds;
+    interval = setInterval(function () {
+        minutes = parseInt(timer / 60, 10);
+        seconds = parseInt(timer % 60, 10);
+
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        display.textContent = minutes + ":" + seconds;
+
+        if (--timer < 0) {
+            clearInterval(interval);
+            display.textContent = "00:00";
+            document.getElementById('stopButton').style.display = 'block';
+            document.getElementById('continueButton').style.display = 'block';
+            document.getElementById('activityForm').style.display = 'none';
+        }
+    }, 1000);
+}
+function continueTimer() {
+    var display = document.querySelector('.circle span'); // Antag att tiden visas här
+    repetitions += + 1
+    document.querySelector('.repetitions h2').textContent = repetitions
+    startTimer(ogIntervall, display); // Fortsätt timern
+}
+function stopTimer() {
+    var timeTot = repetitions * (ogIntervall/60)
+    document.getElementById('complete-form').style.display = 'block';
+    document.getElementById('aID').value = activity;
+    document.getElementById('gID').value = goal;
+    document.getElementById('score').value = timeTot;
+}
+function parseTime(timeStr) {
+    var parts = timeStr.split(":");
+    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10); // Konverterar "mm:ss" till sekunder
+}
+function startTimerFromSelection() {
+    var duration = document.getElementById('timeSelect').value * 60; // Konverterar minuter till sekunder
+    goal = document.getElementById('goalSelect').value;
+    activity = document.getElementById('activitySelect').value;
+    ogIntervall = duration
+    var display = document.querySelector('.circle span'); // Förutsätter att tiden ska visas här
+    if (document.getElementById('activityForm').style.display === 'none') {
+        toggleActivityForm(); // Visar formen om den är dold
+    }
+    startTimer(parseInt(duration), display); // Startar timern
+    }
+function toggleActivityForm() {
+    var form = document.getElementById('activityForm');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    document.getElementById('startaAktivitet').style.display = 'none'
+}
+
+document.getElementById('startaAktivitet').addEventListener('click', toggleActivityForm);
+document.getElementById('continueButton').addEventListener('click', continueTimer);
+document.getElementById('stopButton').addEventListener('click', stopTimer);
+
+</script>
 {% endblock body %}

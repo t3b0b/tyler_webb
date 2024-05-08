@@ -49,7 +49,7 @@ def register():
 @auth_bp.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('main.home'))  # anta att 'main' är ett annat blueprint
+    return redirect(url_for('home'))  # anta att 'main' är ett annat blueprint
 
 @auth_bp.route('/confirm_email/<token>')
 def confirm_email(token):

@@ -95,11 +95,10 @@
         </tbody>
     </table>
 </div>
+
 <script>
 function onDateClick(date) {
-    // Här kan du lägga till vad som ska hända när en datumruta klickas
-    // till exempel, visa en popup, ladda en sida, etc.
-    alert("Datum valt: " + date);
+    window.location.href = '/pmg/myday/' + date; // Ändra till den korrekta sökvägen för din applikation
 }
 </script>
 {% endblock main %}

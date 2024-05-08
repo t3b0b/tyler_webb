@@ -54,9 +54,14 @@ class Score(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     Goal = db.Column(db.Integer, db.ForeignKey(Goals.id))
     Activity = db.Column(db.Integer, db.ForeignKey(Activity.id), nullable=False)
-    Date = db.Column(db.DateTime, nullable=False)
+    Date = db.Column(db.String(30), nullable=False)
     Time = db.Column(db.Integer, nullable=False)
     def __repr__(self):
         return f'{self.Goal}, {self.Activity}, {self.Date}, {self.Time}'
 
+class MyWords(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ord = db.Column(db.String, nullable=False)
+    def __repr__(self):
+        return f'{self.ord}'
 # endregion

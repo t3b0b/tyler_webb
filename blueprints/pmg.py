@@ -1,8 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for, request
-from models import User, db, Streak, BloggPost, Goals, Activity
+from flask import Blueprint, render_template, redirect, url_for, request, jsonify
+from models import User, db, Streak, BloggPost, Goals, Activity, Score, MyWords
 from datetime import datetime, timedelta
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates')
-
 #region PMG
 @pmg_bp.route('/streak',methods=['GET', 'POST'])
 def streak():
@@ -20,9 +19,14 @@ def streak():
                            dayOne=Streak_dayOne)
         db.session.add(newStreak)
         db.session.commit()
-        return redirect(url_for('streak'),sida=sida,header=sida,todayDate=current_date,streaks=myStreaks)
+        return redirect(url_for('pmg.streak'))
     return render_template('streak.html',sida=sida,header=sida,todayDate=current_date,streaks=myStreaks)
 
+@pmg_bp.route('/get_activities/<goal_id>')
+def get_activities(goal_id):
+    activities = Activity.query.filter_by(goal_id=goal_id).all()
+    activity_list = [{'id': activity.id, 'name': activity.name} for activity in activities]
+    return jsonify(activity_list)
 
 @pmg_bp.route('/goals',methods=['GET', 'POST'])
 def goals():
@@ -45,18 +49,59 @@ def goals():
             return redirect(url_for('pmg.goals',sida=sida,header=sida, goals=myGoals))
     return render_template('goals.html',sida=sida,header=sida, goals=myGoals)
 
-@pmg_bp.route('/myday')
-def myday():
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    sida = "Min Dag"
-    return render_template('myday.html',sida=sida,header=sida)
 
+def myDayScore(date):
+    total = 0
+    myScore = db.session.query(
+        Goals.name.label('goal_name'),
+        Activity.name.label('activity_name'),
+        Score.Date,
+        Score.Time
+    ).join(
+        Goals, Goals.id == Score.Goal
+    ).join(
+        Activity, Activity.id == Score.Activity
+    ).filter(Score.Date == date).all()
+
+    for score in myScore:
+        total += float(score.Time)
+
+    return myScore,total
+@pmg_bp.route('/myday', methods=['GET','POST'])
+def myday():
+    date_now = datetime.now().strftime('%Y.%m.%d')
+    sida = "Min Dag"
+    myGoals = Goals.query.all()
+    myStreaks = Streak.query.all()
+    myScore,total = myDayScore(date_now)
+    if request.method == 'POST':
+        goal_id = request.form['gID']
+        activity_id = request.form['aID']
+        activity_date = request.form['aDate']
+        activity_score = request.form['score']
+        new_score = Score(Goal=goal_id, Activity=activity_id,Date=activity_date,Time=activity_score)
+        db.session.add(new_score)
+        db.session.commit()
+        return redirect(url_for('pmg.myday'))
+    return render_template('myday.html',sida=sida,header=sida, current_date=date_now,
+                           my_goals=myGoals, my_streaks=myStreaks, my_score=myScore,total_score=total)
+
+@pmg_bp.route('/myday/<date>')
+def myday_date(date):
+    selected_date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S').strftime('%Y.%m.%d')
+    sida = "Min Dag"
+    myGoals = Goals.query.all()
+    myStreaks = Streak.query.all()
+    myScore, total = myDayScore(selected_date)
+    return render_template('myday.html', sida=sida, header=sida, current_date=selected_date,
+                           my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
 @pmg_bp.route('/month')
 def month():
     sub_menu = [
         {'choice': '/pmg/month', 'text': 'Månad'},
         {'choice': '/pmg/week', 'text': 'Vecka'},
-        {'choice': '/pmg/myday', 'text': 'Dag'}
+        {'choice': '/pmg/myday', 'text': 'Dag'},
+        {'choice': '/pmg/timer', 'text': 'Timer'}
     ]
     # Det nuvarande året och månaden
     year = datetime.now().year
@@ -113,10 +158,15 @@ def journal():
 
     return render_template('journal.html', sida=sida, header=sida, orden=orden)
 
-@pmg_bp.route('/settings')
+@pmg_bp.route('/settings',methods=['GET','POST'])
 def settings():
     sida = 'Inställningar'
-
-
-    return render_template('settings.html', sida=sida, header=sida)
+    myWords=MyWords.query.all()
+    if request.method == 'POST':
+        ord = request.form['nytt-ord']
+        newWord = MyWords(ord=ord)
+        db.session.add(newWord)
+        db.session.commit()
+        return redirect(url_for('pmg.settings'))
+    return render_template('settings.html', sida=sida, header=sida, my_words=myWords)
 # endregion

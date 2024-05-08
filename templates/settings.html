@@ -1,11 +1,60 @@
 {% extends 'base.html' %}
 
 {% block head %}
-    <style>
-
-    </style>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+    .nytt-ord-form {
+        margin-bottom: 20px;
+    }
+    input[type="text"] {
+        width: 13%;
+        padding: 8px;
+        margin-right: 5px; /* Lägg till marginal mellan fältet och knappen */
+    }
+    button {
+        padding: 10px 20px;
+        background-color: #4CAF50; /* Grön bakgrund */
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #45a049;
+    }
+    .min-ord-lista {
+        background-color: #f4f4f4;
+        border: 1px solid #ccc;
+        width: 20%;
+        max-width: 300px;
+        padding: 0 10px 0 10px;
+    }
+    ul {
+        list-style-type: none; /* Tar bort punkter från listan */
+        padding: 0;
+    }
+    ul li {
+        padding: 8px;
+        border-bottom: 1px solid #ddd; /* Lägg till en linje mellan varje ord */
+    }
+</style>
 {% endblock head %}
 
 {% block body %}
-<div> </div>
+<div class="nytt-ord-form">
+    <form method="post">
+        <h3>Mina Ord:</h3>
+        <input type="text" id="nytt-ord" name="nytt-ord" placeholder="Skriv ett ord här">
+        <button type="submit">Lägg till</button>
+    </form>
+</div>
+<div class="min-ord-lista">
+    <ul id="ord-lista">
+        {% for word in my_words %}
+            <li><strong>{{ word }}</strong></li>
+        {% endfor %}
+    </ul>
+</div>
+
 {% endblock body %}
