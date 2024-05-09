@@ -22,7 +22,12 @@
             flex-direction: column; /* Stackar barn vertikalt */
             align-items: center; /* Centrerar barn i mitten */
         }
-        form {padding: 10px}
+        form {
+            padding: 10px;
+            display: flex;
+            width: 80%;
+            align-self: center;
+        }
         .activity {
             margin-left: 70px;
             padding: 5px;
@@ -33,10 +38,15 @@
             padding: 10px;
             margin-bottom: 10px;
             display: flex;
-            flex-direction: column; /* Se till att detta är inställt på 'column' */
-            align-items: flex-start; /* Ändra från center till flex-start för att linjera innehåll till vänster */
+            flex-direction: column; /* Ensure the main direction is column */
+            align-items: flex-start; /* Align items to the start on the cross-axis */
             height: auto;
             min-height: 50px;
+        }
+        .goals-box > div:first-child { /* Assuming the first div contains the header and button */
+            display: flex;
+            width: 100%;
+            justify-content: space-between; /* This separates the button and the rest to opposite ends */
         }
         #new-goal-form, #new-goal-form * {
             width: 100%; /* Fyller hela bredden av sin container */
@@ -48,6 +58,7 @@
         }
 
         button {
+            align-self: center;
             cursor: pointer; /* Gör muspekaren till en pekare när den hovrar över knappar */
         }
 
@@ -67,6 +78,7 @@
                 <div style="display: flex; align-items: center; width: 100%;">
                     <button class="toggle-button" onclick="toggleActivities(this)">▼</button>
                     <h3 style="margin-left: 10px;">{{ goal.name }}</h3>
+                    <button onclick="deleteGoal({{ goal.id }})">Radera Mål</button>
                 </div>
                 <div class="activity-list" style="display: none;">
                     {% for activity in goal.activities %}
@@ -96,6 +108,27 @@
     </div>
 </div>
 <script>
+    function deleteGoal(goalId) {
+        if (confirm('Är du säker på att du vill radera detta mål?')) {
+            fetch('/delete-goal/' + goalId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ goalId: goalId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Målet har raderats!');
+                    location.reload(); // Ladda om sidan för att uppdatera listan
+                } else {
+                    alert('Ett fel inträffade. Försök igen.');
+                }
+            });
+        }
+    }
+
 function toggleActivities(button) {
     event.stopPropagation(); // Förhindra bubbling av event till högre element
     var goalsBox = button.closest('.goals-box'); // Hämta närmaste mållåda

@@ -63,7 +63,7 @@
             <form method="post">
                 <h3>Mina Ord:</h3>
                 <input type="text" id="nytt-ord" name="nytt-ord" placeholder="Skriv ett ord här">
-                <button type="submit">Lägg till</button>
+                <button type="submit" value="word" name="action">Lägg till</button>
             </form>
         </div>
         <div class="min-ord-lista">
@@ -75,14 +75,17 @@
         </div>
     </div>
     <div class="timer-section">
+        <form method="POST">
         <h3>Timer:</h3>
         <label for="standard-intervall">Standard intervall:</label>
-        <select id="standard-intervall" class="timer-input">
+        <select id="standard-intervall" class="timer-input" name="time-intervall">
             <option value="5">5 minuter</option>
             <option value="10">10 minuter</option>
             <option value="15">15 minuter</option>
             <option value="20">20 minuter</option>
         </select>
     </div>
+        <button type="submit" value="timer" name="action">Save</button>
+    </form>
 </div>
 {% endblock body %}

@@ -148,3 +148,8 @@ footer {
 .sub-menu a:hover {
     color: black;
 }
+@media (max-width: 1170px) {
+    body{
+    display: flex
+    }
+}

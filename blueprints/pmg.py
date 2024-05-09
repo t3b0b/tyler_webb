@@ -1,11 +1,11 @@
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
-from models import User, db, Streak, BloggPost, Goals, Activity, Score, MyWords
+from models import User, db, Streak, BloggPost, Goals, Activity, Score, MyWords,Settings
 from datetime import datetime, timedelta
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates')
 #region PMG
 @pmg_bp.route('/streak',methods=['GET', 'POST'])
 def streak():
-    current_date = datetime.now().strftime("%Y-%m-%d")
+    current_date = datetime.now().strftime("%Y.%m.%d")
     sida="Mina Streaks"
     myStreaks = Streak.query.all()
     print(myStreaks)
@@ -49,6 +49,27 @@ def goals():
             return redirect(url_for('pmg.goals',sida=sida,header=sida, goals=myGoals))
     return render_template('goals.html',sida=sida,header=sida, goals=myGoals)
 
+@pmg_bp.route('/update_streak/<int:streak_id>/<action>', methods=['POST'])
+def update_streak(streak_id, action):
+    streak = Streak.query.get_or_404(streak_id)
+    today = datetime.utcnow().strftime('%Y.%m.%d')
+    if action == 'check':
+        if today != streak.lastReg:
+            count = streak.count
+            count += 1
+            streak.count = count
+            streak.lastReg = today
+            db.session.commit()
+
+    elif action == 'cross':
+        streak.count = 0
+        streak.day_one = today  # Reset the start day of the streak
+        db.session.commit()
+
+    return redirect(url_for('pmg.myday'))
+
+
+
 
 def myDayScore(date):
     total = 0
@@ -67,6 +88,16 @@ def myDayScore(date):
         total += float(score.Time)
 
     return myScore,total
+
+@pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
+def delete_goal(goal_id):
+    goal = Goals.query.get(goal_id)
+    if goal:
+        db.session.delete(goal)
+        db.session.commit()
+        return jsonify(success=True)
+    return jsonify(success=False), 404
+
 @pmg_bp.route('/myday', methods=['GET','POST'])
 def myday():
     date_now = datetime.now().strftime('%Y.%m.%d')
@@ -167,10 +198,17 @@ def settings():
     sida = 'Inställningar'
     myWords=MyWords.query.all()
     if request.method == 'POST':
-        ord = request.form['nytt-ord']
-        newWord = MyWords(ord=ord)
-        db.session.add(newWord)
+        if "word" in request.form['action']:
+            ord = request.form['nytt-ord']
+            newWord = MyWords(ord=ord)
+            db.session.add(newWord)
+            db.session.commit()
+            return redirect(url_for('pmg.settings'))
+    elif "timer" in request.form['action']:
+        intervall=request.form['time-intervall']
+        newsetting=Settings(stInterval=intervall)
+        db.session.add(newsetting)
         db.session.commit()
-        return redirect(url_for('pmg.settings'))
+        return redirect(url_for('pmg.myday'))
     return render_template('settings.html', sida=sida, header=sida, my_words=myWords)
 # endregion

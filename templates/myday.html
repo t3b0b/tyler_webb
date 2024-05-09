@@ -137,8 +137,16 @@
             <div class="list-item">
                 <label class="streak-style"> {{ streak.condition }}</label>
                     <div class="streak-icon">
-                        <img src="{{ url_for('static', filename='images/check.png') }}" onclick="count()">
-                        <img src="{{ url_for('static', filename='images/kryss.png') }}" onclick="retry()">
+                        <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post">
+                            <button type="submit" style="border: none; background: none;">
+                                <img src="{{ url_for('static', filename='images/check.png') }}">
+                            </button>
+                        </form>
+                        <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='cross') }}" method="post">
+                            <button type="submit" style="border: none; background: none;">
+                                <img src="{{ url_for('static', filename='images/kryss.png') }}">
+                            </button>
+                        </form>
                     </div>
             </div>
         {% endfor %}

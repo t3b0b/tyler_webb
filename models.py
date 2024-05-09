@@ -18,7 +18,7 @@ class BloggPost(db.Model):
     author = db.Column(db.String(50), nullable=False)
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, unique=False, nullable=False)
-    date = db.Column(db.String(30), unique=False, nullable=False, default=datetime.utcnow)
+    date = db.Column(db.String(30), unique=False, nullable=False)
     def __repr__(self):
         return f"{self.author}, {self.title}, {self.content},{self.date}"
 
@@ -46,7 +46,6 @@ class Activity(db.Model):
     name = db.Column(db.String(100), nullable=False)
     measurement = db.Column(db.String(20), nullable=False)
     goal_id = db.Column(db.Integer, db.ForeignKey(Goals.id), nullable=False)
-
     def __repr__(self):
         return f'{self.name}, {self.measurement}, {self.goal_id}'
 
@@ -64,4 +63,9 @@ class MyWords(db.Model):
     ord = db.Column(db.String, nullable=False)
     def __repr__(self):
         return f'{self.ord}'
+class Settings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    stInterval=db.Column(db.Integer, nullable=False)
+    def __repr__(self):
+        return f'{self.stInterval}'
 # endregion
