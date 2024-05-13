@@ -1,10 +1,6 @@
 from docx import Document
 import re
-
-from main import app,db
-from models import BloggPost
 import datetime
-
 def extract_sections(doc_path):
     doc = Document(doc_path)
     headings = []  # Lista för att spara rubriker
@@ -123,7 +119,7 @@ Förändring=extract_title('Förändring',headings,texts)
 Inre_Dialog=extract_title('Inre Dialog',headings,texts)
 Början=extract_title('Början',headings,texts)
 
-for post_info in Stolt:
-    post = BloggPost(author="Tyler O'Brien", title=post_info['title'], date=post_info['date'], content=post_info['content'])
+#for post_info in Stolt:
+ #   post = BloggPost(author="Tyler O'Brien", title=post_info['title'], date=post_info['date'], content=post_info['content'])
 
-    print(f"Title:{post.title}, Date: {post.date}, Content: {post.content}")
+  #  print(f"Title:{post.title}, Date: {post.date}, Content: {post.content}")

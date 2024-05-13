@@ -2,11 +2,12 @@
 from flask import (Flask, render_template, flash,
                    request, redirect, url_for)
 from flask_login import LoginManager
-
-from models import db, User, BloggPost, Streak, Goals
+from models import db, User, BloggPost, Streak, Goals, MyWords
 from blueprints.auth import auth_bp
 from blueprints.pmg import pmg_bp
 from flask_mail import Mail, Message
+
+
 # endregion
 
 #region Appconfig
@@ -32,9 +33,6 @@ with app.app_context():
     db.create_all()
 
 #endregion
-def readinfo(filename):
-    with open(filename, "r", encoding="utf-8") as f:
-        return f.read()
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
