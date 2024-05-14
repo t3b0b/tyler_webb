@@ -69,7 +69,9 @@
     <table class="calendar-table">
         <thead>
             <tr>
-                <th class="month-header" colspan="7">{{ month_name }} {{ year }}</th>
+                <th><button onclick="changeMonth(-1)">Föregående Månad</button></th>
+                <th class="month-header" colspan="5">{{ month_name }} {{ year }}</th>
+                <th><button onclick="changeMonth(1)">Nästa Månad</button></th>
             </tr>
             <tr>
                 <th>Måndag</th>
@@ -95,10 +97,15 @@
         </tbody>
     </table>
 </div>
-
 <script>
 function onDateClick(date) {
-    window.location.href = '/pmg/myday/' + date; // Ändra till den korrekta sökvägen för din applikation
+    window.location.href = '/pmg/myday/' + date;
+}
+function changeMonth(change) {
+    var currentYear = {{ year }};
+    var currentMonth = {{ month }};
+    var newDate = new Date(currentYear, currentMonth - 1 + change);
+    window.location.href = `/pmg/month/${newDate.getFullYear()}/${newDate.getMonth() + 1}`;
 }
 </script>
 {% endblock main %}

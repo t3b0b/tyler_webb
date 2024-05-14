@@ -2,18 +2,11 @@
 
 {% block head %}
 <style>
-    .strak-main {
+    .streak-main {
         display: flex;
         flex-direction: row;
         width: 100%;
-        justify-content: center;
-    }
-    .streak-container-wrapper {
-        margin-left: 30px;
-        flex: 0 0 60%; /* Ingen växt, ingen krympning och baserad på 70% av förälderns bredd */
-        max-width: 60%;
-        display: flex;
-        justify-content: flex-start; /* Centrerar barnhorisontellt */
+        justify-content: space-evenly;
     }
 
     .streak-container {
@@ -23,22 +16,20 @@
         flex-basis: 70%; /* Startbredd innan flex-grow tillämpas */
         width: 70%; /* Om du inte vill använda flex-grow och shrink */
     }
-
-    .streak-box {
-        border: 1px solid #000;
-        padding: 10px;
-        margin-bottom: 10px;
+    .add-form-container{
         display: flex;
-        justify-content: space-between;
-        max-height: 20px; /* Exempel på en minsta höjd */
-        /* height: 100px; Om du vill ha en fast höjd istället */
+        width: 100%;
+        justify-content: space-evenly;
+        margin-bottom: 15px;
     }
-
+    .add-form-container form input{
+        width: 50%;
+        margin-bottom: 10px;
+    }
     .streak-input {
         width: 45%; /* Ange en bredde så att det finns plats för två sidan om varandra */
         margin: 0; /* Ta bort alla ytterligare marginaler */
     }
-
 /* Om du vill att de ska vara centrerade */
     .streak-detail {
         display: flex;
@@ -53,7 +44,6 @@
         width: 100%; /* Fyller hela bredden av sin container */
         /* Använd övrig styling så att knappen matchar dina andra containers */
     }
-
     #new-streak-form input,
     #new-streak-form select,
     #new-streak-form button {
@@ -68,13 +58,12 @@
 
 {% endblock %}
 {% block body %}
-<div class="strak-main">
-    <div class="streak-container-wrapper">
+<div class="streak-main">
         <div class="streak-container">
             <!-- Exempel på hur du kan använda en Jinja2 loop för att skapa en container för varje streak -->
             {% if streaks %}
             {% for streak in streaks %}
-            <div class="streak-box">
+            <div class="items-container">
                 <div class="streak-detail streak-input">
                     <h3 disabled> {{ streak.name }} </h3>
                 </div>
@@ -85,23 +74,20 @@
             {% endfor %}
             {% endif %}
             <div class="streak-box">
-                <button id="new-streak-button" onclick="expandNewStreakForm()">Ny Streak</button>
+                <button class="button-style" style="width: 130px" id="new-streak-button" onclick="expandNewStreakForm()">Ny Streak</button>
             </div>
         <!-- Dold form för att lägga till ny streak, initialt gömd och visas när knappen klickas -->
-            <form method="POST" id="new-streak-form" style="display: none;">
-                <input type="text" placeholder="Streak Namn" name="streakName">
-                <input type="text" value="{{ todayDate }}" name="streakStart">
-                <select name="streakPriority">
-                    <option value="high">Hög</option>
-                    <option value="medium">Medel</option>
-                    <option value="low">Låg</option>
-                </select>
-                <input type="text" placeholder="Streak Villkor" name="streakConditions">
-                <input type="submit" value="Save">Save</input>
-                <button type="button" onclick="cancelNewStreakForm()">Avbryt</button>
-            </form>
+            <div class="add-form-container">
+                <form method="POST" id="new-streak-form" style="display: none;">
+                    Namn:<input type="text" placeholder="Enter streak name" name="streakName">
+                    Intervall:<input type="number" name="streakInterval" min="1" max="7" placeholder="Set streak interval">
+                    Villkor:<input type="text" placeholder="Enter streak condition" name="streakConditions">
+                    Mål: <input type="number" name="streakGoal" max="365" min="7" placeholder="Set goal count">
+                    <input type="submit" value="Save">Save</input>
+                    <button type="button" onclick="cancelNewStreakForm()">Avbryt</button>
+                </form>
+            </div>
         </div>
-    </div>
  </div>
     <script>
 function expandNewStreakForm() {

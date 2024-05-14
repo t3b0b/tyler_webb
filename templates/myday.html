@@ -2,115 +2,52 @@
 
 {% block head %}
 <style>
-    html, body {
-    height: 100%; /* Gör att HTML och body tar upp hela sidans höjd */
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column; /* Lägger innehållet i en vertikal stapel */
-    font-family: Arial, sans-serif;
-}
-.container {
-    display: flex;
-    flex: 1 0 auto; /* Tar upp tillgängligt utrymme */
-    gap: 50px;
-    justify-content: space-around;
-    padding: 20px;
-    box-sizing: border-box;
-    flex-wrap: wrap; /* Ser till att innehåll kan rymmas på mindre skärmar */
-}
-.goals, .streaks{
-    flex: 1; /* Ger flexibilitet till varje kolumn */
-    align-self: start; /* Startar innehåll vid toppen av containern */
-    margin: 10px; /* Ger utrymme runt blocken */
-    padding: 20px;
-    box-sizing: border-box;
-    border: 1px solid #ccc; /* Ramborder */
-}
-.circle {
-    flex: none; /* Förhindrar att cirkeln växer eller krymper */
-    width: 210px;
-    height: 210px;
-    align-self: center; /* Centrerar cirkeln i flex-container */
-}
-.circle span {
+.score-style {
     width: 100%;
-    height: 200px;
-    font-size: 38px;
+    font-size: 22px;
     font-weight: bold;
-    border-radius: 50%;
-    border: 1px solid black;
-    line-height: 200px;
+    line-height: 50px;
     text-align: center;
     display: block;
 }
-.sub-header {
-    width: 100%; /* Tar full bredd */
-    display: flex;
-    margin-left: 30px;
-}
-.sub-header-text {
-    font-size: 20px;
-}
-.button-center {
-    width: 100%; /* Tar full bredd */
-    display: flex;
-    justify-content: center;
-    margin-top: auto; /* Skjuter automatiskt innehållet till botten */
-    margin-bottom: 20px;
-}
 .list-item {
-    display: flex;
-    flex-direction: row;
-    width: 80%; /* Ökar bredden på select-elementen */
-    border: solid 1px #505050;
-    padding: 10px; /* Lägger till lite padding för bättre utseende */
-}
-.list-item label {
     font-size: 1.2em; /* Ökar fontstorleken */
     font-weight: bold;
     align-self: center;
+    padding-right: 30px;
 }
-.streak-icon {
-    display: flex;
-    flex-direction: row;
-    gap: 50px;
-    margin-left: 220px;
-}
+
 .streak-icon img {
     width: 30px;
     height: 30px;
 }
-.select-style {
-    margin: 0 auto; /* Centrerar elementet horisontellt */
-    display: block; /* Block-nivå-element tar upp hela radens bredd */
-    font-size: 1.2em; /* Ökar fontstorleken */
-}
+
 .repetitions{
     align-self: center;
 }
-.button-style {
-    width: 30%; /* Bredden på knappen */
-    padding: 15px 20px; /* Padding runt texten i knappen */
-    margin: 20px auto; /* Marginal ovanför/under och centrerar horisontellt */
-    display: block; /* Gör knappen till ett block-nivå-element */
-    font-size: 1.2em; /* Ökar fontstorleken */
-    cursor: pointer; /* Ändrar muspekaren till en pekare när den hovrar över knappen */
-    background-color: #007BFF; /* Bakgrundsfärg på knappen */
-    color: white; /* Textfärg på knappen */
-    border: none; /* Tar bort ramen runt knappen */
-    border-radius: 5px; /* Rundade hörn */
-}
-
     </style>
 {% endblock head %}
 
 {% block body %}
+
+<div id="timerModal" class="modal" style="display: none">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Timer</h2>
+        <div class="timer" id="timerDisplay">00:00</div>
+        <button onclick="startTimerFromSelection()">Starta Timer</button>
+        <button onclick="stopTimer()" style="background-color: red">Stop</button>
+        <button onclick="continueTimer()" style="background-color: green">Continue</button>
+    </div>
+</div>
+
+
 <div class="sub-header">
     <h2 class="sub-header-text"> {{ current_date }} </h2>
 </div>
-<div class="container">
-    <div class="goals">
+<div class="timer" id="timer"></div>
+<div class="day-container">
+    <div class="items-container">
         <h2>Goals</h2>
         {% if my_score %}
         <ul>
@@ -123,47 +60,56 @@
             {% endfor %}
         </ul>
         {% endif %}
+        <div class="score-style">
+            {% if total_score %}
+                <span>{{ total_score }} min</span>
+            {% else %}
+                <span>0min</span>
+            {% endif %}
+        </div>
     </div>
-    <div class="circle">
-        {% if total_score %}
-            <span>{{ total_score }}</span>
-        {% else %}
-            <span>0</span>
-        {% endif %}
-    </div>
-    <div class="streaks">
+    {% if my_streaks %}
+    <div class="items-container">
         <h2>Streaks</h2>
         {% for streak in my_streaks %}
-            <div class="list-item">
-                <label class="streak-style"> {{ streak.condition }}</label>
+            <div class="list-container">
+                <label class="list-item"> {{ streak.name }}</label>
+                <label class="list-item"> {{ streak.condition }}</label>
                     <div class="streak-icon">
                         <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post">
                             <button type="submit" style="border: none; background: none;">
                                 <img src="{{ url_for('static', filename='images/check.png') }}">
                             </button>
                         </form>
+                    </div>
+                    <div class="streak-icon">
                         <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='cross') }}" method="post">
                             <button type="submit" style="border: none; background: none;">
                                 <img src="{{ url_for('static', filename='images/kryss.png') }}">
                             </button>
                         </form>
                     </div>
-            </div>
+                </div>
         {% endfor %}
-    </div>
+        </div>
+
+    {% endif %}
 </div>
 <div class="repetitions" style="display: none">
     <h2 id="repetitons">0</h2>
 </div>
-<div id="complete-form" style="display: none" class="list-item">
+<div id="completed-form" style="display: none" class="list-item">
     <form method="POST">
-        <input type="" id="gID" name="gID"></input>
-        <input type="text" id="aID" name="aID"></input>
-        <input type="text" id="aDate" name="aDate" value='{{ current_date }}'></input>
-        <input type="text"id="score" name="score"></input>
-        <button type="submit" id="save-btn">Save</button>
-    </form>
+        <input type="" id="gID" name="gID">
+        <input type="text" id="aID" name="aID">
+        <input type="text" id="aDate" name="aDate" value='{{ current_date }}'>
+        <input type="text"id="score" name="score">
 </div>
+<div class="button-center" id="complete-form" style="display: none">
+    <button type="submit" id="save-btn" class="button-style">Save</button>
+</div>
+    </form>
+
 <div id="activityForm" style="display: none;">
     <select id="goalSelect" class="select-style">
         <option value="----"></option>
@@ -183,16 +129,11 @@
    <button onclick="startTimerFromSelection()" class="button-style">Starta</button>
 </div>
 <div class="button-center">
-    <button id="stopButton" class="button-style" style="display: none; background-color: red">Stop</button>
-    <button id="continueButton" class="button-style" style="display: none; background-color: green">Continue</button>
-</div>
-</form>
-</div>
-<div class="button-center">
     <button id ="startaAktivitet" class="button-style" type="submit">Starta Aktivitet</button>
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
 <script>
 $(document).ready(function() {
     $('#goalSelect').change(function() {
@@ -214,10 +155,9 @@ $(document).ready(function() {
     });
 });
 </script>
-<script src="{{ url_for('static', filename='common_functions.js') }}"> </script>
+<script src="{{ url_for('static', filename='common_functions.js') }}">
+</script>
 <script>
     document.getElementById('startaAktivitet').addEventListener('click', toggleActivityForm);
-    document.getElementById('continueButton').addEventListener('click', continueTimer);
-    document.getElementById('stopButton').addEventListener('click', stopTimer);
 </script>
 {% endblock body %}

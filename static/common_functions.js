@@ -1,56 +1,78 @@
-var interval;
-var ogIntervall = 0;
 var repetitions = 1;
 var activity = 0;
 var goal = 0;
+var timeTot = 0;
+
 function startTimer(duration, display) {
-    document.getElementById('activityForm').style.display = 'none'
-    clearInterval(interval);  // Rensar tidigare intervaller för att förhindra dubbla timers
     var timer = duration, minutes, seconds;
-    interval = setInterval(function () {
-        minutes = parseInt(timer / 60, 10);
-        seconds = parseInt(timer % 60, 10);
-
-        minutes = minutes < 10 ? "0" + minutes : minutes;
-        seconds = seconds < 10 ? "0" + seconds : seconds;
-
-        display.textContent = minutes + ":" + seconds;
+    var interval = setInterval(function () {
+        updateTimerDisplay(timer, display);
+        updateAnimation(timer, duration);
 
         if (--timer < 0) {
             clearInterval(interval);
-            display.textContent = "00:00";
-            document.getElementById('stopButton').style.display = 'block';
-            document.getElementById('continueButton').style.display = 'block';
-            document.getElementById('activityForm').style.display = 'none';
+            display.textContent = "00:00"
+            document.getElementById('stopButton').style.display = 'block'
+            document.getElementById('continueButton').style.display = 'block'
         }
     }, 1000);
 }
+function updateTimerDisplay(timer, display) {
+    var minutes = parseInt(timer / 60, 10);
+    var seconds = parseInt(timer % 60, 10);
+    display.textContent = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+}
+function updateAnimation(currentTime, totalTime) {
+    var circle = document.querySelector('circle');
+    var progress = (1 - currentTime / totalTime) * 472; // 472 är det totala stroke-dasharray värdet
+    circle.style.strokeDashoffset = 472 - progress;
+}
 function continueTimer() {
-    var display = document.querySelector('.circle span'); // Antag att tiden visas här
+    var params = new URLSearchParams(window.location.search);
+    var duration = parseInt(params.get('duration'), 10);
+    var display = document.getElementById('timerDisplay');
+    var circle = document.querySelector('circle');
+    circle.style.animation = 'none';
+    setTimeout(function() {
+        circle.style.strokeDashoffset = 472;  // Ursprungligt värde
+        circle.style.animation = 'anim ' + ogIntervall + 's linear forwards';
+    }, 10);
     repetitions += + 1
     document.querySelector('.repetitions h2').textContent = repetitions
-    startTimer(ogIntervall, display); // Fortsätt timern
+    startTimer(duration, display);
 }
 function stopTimer() {
-    var timeTot = repetitions * (ogIntervall/60)
-    document.getElementById('complete-form').style.display = 'block';
-    document.getElementById('aID').value = activity;
-    document.getElementById('gID').value = goal;
-    document.getElementById('score').value = timeTot;
+    var params = new URLSearchParams(window.location.search);
+    var duration = parseInt(params.get('duration'), 10);
+    timeTot = repetitions * duration / 60
+    window.close(); // Stänger popup-fönstret
+    saveActivity(timeTot)
 }
 function startTimerFromSelection() {
+    document.getElementById('activityForm').style.display = 'none'
     var duration = document.getElementById('timeSelect').value * 60; // Konverterar minuter till sekunder
-    goal = document.getElementById('goalSelect').value;
-    activity = document.getElementById('activitySelect').value;
-    ogIntervall = duration
-    var display = document.querySelector('.circle span'); // Förutsätter att tiden ska visas här
-    if (document.getElementById('activityForm').style.display === 'none') {
-        toggleActivityForm(); // Visar formen om den är dold
-    }
-    startTimer(parseInt(duration), display); // Startar timern
-    }
+    var timerURL = '/pmg/timer?duration=' + duration;
+    window.open(timerURL, 'TimerWindow', 'width=400,height=400');
+}
 function toggleActivityForm() {
     var form = document.getElementById('activityForm');
     form.style.display = form.style.display === 'none' ? 'block' : 'none';
     document.getElementById('startaAktivitet').style.display = 'none'
 }
+function saveActivity (totTime){
+    goal = window.opener.document.getElementById('goalSelect').value;
+    activity = window.opener.document.getElementById('activitySelect').value;
+    window.opener.document.getElementById('complete-form').style.display = 'block';
+    window.opener.document.getElementById('aID').value = activity;
+    window.opener.document.getElementById('gID').value = goal;
+    window.opener.document.getElementById('score').value = totTime;
+}
+
+window.onload = function () {
+    var params = new URLSearchParams(window.location.search);
+    var duration = parseInt(params.get('duration'), 10);
+    var display = document.getElementById('timerDisplay');
+    startTimer(duration, display);
+    document.getElementById('continueButton').addEventListener('click', continueTimer);
+    document.getElementById('stopButton').addEventListener('click', stopTimer);
+};

@@ -5,7 +5,66 @@ body {
     display: flex;
     flex-direction: column;
 }
+.day-container {
+    display: flex;
+    flex: 1 0 auto; /* Tar upp tillgängligt utrymme */
+    gap: 50px;
+    justify-content: space-evenly;
+    padding: 20px;
+    box-sizing: border-box;
+    flex-wrap: wrap; /* Ser till att innehåll kan rymmas på mindre skärmar */
+}
 
+.select-style {
+    margin: 0 auto; /* Centrerar elementet horisontellt */
+    display: block; /* Block-nivå-element tar upp hela radens bredd */
+    font-size: 1.2em; /* Ökar fontstorleken */
+    min-width: 120px ;
+    margin-bottom: 10px;
+}
+.list-container {
+    display: flex;
+    justify-content: space-evenly;
+    border: solid #aaaaaa 0.8px;
+    flex-direction: row;
+    width: 80%; /* Ökar bredden på select-elementen */
+    padding: 5px; /* Lägger till lite padding för bättre utseende */
+}
+.items-container {
+    flex: 1; /* Ger flexibilitet till varje kolumn */
+    align-self: center;
+    margin: 10px; /* Ger utrymme runt blocken */
+    padding: 20px;
+    box-sizing: border-box;
+    border: 1px solid #ccc; /* Ramborder */
+}
+.button-center {
+    width: 100%; /* Tar full bredd */
+    display: flex;
+    justify-content: center;
+    margin-top: auto; /* Skjuter automatiskt innehållet till botten */
+    margin-bottom: 20px;
+}
+.sub-header {
+    width: 100%; /* Tar full bredd */
+    display: flex;
+    margin-left: 30px;
+}
+.sub-header-text {
+    font-size: 20px;
+}
+.button-style {
+    width: 30%; /* Bredden på knappen */
+    padding: 15px 20px; /* Padding runt texten i knappen */
+    margin: 20px auto; /* Marginal ovanför/under och centrerar horisontellt */
+    display: block; /* Gör knappen till ett block-nivå-element */
+    font-size: 1.2em; /* Ökar fontstorleken */
+    cursor: pointer; /* Ändrar muspekaren till en pekare när den hovrar över knappen */
+    background-color: #007BFF; /* Bakgrundsfärg på knappen */
+    color: white; /* Textfärg på knappen */
+    border: none; /* Tar bort ramen runt knappen */
+    border-radius: 5px; /* Rundade hörn */
+}
 header {
     background-color: #f0f0f0;
     padding: 10px;

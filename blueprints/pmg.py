@@ -1,11 +1,20 @@
+from random import choice
+
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 from models import User, db, Streak, BloggPost, Goals, Activity, Score, MyWords,Settings
 from datetime import datetime, timedelta
 from flask_login import current_user
 from morgontext import headings
+
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates')
 
 #region PMG
+
+@pmg_bp.route('/timer')
+def timer():
+    sida='Timer'
+    duration = request.args.get('duration', default=60, type=int)
+    return render_template('timer.html',sida=sida,header=sida, duration=duration)
 @pmg_bp.route('/streak',methods=['GET', 'POST'])
 def streak():
     current_date = datetime.now().strftime("%Y-%m-%d")
@@ -105,7 +114,7 @@ def myday():
     date_now = datetime.now().strftime('%Y.%m.%d')
     sida = "Min Dag"
     myGoals = Goals.query.filter_by(user_id=current_user.id).all()
-    myStreaks = Streak.query.filter_by(user_id=current_user.id).all()
+    myStreaks = Streak.query.filter(Streak.user_id == current_user.id, Streak.lastReg != date_now).all()
     myScore = Score.query.filter_by(user_id=current_user.id).all()
     myScore,total = myDayScore(date_now)
     if request.method == 'POST':
@@ -122,26 +131,46 @@ def myday():
 
 @pmg_bp.route('/myday/<date>')
 def myday_date(date):
-    selected_date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S').strftime('%Y.%m.%d')
-    sida = "Min Dag"
-    myGoals = Goals.query.filter_by(user_id=current_user.id).all()
-    myStreaks = Streak.query.filter_by(user_id=current_user.id).all()
-    myScore=Score.query.filter_by(user_id=current_user.id).all()
-    myScore, total = myDayScore(selected_date)
-    return render_template('myday.html', sida=sida, header=sida, current_date=selected_date,
-                           my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
+    selected_date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S').date()
+    today = datetime.now().date()
+    if selected_date < today:
+        sida='Past Day'
+        myGoals = Goals.query.filter_by(user_id=current_user.id).all()
+        myStreaks = Streak.query.filter_by(user_id=current_user.id).all()
+        myScore = Score.query.filter_by(user_id=current_user.id).all()
+        myScore, total = myDayScore(selected_date)
+        return render_template('pastDays.html', sida=sida, header=sida, current_date=selected_date,
+                               my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
+    elif selected_date > today:
+        sida = 'Post Day'
+        myGoals = Goals.query.filter_by(user_id=current_user.id).all()
+        myStreaks = Streak.query.filter_by(user_id=current_user.id).all()
+        myScore = Score.query.filter_by(user_id=current_user.id).all()
+        myScore, total = myDayScore(selected_date)
+        return render_template('postDays.html', sida=sida, header=sida, current_date=selected_date,
+                               my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
+    else:
+        return redirect(url_for('pmg.myday'))
+
+
+@pmg_bp.route('/week')
+def week():
+    sida='My Week'
+    return render_template('myWeek.html',sida=sida, header=sida)
+
 @pmg_bp.route('/month')
-def month():
+@pmg_bp.route('/month/<int:year>/<int:month>')
+def month(year=None, month=None):
     sub_menu = [
         {'choice': '/pmg/month', 'text': 'Månad'},
         {'choice': '/pmg/week', 'text': 'Vecka'},
         {'choice': '/pmg/myday', 'text': 'Dag'}
     ]
     # Det nuvarande året och månaden
-    year = datetime.now().year
-    month = datetime.now().month
+    if not year or not month:
+        year = datetime.now().year
+        month = datetime.now().month
 
-    # Första dagen i månaden och månadens namn
     first_day_of_month = datetime(year, month, 1)
     month_name = first_day_of_month.strftime('%B')
 
@@ -168,8 +197,9 @@ def month():
     weeks = [days[i:i + 7] for i in range(0, len(days), 7)]
 
     # Titeln och headern för sidan
-    sida = "Min Månad"
-    return render_template('month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida, sub_menu=sub_menu)
+    sida = "Min Kalender"
+
+    return render_template('month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida, sub_menu=sub_menu, month=month, days=days)
 
 @pmg_bp.route('/journal/skrivande', methods=['GET', 'POST'])
 def journal():
@@ -181,7 +211,8 @@ def journal():
     ]
     orden = MyWords.query.filter_by(user_id=current_user.id).with_entities(MyWords.ord).all()
     ord_lista=[ord[0] for ord in orden]
-    print(ord_lista)
+    ordet = choice(ord_lista)
+    print(ordet)
     if request.method == 'POST':
         post_author = User.query.filter_by(id=current_user.id).first().username
         post_ord = request.form['post-ord']
@@ -192,7 +223,14 @@ def journal():
         db.session.add(newPost)
         db.session.commit()
 
-    return render_template('journal.html', sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu)
+    return render_template('journal.html',ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu)
+
+@pmg_bp.route('/get-new-word')
+def get_new_word():
+    orden = MyWords.query.filter_by(user_id=current_user.id).with_entities(MyWords.ord).all()
+    ord_lista = [ord[0] for ord in orden]
+    ordet = choice(ord_lista)
+    return jsonify(ordet)
 @pmg_bp.route('/journal/läs')
 def read_journal():
     sida = "Blogg"

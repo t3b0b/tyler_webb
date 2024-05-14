@@ -105,8 +105,9 @@
     <div class="blogg-container">
         <form method="POST">
             <div class="ordet">
-                <label id="ordet-label" name="post-ord"> {{ orden|random }} </label>
-                <input type="text" id="ordet-input" class="hidden" name="post-ord" value="{{ orden|random }}">
+                <button onclick="fetchNewWord()">Få ett nytt ord</button>
+                <label id="ordet-label" name="post-ord">{{ ordet }}</label>
+                <input type="text" id="ordet-input" class="hidden" name="post-ord" value="{ ordet }}">
                 <div class="img-plus">
                     <img src="{{ url_for('static', filename='images/plus-icon-större.png') }}" class="edit-icon" onclick="editTitle()" alt="Redigera" />
                 </div>
@@ -116,30 +117,12 @@
             </div>
             <div class="btn">
                 <button type="submit">Skicka</button>
+                <button onclick="startTimerFromSelection()" myBtn>Öppna Timer</button>
             </div>
         </form>
-    <button id="myBtn">Öppna Timer</button>
-    <div id="myModal" class="modal">
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <p>Ställ in din timer!</p>
-        <input type="number" id="timeInput" placeholder="Antal minuter">
-        <button onclick="startTimer()">Starta Timer</button>
-        <p id="timerOutput"></p>
-      </div>
+
     </div>
     </div>
-
-    <script>
-
-    function editTitle() {
-        var label = document.getElementById('ordet-label');
-        var input = document.getElementById('ordet-input');
-        label.classList.add('hidden'); // Gömmer label
-        input.classList.remove('hidden'); // Visar input-fält
-        input.focus(); // Sätter fokus på input-fält
-    }
-    </script>
 {% endif %}
 {% if sida == 'Blogg' %}
     <div class="blogg-container">
@@ -154,4 +137,15 @@
     {% endif %}
     </div>
 {% endif %}
+<script>
+function fetchNewWord() {
+    fetch('/get-new-word')
+        .then(response => response.json())
+        .then(text => {
+            var wordLabel = document.getElementById('ordet-label');
+            wordLabel.textContent = text;  // 'text' ska vara den rena strängen från JSON-svaret
+        })
+        .catch(error => console.error('Error fetching new word:', error));
+}
+</script>
 {% endblock body %}
