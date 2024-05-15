@@ -15,11 +15,10 @@ body {
 }
 
 .select-style {
-    margin: 0 auto; /* Centrerar elementet horisontellt */
     display: block; /* Block-nivå-element tar upp hela radens bredd */
     font-size: 1.2em; /* Ökar fontstorleken */
     min-width: 120px ;
-    margin-bottom: 10px;
+    margin: 0 auto 10px;
 }
 
 .list-container {
@@ -121,9 +120,9 @@ footer {
     box-sizing: border-box; /* Inkluderar padding i elementets totala bredd */
 }
 .top-bar-menu {
-    width: auto
+    width: auto;
     margin: 0 auto; /* Centrerar menyn om den inte redan är full bredd */
-    padding: 0px;
+    padding: 0;
     background: #f6b3b3;
     border-bottom: 2px solid #ccc;
 }
@@ -137,7 +136,7 @@ footer {
     display: flex;
     list-style-type: none;
     margin: 0;
-    padding: 10;
+    padding: 10px;
 }
 .top-bar-menu nav > ul > li {
     display: flex;
@@ -161,7 +160,7 @@ footer {
     display: flex;
     background-color: burlywood;
     margin: 0;
-    width: max-content 1200px;
+    width: max-content;
     height: 40px;
     border-bottom: 2px solid #ccc;
     text-align: center;
@@ -183,4 +182,4 @@ footer {
 }
 .sub-menu a:hover {
     color: black;
-}
+}}
