@@ -99,11 +99,13 @@
             </div>
             {% endfor %}
         {% endif %}
-        <button id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
+        <button class="button-style" id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
         <form method="POST" id="new-goal-form" style="display: none;">
             <input type="text" placeholder="Goal Name" name="goalName">
-            <button type="submit" name="action" value="addGoal">Save</button>
-            <button type="button" onclick="cancelNewGoalForm()">Cancel</button>
+            <div class="button-center">
+                <button class="button-style" type="button" style="background-color: firebrick;" onclick="cancelNewGoalForm()">Cancel</button>
+                <button class="button-style" type="submit" name="action" value="addGoal" style="background-color: cornflowerblue;">Save</button>
+            </div>
         </form>
     </div>
 </div>

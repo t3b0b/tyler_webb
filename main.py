@@ -6,7 +6,7 @@ from models import db, User, BloggPost, Streak, Goals, MyWords
 from blueprints.auth import auth_bp
 from blueprints.pmg import pmg_bp
 from flask_mail import Mail, Message
-
+import mysql.connector
 
 # endregion
 
@@ -15,7 +15,7 @@ from flask_mail import Mail, Message
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = "K6SM4x14"
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///tylerobri.db"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:Tellus420@localhost/pmgonline'
 app.config['MAIL_SERVER'] = "smtp.gmail.com"
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_PORT'] = 465
@@ -26,6 +26,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'auth.login'
+
+#mysql.connector.connect(host="localhost",user="root",password="Tellus420",database="Tellus420")
 
 db.init_app(app)
 mail = Mail(app)

@@ -9,7 +9,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
+    password = db.Column(db.String(255), nullable=False)
     def __repr__(self):
         return f'{self.username}, {self.email}, {self.password}'
 
@@ -66,7 +66,7 @@ class Score(db.Model):
 
 class MyWords(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    ord = db.Column(db.String, nullable=False)
+    ord = db.Column(db.String(120), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
         return f'{self.ord}, {self.user_id}'

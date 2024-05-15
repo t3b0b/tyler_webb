@@ -4,13 +4,17 @@ from flask import Blueprint, render_template, redirect, url_for, request, jsonif
 from models import User, db, Streak, BloggPost, Goals, Activity, Score, MyWords,Settings
 from datetime import datetime, timedelta
 from flask_login import current_user
-from morgontext import headings
 import pandas as pd
-import matplotlib.pyplot as plt
 
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates')
 
 #region PMG
+def read(filename):
+    with open(filename,'r') as file:
+        data = file.read()
+    data = data.split('\n')
+    data_ord = choice(data)
+    return data_ord,data
 
 @pmg_bp.route('/timer')
 def timer():
@@ -86,12 +90,13 @@ def update_streak(streak_id, action):
 
 @pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
 def delete_goal(goal_id):
-    goal = Goals.query.get(goal_id)
+    goal = Goals.query.get(goal_id)  # Använder get för att hitta målet med specifik ID
     if goal:
-        db.session.delete(goal)
+        db.session.delete(goal)  # Använder delete för att ta bort objektet direkt
         db.session.commit()
         return jsonify(success=True)
-    return jsonify(success=False), 404
+    else:
+        return jsonify(success=False)
 
 def myDayScore(date):
     total = 0
@@ -233,14 +238,12 @@ def journal():
         {'choice': '/pmg/journal/läs', 'text': 'Blogg'},
     ]
 
-    with open('orden.txt','r') as file:
-        orden=file.read()
-        ord_lista=orden.split('\n')
-    ordet = choice(ord_lista)
+    activities = None
+    ordet,ord_lista = read('orden.txt')
+    print(ordet)
 
     time = Settings.query.filter_by(user_id=current_user.id).first().stInterval
     myGoals = Goals.query.filter_by(name='Skriva').first()
-    print(myGoals.id)
     if myGoals:
         activities = Activity.query.filter_by(goal_id=myGoals.id).first()
         print(activities.id)
@@ -279,8 +282,11 @@ def journal():
 @pmg_bp.route('/get-new-word')
 def get_new_word():
     orden = MyWords.query.filter_by(user_id=current_user.id).with_entities(MyWords.ord).all()
-    ord_lista = [ord[0] for ord in orden]
-    ordet = choice(ord_lista)
+    if orden:
+        ord_lista = [ord[0] for ord in orden]
+        ordet = choice(ord_lista)
+    else:
+        ordet,ord_lista=read('orden.txt')
     return jsonify(ordet)
 @pmg_bp.route('/journal/läs')
 def read_journal():
@@ -298,12 +304,6 @@ def settings():
         {'choice': '/pmg/settings', 'text': 'Timer'},
         {'choice': '/pmg/settings', 'text': 'Konto'}
     ]
-    for head in headings:
-        ordet=head
-        newWord = MyWords(ord=ordet, user_id=current_user.id)
-        db.session.add(newWord)
-        db.session.commit()
-
     sida = 'Inställningar'
     myWords=MyWords.query.filter_by(user_id=current_user.id).all()
     if request.method == 'POST':
@@ -314,10 +314,15 @@ def settings():
             db.session.commit()
             return redirect(url_for('pmg.settings'))
         elif "timer" in request.form['action']:
-            intervall=request.form['time-intervall']
-            timeSet=Settings(stInterval=intervall,user_id=current_user.id)
-            db.session.add(timeSet)
-            db.session.commit()
+            intervall = request.form['time-intervall']
+            existing_setting = Settings.query.filter_by(user_id=current_user.id).first()
+            print(existing_setting)
+            if existing_setting:
+                existing_setting.stInterval = int(intervall)
+            else:
+                timeSet = Settings(stInterval=int(intervall),user_id=current_user.id)
+                db.session.add(timeSet)
+                db.session.commit()
             return redirect(url_for('pmg.myday'))
-    return render_template('settings.html', sida=sida, header=sida, my_words=myWords)
+    return render_template('settings.html', sida=sida, header=sida, my_words=myWords,sub_menu=sub_menu)
 # endregion
