@@ -1,10 +1,12 @@
 from random import choice
-
+import plotly.graph_objects as go
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 from models import User, db, Streak, BloggPost, Goals, Activity, Score, MyWords,Settings
 from datetime import datetime, timedelta
 from flask_login import current_user
 from morgontext import headings
+import pandas as pd
+import matplotlib.pyplot as plt
 
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates')
 
@@ -14,19 +16,19 @@ pmg_bp = Blueprint('pmg', __name__, template_folder='templates')
 def timer():
     sida='Timer'
     duration = request.args.get('duration', default=60, type=int)
-    return render_template('timer.html',sida=sida,header=sida, duration=duration)
+    return render_template('timer.html',sida=sida, header=sida, duration=duration)
 @pmg_bp.route('/streak',methods=['GET', 'POST'])
 def streak():
     current_date = datetime.now().strftime("%Y-%m-%d")
     sida="Mina Streaks"
     myStreaks = Streak.query.filter_by(user_id=current_user.id).all()
-    print(myStreaks)
     if request.method == 'POST':
         Streak_name = request.form['streakName']
         Streak_dayOne = request.form['streakStart']
-        Streak_priority = request.form['streakPriority']
-        Streak_condition = request.form['streakConditions']
-        newStreak = Streak(name=Streak_name, priority=Streak_priority, count=1,
+        Streak_interval = request.form['streakInterval']
+        Streak_condition = request.form['streakCondition']
+        Streak_goal = request.form['streakGoal']
+        newStreak = Streak(name=Streak_name, interval=Streak_interval, count=1,goal=Streak_goal,
                            best=1,condition=Streak_condition, lastReg=Streak_dayOne,
                            dayOne=Streak_dayOne,user_id=current_user.id)
         db.session.add(newStreak)
@@ -82,6 +84,15 @@ def update_streak(streak_id, action):
 
     return redirect(url_for('pmg.myday'))
 
+@pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
+def delete_goal(goal_id):
+    goal = Goals.query.get(goal_id)
+    if goal:
+        db.session.delete(goal)
+        db.session.commit()
+        return jsonify(success=True)
+    return jsonify(success=False), 404
+
 def myDayScore(date):
     total = 0
     myScore = db.session.query(
@@ -99,16 +110,6 @@ def myDayScore(date):
         total += float(score.Time)
 
     return myScore,total
-
-@pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
-def delete_goal(goal_id):
-    goal = Goals.query.get(goal_id)
-    if goal:
-        db.session.delete(goal)
-        db.session.commit()
-        return jsonify(success=True)
-    return jsonify(success=False), 404
-
 @pmg_bp.route('/myday', methods=['GET','POST'])
 def myday():
     date_now = datetime.now().strftime('%Y.%m.%d')
@@ -117,6 +118,32 @@ def myday():
     myStreaks = Streak.query.filter(Streak.user_id == current_user.id, Streak.lastReg != date_now).all()
     myScore = Score.query.filter_by(user_id=current_user.id).all()
     myScore,total = myDayScore(date_now)
+    for score in myScore:
+        print(score)
+    sorted_myScore = sorted(myScore, key=lambda score: score[0])
+    df = pd.DataFrame(sorted_myScore, columns=['goal', 'activity', 'date', 'score'])
+
+    # Plotta aggregerad data
+    fig = go.Figure(data=[go.Bar(x=df['goal'], y=df['score'])])
+    # Justera storleken på plotten och uppdatera layouten
+    fig.update_layout(
+        title_text='Total Score per Goal',
+        xaxis_title='Goal',
+        yaxis_title='Total Score',
+        plot_bgcolor='white',
+        showlegend=False,
+        width=400,  # bredd på plotten
+        height=300  # höjd på plotten
+    )
+    # Rendera figuren till HTML (till exempelvis en Jupyter Notebook eller en webbsida)
+    fig.show()
+
+    # För att bädda in figuren på en webbsida kan du använda Plotly's to_html() funktion
+    html_string = fig.to_html(full_html=False, include_plotlyjs='cdn')
+
+    for score in sorted_myScore:
+        print(score)
+
     if request.method == 'POST':
         goal_id = request.form['gID']
         activity_id = request.form['aID']
@@ -127,26 +154,23 @@ def myday():
         db.session.commit()
         return redirect(url_for('pmg.myday'))
     return render_template('myday.html',sida=sida,header=sida, current_date=date_now,
-                           my_goals=myGoals, my_streaks=myStreaks, my_score=myScore,total_score=total)
+                           my_goals=myGoals, my_streaks=myStreaks, my_score=myScore,total_score=total,plot=html_string)
 
 @pmg_bp.route('/myday/<date>')
 def myday_date(date):
     selected_date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S').date()
     today = datetime.now().date()
+    myGoals = Goals.query.filter_by(user_id=current_user.id).all()
+    myStreaks = Streak.query.filter_by(user_id=current_user.id).all()
+    myScore = Score.query.filter_by(user_id=current_user.id).all()
+    myScore, total = myDayScore(selected_date)
+
     if selected_date < today:
         sida='Past Day'
-        myGoals = Goals.query.filter_by(user_id=current_user.id).all()
-        myStreaks = Streak.query.filter_by(user_id=current_user.id).all()
-        myScore = Score.query.filter_by(user_id=current_user.id).all()
-        myScore, total = myDayScore(selected_date)
         return render_template('pastDays.html', sida=sida, header=sida, current_date=selected_date,
                                my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
     elif selected_date > today:
         sida = 'Post Day'
-        myGoals = Goals.query.filter_by(user_id=current_user.id).all()
-        myStreaks = Streak.query.filter_by(user_id=current_user.id).all()
-        myScore = Score.query.filter_by(user_id=current_user.id).all()
-        myScore, total = myDayScore(selected_date)
         return render_template('postDays.html', sida=sida, header=sida, current_date=selected_date,
                                my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
     else:
@@ -200,7 +224,6 @@ def month(year=None, month=None):
     sida = "Min Kalender"
 
     return render_template('month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida, sub_menu=sub_menu, month=month, days=days)
-
 @pmg_bp.route('/journal/skrivande', methods=['GET', 'POST'])
 def journal():
     current_date = datetime.now().strftime("%Y-%m-%d")
@@ -209,22 +232,50 @@ def journal():
         {'choice': '/pmg/journal/skrivande', 'text': 'Skriv'},
         {'choice': '/pmg/journal/läs', 'text': 'Blogg'},
     ]
-    orden = MyWords.query.filter_by(user_id=current_user.id).with_entities(MyWords.ord).all()
-    ord_lista=[ord[0] for ord in orden]
+
+    with open('orden.txt','r') as file:
+        orden=file.read()
+        ord_lista=orden.split('\n')
     ordet = choice(ord_lista)
-    print(ordet)
+
+    time = Settings.query.filter_by(user_id=current_user.id).first().stInterval
+    myGoals = Goals.query.filter_by(name='Skriva').first()
+    print(myGoals.id)
+    if myGoals:
+        activities = Activity.query.filter_by(goal_id=myGoals.id).first()
+        print(activities.id)
+    option = request.form.get('option')
     if request.method == 'POST':
-        post_author = User.query.filter_by(id=current_user.id).first().username
-        post_ord = request.form['post-ord']
-        post_text = request.form['blogg-content']
-        post_date = current_date
-        newPost = BloggPost(author=post_author, title=post_ord,
-                            content=post_text, date=post_date, user_id=current_user.id)
-        db.session.add(newPost)
-        db.session.commit()
+        if option == 'timeless':
+            post_author = User.query.filter_by(id=current_user.id).first().username
+            post_ord = request.form['post-ord']
+            post_text = request.form['blogg-content']
+            post_date = current_date
+            newPost = BloggPost(author=post_author, title=post_ord,
+                                content=post_text, date=post_date, user_id=current_user.id)
+            db.session.add(newPost)
+            db.session.commit()
 
-    return render_template('journal.html',ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu)
+        elif option == "time":
+            goal_id = request.form['gID']
+            activity_id = request.form['aID']
+            activity_date = request.form['aDate']
+            activity_score = request.form['score']
+            new_score = Score(Goal=goal_id, Activity=activity_id, Date=activity_date, Time=activity_score,
+                              user_id=current_user.id)
+            db.session.add(new_score)
+            db.session.commit()
 
+            post_author = User.query.filter_by(id=current_user.id).first().username
+            post_ord = request.form['post-ord']
+            post_text = request.form['blogg-content']
+            post_date = current_date
+            newPost = BloggPost(author=post_author, title=post_ord,
+                                content=post_text, date=post_date, user_id=current_user.id)
+            db.session.add(newPost)
+            db.session.commit()
+    return render_template('journal.html',time=time,goal=myGoals,activity=activities, ordet=ordet,
+                           sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu, current_date=current_date)
 @pmg_bp.route('/get-new-word')
 def get_new_word():
     orden = MyWords.query.filter_by(user_id=current_user.id).with_entities(MyWords.ord).all()
@@ -240,7 +291,6 @@ def read_journal():
         {'choice': '/pmg/journal/läs', 'text': 'Blogg'},
     ]
     return render_template('journal.html',sida=sida, header=sida,sub_menu=sub_menu,myPosts=myPosts)
-
 @pmg_bp.route('/settings',methods=['GET','POST'])
 def settings():
     sub_menu = [
@@ -265,8 +315,8 @@ def settings():
             return redirect(url_for('pmg.settings'))
         elif "timer" in request.form['action']:
             intervall=request.form['time-intervall']
-            newsetting=Settings(stInterval=intervall)
-            db.session.add(newsetting)
+            timeSet=Settings(stInterval=intervall,user_id=current_user.id)
+            db.session.add(timeSet)
             db.session.commit()
             return redirect(url_for('pmg.myday'))
     return render_template('settings.html', sida=sida, header=sida, my_words=myWords)

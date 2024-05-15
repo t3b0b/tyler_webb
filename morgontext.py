@@ -60,8 +60,7 @@ def extract_title(header, headings, texts):
 # Använd funktionen
 doc_path = 'Morgon Sidor 2021 (Sorterad).docx'
 headings, texts = extract_sections(doc_path)
-for head in headings:
-    print(head)
+
 # Skapa BloggPost-objekt och spara dem i en databas eller annan struktur
 Stolt=extract_title('Stolt',headings,texts)
 Modig=extract_title('Modig',headings,texts)

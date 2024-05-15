@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<style>
+<style xmlns="http://www.w3.org/1999/html">
     .streak-main {
         display: flex;
         flex-direction: row;
@@ -81,10 +81,11 @@
                 <form method="POST" id="new-streak-form" style="display: none;">
                     Namn:<input type="text" placeholder="Enter streak name" name="streakName">
                     Intervall:<input type="number" name="streakInterval" min="1" max="7" placeholder="Set streak interval">
-                    Villkor:<input type="text" placeholder="Enter streak condition" name="streakConditions">
+                    Villkor:<input type="text" placeholder="Enter streak condition" name="streakCondition">
                     Mål: <input type="number" name="streakGoal" max="365" min="7" placeholder="Set goal count">
-                    <input type="submit" value="Save">Save</input>
+                    <button type="submit" value="Post">Save</button>
                     <button type="button" onclick="cancelNewStreakForm()">Avbryt</button>
+                    <input type="text" name="streakStart" value="{{ current_date }}" style="display: none">
                 </form>
             </div>
         </div>

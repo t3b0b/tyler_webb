@@ -10,21 +10,15 @@
     text-align: center;
     display: block;
 }
-.list-item {
-    font-size: 1.2em; /* Ökar fontstorleken */
-    font-weight: bold;
-    align-self: center;
-    padding-right: 30px;
-}
-
-.streak-icon img {
-    width: 30px;
-    height: 30px;
-}
 
 .repetitions{
     align-self: center;
 }
+        #my_plot {
+            margin: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 10px #888888;
+        }
     </style>
 {% endblock head %}
 
@@ -42,11 +36,13 @@
 </div>
 
 
+
 <div class="sub-header">
     <h2 class="sub-header-text"> {{ current_date }} </h2>
 </div>
 <div class="timer" id="timer"></div>
 <div class="day-container">
+
     <div class="items-container">
         <h2>Goals</h2>
         {% if my_score %}
@@ -131,7 +127,7 @@
 <div class="button-center">
     <button id ="startaAktivitet" class="button-style" type="submit">Starta Aktivitet</button>
 </div>
-
+<div id="my_plot">{{html_string}}</div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 <script>

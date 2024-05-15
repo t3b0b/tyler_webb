@@ -26,15 +26,16 @@ class BloggPost(db.Model):
 class Streak(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
-    priority = db.Column(db.String(20), nullable=False)
+    interval = db.Column(db.Integer, nullable=False)
     count = db.Column(db.Integer, nullable=False)
+    goal = db.Column(db.Integer, nullable=True)
     best = db.Column(db.Integer, nullable=False)
     condition = db.Column(db.String(80),nullable=False)
     lastReg = db.Column(db.String(50), nullable=False)
     dayOne = db.Column(db.String(50), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
-        return f"{self.name}, {self.priority}, {self.count}, {self.best}, {self.condition}, {self.lastReg}, {self.dayOne}, {self.user_id}"
+        return f"{self.name}, {self.interval}, {self.count}, {self.goal}, {self.best}, {self.condition}, {self.lastReg}, {self.dayOne}, {self.user_id}"
 
 class Goals(db.Model):
     id = db.Column(db.Integer, primary_key=True)

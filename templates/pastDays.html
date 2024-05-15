@@ -1,11 +1,54 @@
 {% extends 'base.html' %}
 
-{% block head %}
-    <style>
-
-    </style>
-{% endblock head %}
 
 {% block body %}
+<div class="day-container">
+    <div class="items-container">
+        <h2>Goals</h2>
+        {% if my_score %}
+        <ul>
+            {% for score in my_score %}
+            <li>
+                <strong>Mål:</strong> {{ score.goal_name }}
+                <strong>Aktivitet:</strong> {{ score.activity_name }}
+                <strong>Poäng:</strong> {{ score.Time }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <div class="score-style">
+            {% if total_score %}
+                <span>{{ total_score }} min</span>
+            {% else %}
+                <span>0min</span>
+            {% endif %}
+        </div>
+    </div>
+    {% if my_streaks %}
+    <div class="items-container">
+        <h2>Streaks</h2>
+        {% for streak in my_streaks %}
+            <div class="list-container">
+                <label class="list-item"> {{ streak.name }}</label>
+                <label class="list-item"> {{ streak.condition }}</label>
+                    <div class="small-icon">
+                        <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post">
+                            <button type="submit" style="border: none; background: none;">
+                                <img src="{{ url_for('static', filename='images/check.png') }}">
+                            </button>
+                        </form>
+                    </div>
+                    <div class="small-icon">
+                        <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='cross') }}" method="post">
+                            <button type="submit" style="border: none; background: none;">
+                                <img src="{{ url_for('static', filename='images/kryss.png') }}">
+                            </button>
+                        </form>
+                    </div>
+                </div>
+        {% endfor %}
+        </div>
 
+    {% endif %}
+</div>
 {% endblock body %}

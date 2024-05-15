@@ -7,20 +7,19 @@
           flex-direction: column; /* Elementen staplas vertikalt */
           justify-content: flex-start; /* Starta från toppen av container */
           align-items: center; /* Centrera elementen horisontellt */
-          width: 100%; /* Se till att containern tar upp hela bredd */
-          max-width: 1200px; /* Eller vilken maxbredd du föredrar */
-          margin: 0 auto; /* Centrera containern på sidan */
-          height: auto; /* Justera höjden efter innehållet */
+          margin-inline: auto; /* Centrera containern på sidan */
+          min-height: 300px; /* Justera höjden efter innehållet */
       }
 
       label, textarea, button {
-          width: 70vw; /* Bredd på både select och textarea */
-          margin: 20px; /* Ger lite utrymme mellan select och textarea */
+          margin: 10px; /* Ger lite utrymme mellan select och textarea */
       }
 
       textarea {
+          flex-wrap: wrap;
+          width: 60vw;
           font-size: 12px;
-          height: 60vh; /* Gör textarea hög så den täcker majoriteten av skärmen */
+          min-height: 40vh; /* Gör textarea hög så den täcker majoriteten av skärmen */
           padding: 12px 20px; /* Lite intern padding för att texten inte ska vara direkt vid kanten */
           border: 1px solid #ccc;
           border-radius: 4px;
@@ -35,7 +34,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding-top: 20px;
+        padding-top: 5px;
         width: 100%;
     }
     .ordet input {
@@ -51,51 +50,14 @@
       }
 
     .edit-icon {
-        width: 20px;
-        cursor: pointer;
+        width: 30px;
+
         margin-right: 20px;
     }
 
     .hidden {
         display: none;
     }
-    /* The Modal (background) */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-}
-
-/* Modal Content/Box */
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto; /* 15% from the top and centered */
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%; /* Could be more or less, depending on screen size */
-}
-
-/* The Close Button */
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
 
     </style>
 {% endblock head %}
@@ -105,7 +67,7 @@
     <div class="blogg-container">
         <form method="POST">
             <div class="ordet">
-                <button onclick="fetchNewWord()">Få ett nytt ord</button>
+                <button name="option" style="width: 60px" onclick="fetchNewWord()">New</button>
                 <label id="ordet-label" name="post-ord">{{ ordet }}</label>
                 <input type="text" id="ordet-input" class="hidden" name="post-ord" value="{ ordet }}">
                 <div class="img-plus">
@@ -115,13 +77,23 @@
             <div class="blogg-container">
                 <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
             </div>
-            <div class="btn">
-                <button type="submit">Skicka</button>
-                <button onclick="startTimerFromSelection()" myBtn>Öppna Timer</button>
+            <div id="activityForm" class="button-center">
+            <button type="submit" class="button-style" name="option" value="timeless">Skicka</button>
             </div>
         </form>
-
-    </div>
+        <button onclick="startTimerFromSelection()">Start Timer</button>
+        <form>
+            <div id=id="completed-form", style="display: none", class="list-item">
+                <input id="timeSelect" value="{{ time }}" style="display: none">
+                <input id="gID" value="{{ goal.id }}" style="display: none">
+                <input id="aID" value="{{ activity.id }}" style="display: none">
+                <input type="text" id="aDate" name="aDate" value='{{ current_date }}'>
+                <input type="text"id="score" name="score">
+            </div>
+            <div class="button-center" id="complete-form" style="display: none">
+                <button type="submit" id="save-btn" class="button-style" name="option" value="time">Save</button>
+            </div>
+        </form>
     </div>
 {% endif %}
 {% if sida == 'Blogg' %}
@@ -137,6 +109,7 @@
     {% endif %}
     </div>
 {% endif %}
+<script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
 function fetchNewWord() {
     fetch('/get-new-word')

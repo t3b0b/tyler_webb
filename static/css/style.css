@@ -2,9 +2,8 @@ body {
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
 }
+
 .day-container {
     display: flex;
     flex: 1 0 auto; /* Tar upp tillgängligt utrymme */
@@ -22,10 +21,10 @@ body {
     min-width: 120px ;
     margin-bottom: 10px;
 }
+
 .list-container {
     display: flex;
-    justify-content: space-evenly;
-    border: solid #aaaaaa 0.8px;
+    justify-content: space-evenly;;
     flex-direction: row;
     width: 80%; /* Ökar bredden på select-elementen */
     padding: 5px; /* Lägger till lite padding för bättre utseende */
@@ -65,7 +64,13 @@ body {
     border: none; /* Tar bort ramen runt knappen */
     border-radius: 5px; /* Rundade hörn */
 }
+.small-icon,img{
+    height: 30px;
+    width: 30px;
+    cursor: pointer;
+}
 header {
+    min-height: 60px;
     background-color: #f0f0f0;
     padding: 10px;
     display: flex;
@@ -100,34 +105,6 @@ nav a.active {
     font-weight: bold;
 }
 
-.circle-progress {
-    margin: 20px auto;
-    width: 200px;
-    height: 200px;
-    background-color: #f0f0f0;
-    border-radius: 50%;
-    border: 10px solid #007bff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
-.circle-progress .number {
-    font-size: 2em;
-    z-index: 2;
-}
-
-.circle-progress:after {
-    content: '';
-    position: absolute;
-    top: -10px; left: -10px;
-    right: -10px; bottom: -10px;
-    background: white;
-    border-radius: 50%;
-    z-index: 1;
-}
-
 .record, .start-date {
     text-align: center;
 }
@@ -135,21 +112,20 @@ nav a.active {
 footer {
     margin-top: auto;
 }
-.top-bar-menu {
-    width: 100%; /* Sätter bredden på menyn till att täcka hela sidans bredd */
-    margin: 0 auto; /* Centrerar menyn om den inte redan är full bredd */
-    padding: 0px;
-    background: #f6b3b3;
-    border-bottom: 2px solid #ccc;
-}
-
 .menu-container {
-    width: 100%; /* Sätter bredden på menyn till att täcka hela sidans bredd */
+    width: auto; /* Sätter bredden på menyn till att täcka hela sidans bredd */
     display: flex;
     justify-content: space-between; /* Separerar logotypen och menyn */
     align-items: center;
     padding: 0 20px;
     box-sizing: border-box; /* Inkluderar padding i elementets totala bredd */
+}
+.top-bar-menu {
+    width: auto
+    margin: 0 auto; /* Centrerar menyn om den inte redan är full bredd */
+    padding: 0px;
+    background: #f6b3b3;
+    border-bottom: 2px solid #ccc;
 }
 .top-bar-menu h1 {
     text-align: center;
@@ -180,6 +156,7 @@ footer {
 .top-bar-menu nav > ul > li:hover > .sub-menu {
     display: block;
     list-style-type: none;
+
 .sub-menu {
     display: flex;
     background-color: burlywood;
@@ -206,9 +183,4 @@ footer {
 }
 .sub-menu a:hover {
     color: black;
-}
-@media (max-width: 1170px) {
-    body{
-    display: flex
-    }
 }

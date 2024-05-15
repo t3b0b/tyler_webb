@@ -11,9 +11,10 @@
         flex-direction: column;
     }
     .calendar-container {
-        padding: 1em; /* Lägg till marginal runt kalendern */
-        max-width: 95%; /* Maxbredd för kalendern */
-        max-height: 95%px;
+
+        flex-wrap: wrap;
+        min-width: 60vw ; /* Maxbredd för kalendern */
+        min-height: 55lh;
         margin: auto; /* Centrerar kalendern */
     }
     .calendar-table {
@@ -29,8 +30,7 @@
         text-align: center;
     }
     .calendar-table th.month-header {
-        background-color: #fdf5c1;
-        font-size: 28px; /* Ökar storleken på texten för månadsnamnet */
+        font-size: 20px; /* Ökar storleken på texten för månadsnamnet */
         font-weight: bold; /* Gör texten fet */
         text-align: center;
         padding: 20px;
@@ -55,6 +55,11 @@
         background-color: #fff; /* Vit bakgrund för dagar som tillhör den aktuella månaden */
     }
     @media (max-width: 720px) {
+        .calendar-container{
+            display: flex;
+            flex-wrap: wrap;
+            height: 60%;
+        }
     .calendar-table td {
         height: 15vw; /* Eller ett annat värde som passar mobila enheter */
     }
