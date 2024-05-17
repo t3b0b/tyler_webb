@@ -2,12 +2,9 @@
 
 {% block head %}
 <style>
-    body {
-        font-family: Arial, sans-serif;
-    }
     .main-section{
-        display: flex;
-        flex-direction: row;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 40px;
     }
     .ord-section {
@@ -79,13 +76,13 @@
         <h3>Timer:</h3>
         <label for="standard-intervall">Standard intervall:</label>
         <select id="standard-intervall" class="timer-input" name="time-intervall">
+            <option value="1">1 minuter</option>
             <option value="5">5 minuter</option>
             <option value="10">10 minuter</option>
             <option value="15">15 minuter</option>
-            <option value="20">20 minuter</option>
         </select>
-    </div>
         <button type="submit" value="timer" name="action">Save</button>
     </form>
+    </div>
 </div>
 {% endblock body %}

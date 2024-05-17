@@ -106,5 +106,30 @@
     </div>
 
     <script src="{{ url_for('static', filename='common_functions.js') }}"> </script>
-
+    <script>
+        window.onload = function () {
+    var params = new URLSearchParams(window.location.search);
+    var duration = parseInt(params.get('duration'), 10);
+    var display = document.getElementById('timerDisplay');
+    if (display) {
+        openTime = new Date();
+        console.log(`Timer öppnad vid: ${openTime}`);
+        startTimer(duration, display);
+        var continueButton = document.getElementById('continueButton');
+        if (continueButton) {
+            continueButton.addEventListener('click', continueTimer);
+        } else {
+            console.error('Continue button not found');
+        }
+        var stopButton = document.getElementById('stopButton');
+        if (stopButton) {
+            stopButton.addEventListener('click', stopTimer);
+        } else {
+            console.error('Stop button not found');
+        }
+    } else {
+        console.error('Timer display element not found');
+    }
+};
+    </script>
 </body>

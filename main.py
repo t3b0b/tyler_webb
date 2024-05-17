@@ -43,7 +43,7 @@ def load_user(user_id):
 @app.route('/')
 def home():
     sida="Hem"
-    return render_template('home.html',sida=sida,header="Tyler O'Brien")
+    return render_template('home.html',sida=sida,header="Tyler O'Brien",sideOptions=None)
 @app.route('/blog')
 def blog():
     sida="Blogg"

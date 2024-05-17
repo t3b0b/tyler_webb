@@ -2,50 +2,34 @@
 
 {% block head %}
     <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
 
-        }
-        .loggin-box {
-            border: 1px solid #000000;
-            padding: 0px 20px 20px 20px;
-            display: flex;
-            flex-direction: column;
-            max-width: 800px;
-            max-height: 600px;
-            margin-top: 40px;
-            margin-bottom: 10px;
-        }
-        input {
-            margin-bottom: 10px;
-            padding: 5px;
-            width: 250px;
-        }
+
         .loggin-btn {
             display: flex;
             flex-direction: row;
-            gap: 5px;
+            gap: 10px;
         }
         button {
-
-            width: 50%;
+            width: fit-content;
             height: 25px;
-
         }
+
         li {
             margin-top: 10px;
             list-style: none;
             font-size: 12px;
         }
-
+        button a {
+        color: inherit; /* Ärv färg från knappen */
+        text-decoration: none; /* Inga understrykningar */
+        display: block; /* Gör så att länken fyller hela knappens yta */
+    }
     </style>
 {% endblock head %}
 
 {% block body %}
 <form method="POST">
-    <div class="loggin-box">
+    <div class="form-box">
         <h3>Log In</h3>
         <input type="text" id="username" name="username" placeholder="Username" </input>
         <input type="password" id="user-password" name="password" placeholder="Password" </input>

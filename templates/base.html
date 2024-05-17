@@ -19,7 +19,7 @@
                         <li><a href="/pmg/month">Kalender</a></li>
                         <li><a href="/pmg/streak">Streak</a></li>
                         <li><a href="/pmg/goals">Mål</a></li>
-                        <li><a href='/pmg/journal/skrivande'>Text</a></li>
+                        <li><a href="/pmg/journal/skrivande">Text</a></li>
                         <li><a href="/pmg/settings">Inställningar</a></li>
                         <li><a href="/auth/logout">Logga ut</a></li>
                     {% else %}
@@ -30,20 +30,35 @@
                 </ul>
             </nav>
         </div>
-    </header>
-    <div class="sub-menu">
-        <nav>
-            <ul>
-                {% if sub_menu %}
-                    {% for item in sub_menu %}
-                    <li><a href="{{ item.choice }}">{{ item.text }}</a></li>
-                    {% endfor %}
-                {% endif %}
-            </ul>
-        </nav>
-    </div>
-    {% block body %}
+        </header>
 
-    {% endblock %}
+            <div class="sub-menu">
+                <nav>
+                    <ul>
+                        {% if sub_menu %}
+                            {% for item in sub_menu %}
+                            <li><a href="{{ item.choice }}">{{ item.text }}</a></li>
+                            {% endfor %}
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+    <div class="main-container">
+        {% if side_options %}
+            <div class="side-menu">
+                <nav class="side-menu-nav">
+                        {% for option in side_options %}
+                            <ul>
+                                <li><a href="{{ url_for((page_url), section_name=(option.name)) }}"> {{ option.name }} </a></li>
+                            </ul>
+                        {% endfor %}
+                </nav>
+            </div>
+        {% endif %}
+            <div class="main-content">
+                {% block body %} {% endblock %}
+            </div>
+        </div>
+                </div>
 </body>
 </html>

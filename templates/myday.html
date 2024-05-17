@@ -66,11 +66,13 @@
     </div>
     {% if my_streaks %}
     <div class="items-container">
+        <div class="list-item">
         <h2>Streaks</h2>
+        </div>
         {% for streak in my_streaks %}
-            <div class="list-container">
-                <label class="list-item"> {{ streak.name }}</label>
-                <label class="list-item"> {{ streak.condition }}</label>
+        <div class="items-container">
+                <label> {{ streak.name }}</label>
+                <label> {{ streak.condition }}</label>
                     <div class="streak-icon">
                         <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post">
                             <button type="submit" style="border: none; background: none;">
@@ -86,20 +88,21 @@
                         </form>
                     </div>
                 </div>
+            </div>
         {% endfor %}
-        </div>
+
 
     {% endif %}
 </div>
 <div class="repetitions" style="display: none">
     <h2 id="repetitons">0</h2>
 </div>
-<div id="completed-form" style="display: none" class="list-item">
+<div id="completed-form" class="list-item">
     <form method="POST">
-        <input type="" id="gID" name="gID">
-        <input type="text" id="aID" name="aID">
-        <input type="text" id="aDate" name="aDate" value='{{ current_date }}'>
-        <input type="text"id="score" name="score">
+        <input type="" id="gID" name="gID" style="display: none">
+        <input type="text" id="aID" name="aID" style="display: none">
+        <input type="text" style="display: none" id="aDate" name="aDate" value='{{ current_date }}'>
+        <input type="text" id="score" name="score">
 </div>
 <div class="button-center" id="complete-form" style="display: none">
     <button type="submit" id="save-btn" class="button-style">Save</button>

@@ -2,13 +2,7 @@
 
 {% block head %}
     <style>
-        .goals-main {
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Centrerar barn vertikalt i mitten */
-            margin-top: 40px; /* 40px marginal från toppen */
-            width: 100%;
-        }
+
         .toggle-button {
             background: none;
             border: none;
@@ -16,71 +10,47 @@
             font-size: 16px;
             cursor: pointer;
         }
-        .goals-container-wrapper {
-            width: 70%; /* Justerar bredden på hela målcontainern */
-            display: flex;
-            flex-direction: column; /* Stackar barn vertikalt */
-            align-items: center; /* Centrerar barn i mitten */
-        }
-        form {
-            padding: 10px;
-            display: flex;
+
+        .form-box button {
+            height: 30px;
+            margin: 5px 0 5px 0;
+            padding: 5px 0 5px 0;
+            margin-inline: auto;
+            background-color: cornflowerblue;
             width: 80%;
-            align-self: center;
+            color: white;
+            cursor: pointer;
         }
+        input {
+            margin-top: 30px;
+            width:300px
+        }
+
         .activity {
             margin-left: 70px;
             padding: 5px;
         }
-        .goals-box {
-            border: 1px solid #000;
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            display: flex;
-            flex-direction: column; /* Ensure the main direction is column */
-            align-items: flex-start; /* Align items to the start on the cross-axis */
-            height: auto;
-            min-height: 50px;
-        }
+
         .goals-box > div:first-child { /* Assuming the first div contains the header and button */
             display: flex;
             width: 100%;
             justify-content: space-between; /* This separates the button and the rest to opposite ends */
         }
-        #new-goal-form, #new-goal-form * {
-            width: 100%; /* Fyller hela bredden av sin container */
-            margin: 5px 0; /* Lägger till marginal ovanför och under varje element */
-        }
 
-        #new-goal-form button {
-            padding: 8px; /* Ger extra utrymme inuti knappen */
-        }
-
-        button {
-            align-self: center;
-            cursor: pointer; /* Gör muspekaren till en pekare när den hovrar över knappar */
-        }
-
-        input[type="text"], select {
-            padding: 8px;
-            margin: 5px 0; /* Samma vertikalt utrymme för alla inmatningsfält */
-        }
     </style>
 {% endblock head %}
 
 {% block body %}
-<div class="goals-main">
-    <div class="goals-container-wrapper">
+
         {% if goals %}
             {% for goal in goals %}
-            <div class="goals-box">
-                <div style="display: flex; align-items: center; width: 100%;">
-                    <button class="toggle-button" onclick="toggleActivities(this)">▼</button>
+            <div class="items-container", style="flex-direction: column; align-items: flex-start;">
+                <div class="list-item">
+                    <button class="toggle-button" style="justify-content: flex-start" onclick="toggleActivities(event, this)">&#5125;</button>
                     <h3 style="margin-left: 10px;">{{ goal.name }}</h3>
-                    <button onclick="deleteGoal({{ goal.id }})">Radera Mål</button>
+                    <button class="toggle-button" onclick="deleteGoal({{ goal.id }})">&#10060;</button>
                 </div>
-                <div class="activity-list" style="display: none;">
+                <div id="activity-list" style="display: none;">
                     {% for activity in goal.activities %}
                     <div class="activity">{{ activity.name }}</div>
                     {% endfor %}
@@ -96,23 +66,22 @@
                         <button type="button" onclick="hideAddActivityForm(event, this)">Cancel</button>
                     </form>
                 </div>
-            </div>
             {% endfor %}
         {% endif %}
+        </div>
         <button class="button-style" id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
-        <form method="POST" id="new-goal-form" style="display: none;">
-            <input type="text" placeholder="Goal Name" name="goalName">
-            <div class="button-center">
+        <div class="form-box">
+            <form method="POST" id="new-goal-form" style="display: none;">
+                <input type="text" placeholder="Goal Name" name="goalName">
                 <button class="button-style" type="button" style="background-color: firebrick;" onclick="cancelNewGoalForm()">Cancel</button>
                 <button class="button-style" type="submit" name="action" value="addGoal" style="background-color: cornflowerblue;">Save</button>
-            </div>
-        </form>
-    </div>
+            </form>
+        </div>
 </div>
 <script>
     function deleteGoal(goalId) {
         if (confirm('Är du säker på att du vill radera detta mål?')) {
-            fetch('/delete-goal/' + goalId, {
+            fetch('/pmg/delete-goal/' + goalId, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -131,12 +100,12 @@
         }
     }
 
-function toggleActivities(button) {
+function toggleActivities(event, button) {
     event.stopPropagation(); // Förhindra bubbling av event till högre element
-    var goalsBox = button.closest('.goals-box'); // Hämta närmaste mållåda
-    var activityList = goalsBox.querySelector('.activity-list'); // Hämta aktivitetslistan
+    var goalsBox = button.closest('.items-container'); // Hämta närmaste mållåda
+    var activityList = goalsBox.querySelector('#activity-list'); // Hämta aktivitetslistan
     activityList.style.display = activityList.style.display === 'none' ? 'block' : 'none'; // Visa eller dölj aktivitetslistan
-    button.textContent = activityList.style.display === 'none' ? '▼' : '▲'; // Ändra pilens riktning
+    button.textContent = activityList.style.display === 'none' ?  'ᐅ' : 'ᐁ' ; // Ändra pilens riktning
 }
 function showAddActivityForm(event, button) {
     event.stopPropagation(); // Stoppa event-bubbling

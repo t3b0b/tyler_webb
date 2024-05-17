@@ -4,17 +4,19 @@
     <style>
       .blogg-container {
           display: flex;
+          height: 100%;
           flex-direction: column; /* Elementen staplas vertikalt */
           justify-content: flex-start; /* Starta från toppen av container */
           align-items: center; /* Centrera elementen horisontellt */
-          margin-inline: auto; /* Centrera containern på sidan */
           min-height: 300px; /* Justera höjden efter innehållet */
       }
 
       label, textarea, button {
           margin: 10px; /* Ger lite utrymme mellan select och textarea */
       }
-
+      .post-content {
+          white-space: pre-wrap;
+      }
       textarea {
           flex-wrap: wrap;
           width: 60vw;
@@ -32,13 +34,14 @@
       }
     .ordet {
         display: flex;
+        flex-direction: row;
         justify-content: space-between;
         align-items: center;
         padding-top: 5px;
         width: 100%;
     }
     .ordet input {
-        margin-left: 20px;
+        margin-inline: auto;
         height: 30px;
         font-family: 'Arial', sans-serif;
         font-size: larger;
@@ -49,12 +52,6 @@
           width: 100px;
       }
 
-    .edit-icon {
-        width: 30px;
-
-        margin-right: 20px;
-    }
-
     .hidden {
         display: none;
     }
@@ -64,31 +61,33 @@
 
 {% block body %}
 {% if sida == 'Skrivande' %}
-    <div class="blogg-container">
-        <form method="POST">
-            <div class="ordet">
-                <button name="option" style="width: 60px" onclick="fetchNewWord()">New</button>
-                <label id="ordet-label" name="post-ord">{{ ordet }}</label>
-                <input type="text" id="ordet-input" class="hidden" name="post-ord" value="{ ordet }}">
-                <div class="img-plus">
-                    <img src="{{ url_for('static', filename='images/plus-icon-större.png') }}" class="edit-icon" onclick="editTitle()" alt="Redigera" />
-                </div>
-            </div>
+
             <div class="blogg-container">
+                <form method="POST">
+                <div class="ordet">
+                    <button name="option" style="width: 60px" onclick="fetchNewWord()">New</button>
+                    <label id="ordet-label" name="post-ord">{{ ordet }}</label>
+                    <input type="text" id="ordet-input" class="hidden" name="post-ord" value="{{ ordet }}">
+                    <div class="small-icon">
+                        <img src="{{ url_for('static', filename='images/plus-icon-större.png') }}" class="edit-icon" onclick="editTitle()" alt="Redigera" />
+                    </div>
+                </div>
                 <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
-            </div>
             <div id="activityForm" class="button-center">
-            <button type="submit" class="button-style" name="option" value="timeless">Skicka</button>
+                <button type="submit" class="button-style" name="option" value="timeless">Skicka</button>
+                <button class="button-style" onclick="startTimerFromSelection()">Start Timer</button>
+                <input id="timeSelect" value="{{ time }}" style="display: none">
+                <button id="startaAktivitet" style="display: none">A</button>
             </div>
         </form>
-        <button onclick="startTimerFromSelection()">Start Timer</button>
+
+
         <form>
-            <div id=id="completed-form", style="display: none", class="list-item">
-                <input id="timeSelect" value="{{ time }}" style="display: none">
+            <div id=id="completed-form", class="list-item">
                 <input id="gID" value="{{ goal.id }}" style="display: none">
-                <input id="aID" value="{{ activity.id }}" style="display: none">
-                <input type="text" id="aDate" name="aDate" value='{{ current_date }}'>
-                <input type="text"id="score" name="score">
+                <input id="aID" value="{{ activities.id }}" style="display: none">
+                <input type="text" id="aDate" name="aDate" value='{{ current_date }}' style="display: none">
+                <input type="text" id="score" name="score" style="display: block">
             </div>
             <div class="button-center" id="complete-form" style="display: none">
                 <button type="submit" id="save-btn" class="button-style" name="option" value="time">Save</button>
@@ -102,8 +101,8 @@
         <div class="blogg-post">
             {% for post in myPosts %}
             <h3>{{ post.title }}</h3>
-            <p>{{ post.content }}</p>
-            <p> {{post.author}}     {{ post.date }} </p>
+            <p class="post-content">{{ post.content }}</p>
+            <p class="post-content">{{post.author}}     {{ post.date }} </p>
             {% endfor %}
         </div>
     {% endif %}
@@ -111,6 +110,39 @@
 {% endif %}
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
+    function saveActivity(totTime) {
+    var openerDoc = window.opener.document;
+    if (!openerDoc) {
+        console.error('Kan inte hitta huvudfönstret.');
+        return;
+    }
+
+    console.log("Hämtar målet och aktiviteten från huvudfönstret");
+    goal = openerDoc.getElementById('goalSelect')?.value;
+    activity = openerDoc.getElementById('activitySelect')?.value;
+
+    if (!goal || !activity) {
+        console.error('Kan inte hitta målet eller aktiviteten.');
+        return;
+    }
+
+    console.log("Mål:", goal);
+    console.log("Aktivitet:", activity);
+
+    var completeForm = openerDoc.getElementById('complete-form');
+    if (!completeForm) {
+        console.error('Kan inte hitta complete-form.');
+        return;
+    }
+
+    completeForm.style.display = 'block';
+    openerDoc.getElementById('aID').value = activity;
+    openerDoc.getElementById('gID').value = goal;
+    let elapsedTime = (closeTime - openTime) / 1000 / 60; // Konvertera millisekunder till minuter
+    openerDoc.getElementById('score').value = elapsedTime;
+
+    console.log(`Activity saved with goal: ${goal}, activity: ${activity}, elapsedTime: ${elapsedTime}`);
+}
 function fetchNewWord() {
     fetch('/get-new-word')
         .then(response => response.json())
