@@ -28,17 +28,20 @@ def common_route(title,sub_url,sub_text):
     else:
         return sida, None
 
-def add2db(db_model, request, form_fields, model_fields, user_id):
+def add2db(db_model, request, form_fields, model_fields, user):
     new_entry = db_model()
-
+    current_date = datetime.now().strftime("%Y-%m-%d")
     # Iterera över form_fields och model_fields och sätt attribut på new_entry
     for form_fields, model_field in zip(form_fields, model_fields):
         setattr(new_entry, model_field, request.form[form_fields])
 
     # Lägg till user_id om det är en del av modellen
     if hasattr(new_entry, 'user_id'):
-        setattr(new_entry, 'user_id', user_id)
-
+        setattr(new_entry, 'user_id', user.id)
+    if hasattr(new_entry, 'date'):
+        setattr(new_entry, 'date', current_date)
+    if hasattr(new_entry, 'author'):
+        setattr(new_entry, 'author', user.username)
     # Lägg till den nya posten i sessionen och committa
     db.session.add(new_entry)
     db.session.commit()
@@ -46,11 +49,15 @@ def add2db(db_model, request, form_fields, model_fields, user_id):
 def query(db, key, filter):
     return db.query.filter_by(**{key: filter}).all()
 
-def unique(by_db):
-    unique_data = db.session.query(by_db).distinct().all()
+def unique(db,by_db):
+    unique_data = [post.title for post in db.query.with_entities(by_db).distinct().all()]
+    print(unique_data)
     list = [item[0] for item in unique_data]
     return list
 
+def section_content(db,section):
+    list = db.query.filter_by(name=section).first()
+    return list.id
 @pmg_bp.route('/timer')
 def timer():
     sida='Timer'
@@ -218,7 +225,6 @@ def myday_date(date):
 def week():
     sida='My Week'
     return render_template('myWeek.html',sida=sida, header=sida)
-
 @pmg_bp.route('/month')
 @pmg_bp.route('/month/<int:year>/<int:month>')
 def month(year=None, month=None):
@@ -257,57 +263,69 @@ def month(year=None, month=None):
     sida = "Min Kalender"
 
     return render_template('month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida, sub_menu=sub_menu, month=month, days=days)
-@pmg_bp.route('/journal/skrivande', methods=['GET', 'POST'])
+
+@pmg_bp.route('/journal', methods=['GET', 'POST'])
 def journal():
+    section_name = request.args.get('section_name')
+    my_act = Activity.query.filter_by(name=section_name, user_id=current_user.id).all()
+    activity_names = [act.name for act in my_act]
+
+    if section_name == 'Mina Ord' or section_name == 'skrivande':
+        act_id = 1
+        sida, sub_menu = common_route("Mina Ord", [url_for('pmg.journal', section_name='skrivande'),
+                                                   url_for('pmg.journal', section_name='blogg')], ['Skriv', 'Blogg'])
+        return journal_section(act_id, sida, sub_menu,None)
+
+    elif section_name in activity_names:
+        act_id = section_content(Activity, section_name)
+        sida, sub_menu = common_route(section_name, [url_for('pmg.journal', section_name='skrivande'),
+                                                     url_for('pmg.journal', section_name='blogg')], ['Skriv', 'Blogg'])
+        return journal_section(act_id, sida, sub_menu, None)
+
+    elif section_name == 'blogg':
+        sida, sub_menu = common_route("Blogg", [url_for('pmg.journal', section_name='skrivande'),
+                                                url_for('pmg.journal', section_name='blogg')], ['Skriv', 'Blogg'])
+        my_posts = BloggPost.query.filter_by(user_id=current_user.id).all()
+        return journal_section(None, sida, sub_menu, my_posts)
+
+    else:
+        sida, sub_menu = common_route(section_name, [url_for('pmg.journal', section_name='skrivande'),
+                                                     url_for('pmg.journal', section_name='blogg')], ['Skriv', 'Blogg'])
+        my_posts = BloggPost.query.filter_by(title=section_name, user_id=current_user.id).all()
+        return journal_section(None, sida, sub_menu, my_posts)
+@pmg_bp.route('/journal/<section_name>', methods=['GET', 'POST'])
+def journal_section(act_id, sida, sub_menu, my_posts):
     current_date = datetime.now().strftime("%Y-%m-%d")
-    sida,sub_menu = common_route("Skrivande",["/pmg/journal/skrivande",'/pmg/journal/läs'],['Skriv','Blogg'])
     page_url = 'pmg.journal'
     activities = None
-    ordet,ord_lista = read('orden.txt')
-
+    ordet, ord_lista = read('orden.txt')
     time = Settings.query.filter_by(user_id=current_user.id).first().stInterval
-    myGoals = Goals.query.filter_by(name='Skriva').first()
+    if act_id is not None:
+        myGoals = Goals.query.filter_by(name='Skriva', user_id=current_user.id).first()
+        if myGoals:
+            activities = Activity.query.filter_by(goal_id=myGoals.id).all()
+            titles_list = Activity.query.filter_by(goal_id=myGoals.id).all()
+            titles = [item.name for item in titles_list]
+            option = request.form.get('option')
+            if request.method == 'POST':
+                user = User.query.filter_by(id=current_user.id).first()
+                if option == 'timeless':
+                    add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+                elif option == "time":
+                    add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], user)
+                    add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
 
-    if myGoals:
-        activities = Activity.query.filter_by(goal_id=myGoals.id).all()
-        for act in activities:
-            print(act)
-    option = request.form.get('option')
-    if request.method == 'POST':
-        if option == 'timeless':
-            post_author = User.query.filter_by(id=current_user.id).first().username
-            post_ord = request.form['post-ord']
-            post_text = request.form['blogg-content']
-            post_date = current_date
-            newPost = BloggPost(author=post_author, title=post_ord,
-                                content=post_text, date=post_date, user_id=current_user.id)
-            db.session.add(newPost)
-            db.session.commit()
-
-        elif option == "time":
-            goal_id = request.form['gID']
-            activity_id = request.form['aID']
-            activity_date = request.form['aDate']
-            activity_score = request.form['score']
-            new_score = Score(Goal=goal_id, Activity=activity_id, Date=activity_date, Time=activity_score,
-                              user_id=current_user.id)
-            db.session.add(new_score)
-            db.session.commit()
-
-            post_author = User.query.filter_by(id=current_user.id).first().username
-            post_ord = request.form['post-ord']
-            post_text = request.form['blogg-content']
-            post_date = current_date
-            newPost = BloggPost(author=post_author, title=post_ord,
-                                content=post_text, date=post_date, user_id=current_user.id)
-            db.session.add(newPost)
-            db.session.commit()
-
-    return render_template('journal.html',time=time,goal=myGoals,activities=activities,side_options=activities,
-                           ordet=ordet,sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
-                           current_date=current_date, page_url=page_url)
+    elif act_id is None:
+        myGoals = None
+        activities = None
+        titles_list = BloggPost.query.filter_by(user_id=current_user.id).distinct().with_entities(BloggPost.title).all()
+        titles = [item[0] for item in titles_list]
+        print(titles)
+    return render_template('journal.html', time=time, goal=myGoals, activities=activities, side_options=titles,
+                           ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
+                           current_date=current_date, page_url=page_url, act_id=act_id, myPosts=my_posts)
 @pmg_bp.route('/get-new-word')
-def get_new_word():
+def get_new_word(section_id):
     orden = MyWords.query.filter_by(user_id=current_user.id).with_entities(MyWords.ord).all()
     if orden:
         ord_lista = [ord[0] for ord in orden]
@@ -315,20 +333,6 @@ def get_new_word():
     else:
         ordet,ord_lista=read('orden.txt')
     return jsonify(ordet)
-@pmg_bp.route('/journal/läs/<section_name>')
-def read_journal():
-    sida = "Blogg"
-    page_url = 'pmg.journal'
-
-    sida, sub_menu = common_route("Blogg",['/pmg/journal/skrivande','/pmg/journal/läs'],['Skriv','Blogg'])
-
-    title_list = unique(BloggPost.title)
-
-    myPosts=query(BloggPost,'user_id',current_user.id)
-
-#    myPosts = BloggPost.query.filter_by(user_id=).all()
-    return render_template('journal.html',sida=sida, header=sida,sub_menu=sub_menu,
-                           myPosts=myPosts,side_options=title_list,page_url=page_url)
 @pmg_bp.route('/settings',methods=['GET','POST'])
 def settings():
     sida, sub_menu = common_route('Inställningar',['/pmg/settings','/pmg/settings/timer','/pmg/konto'],['Journal','Timer','Konto'])

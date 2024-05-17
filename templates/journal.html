@@ -60,8 +60,7 @@
 {% endblock head %}
 
 {% block body %}
-{% if sida == 'Skrivande' %}
-
+{% if sida == 'Mina Ord' %}
             <div class="blogg-container">
                 <form method="POST">
                 <div class="ordet">
@@ -80,12 +79,10 @@
                 <button id="startaAktivitet" style="display: none">A</button>
             </div>
         </form>
-
-
         <form>
             <div id=id="completed-form", class="list-item">
                 <input id="gID" value="{{ goal.id }}" style="display: none">
-                <input id="aID" value="{{ activities.id }}" style="display: none">
+                <input id="aID" value="{{ act_id }}" style="display: none">
                 <input type="text" id="aDate" name="aDate" value='{{ current_date }}' style="display: none">
                 <input type="text" id="score" name="score" style="display: block">
             </div>
@@ -95,7 +92,34 @@
         </form>
     </div>
 {% endif %}
-{% if sida == 'Blogg' %}
+{% if sida == 'Dagbok' %}
+            <div class="blogg-container">
+                <form method="POST">
+                <div class="ordet" style="justify-content: center;">
+                    <label id="ordet-label" name="post-ord">{{ current_date }}</label>
+                </div>
+                <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
+            <div id="activityForm" class="button-center">
+                <button type="submit" class="button-style" name="option" value="timeless">Skicka</button>
+                <button class="button-style" onclick="startTimerFromSelection()">Start Timer</button>
+                <input id="timeSelect" value="{{ time }}" style="display: none">
+                <button id="startaAktivitet" style="display: none">A</button>
+            </div>
+        </form>
+        <form>
+            <div id=id="completed-form", class="list-item">
+                <input id="gID" value="{{ goal.id }}" style="display: none">
+                <input id="aID" value="{{ act_id }}" style="display: none">
+                <input type="text" id="aDate" name="aDate" value='{{ current_date }}' style="display: none">
+                <input type="text" id="score" name="score" style="display: block">
+            </div>
+            <div class="button-center" id="complete-form" style="display: none">
+                <button type="submit" id="save-btn" class="button-style" name="option" value="time">Save</button>
+            </div>
+        </form>
+    </div>
+        {% endif %}
+{% if not act_id %}
     <div class="blogg-container">
     {% if myPosts %}
         <div class="blogg-post">
