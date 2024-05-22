@@ -188,11 +188,37 @@ def myday():
     date_now = datetime.now().strftime('%Y.%m.%d')
 
     myGoals = query(Goals,'user_id',current_user.id)
-    myStreaks = Streak.query.filter(Streak.user_id == current_user.id, Streak.lastReg != date_now).all()
+    myStreaks = Streak.query.filter(Streak.user_id == current_user.id).all()
     myScore = query(Score,'user_id',current_user.id)
     myScore,total = myDayScore(date_now)
     for score in myScore:
         print(score)
+
+    today = datetime.utcnow()
+    valid_streaks=[]
+    for streak in myStreaks:
+        interval_days = timedelta(days=streak.interval)
+        try:
+            last_reg_date = datetime.strptime(streak.lastReg, "%Y-%m-%d")
+
+            # Kontrollera om streaken ska visas
+            if streak.count == 0:
+                valid_streaks.append(streak)
+            elif streak.count >= 1:
+                if today == last_reg_date + interval_days:
+                    valid_streaks.append(streak)
+                elif today < last_reg_date + interval_days:
+                    continue  # Ignorera streaks där lastReg + interval är större än idag
+                elif today > last_reg_date + interval_days:
+                    streak.count = 0
+                    db.session.commit()
+        except (ValueError, TypeError):
+            # Hantera ogiltigt datum
+            streak.count = 0
+            streak.lastReg = today.strftime("%Y-%m-%d")
+            db.session.commit()
+
+
     sorted_myScore = sorted(myScore, key=lambda score: score[0])
     df = pd.DataFrame(sorted_myScore, columns=['goal', 'activity', 'date', 'score'])
 
@@ -202,11 +228,11 @@ def myday():
         return redirect(url_for('pmg.myday'))
 
     return render_template('myday.html',sida=sida,header=sida, current_date=date_now,
-                           my_goals=myGoals, my_streaks=myStreaks, my_score=myScore,total_score=total,sub_menu=sub_menu)
+                           my_goals=myGoals, my_streaks=valid_streaks, my_score=myScore,total_score=total,sub_menu=sub_menu)
 
 @pmg_bp.route('/myday/<date>')
 def myday_date(date):
-    selected_date = datetime.strptime(date, '%Y.%m.%d %H:%M:%S').date()
+    selected_date = datetime.strptime(date, '%Y-%m-%d %H:%M:%S').date()
     today = datetime.now().date()
 
     myGoals = query(Goals, 'user_id', current_user.id)

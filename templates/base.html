@@ -5,113 +5,215 @@
     <meta name="viewport" content="width=device-width" initial-scale="1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <style>
-    .menu-container {
-        width: auto; /* Sätter bredden på menyn till att täcka hela sidans bredd */
-        display: flex;
-        justify-content: space-between; /* Separerar logotypen och menyn */
-        align-items: center;
-        padding: 0 20px;
-        box-sizing: border-box; /* Inkluderar padding i elementets totala bredd */
+    body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #ecf0f1;
+    color: #2c3e50;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #1c2d5b;
+    color: #ffffff;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+header h1 {
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+}
+
+.menu-toggle {
+    display: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 10px;
+    background-color: #2ecc71;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.menu-toggle:hover {
+    background-color: #27ae60;
+}
+
+.top-bar-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 20px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.top-bar-menu ul li {
+    list-style: none;
+}
+
+.top-bar-menu ul li a {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 16px;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.top-bar-menu ul li a:hover {
+    background-color: #2980b9;
+    color: #ffffff;
+}
+
+.sub-menu {
+    background-color: #88b1da;
+    color: #ffffff;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.sub-menu a {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 16px;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.sub-menu a:hover {
+    background-color: #27ae60;
+}
+
+.main-container {
+    padding: 20px;
+}
+
+.card, .streak, .items-container {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.button-style {
+    background-color: #1c2d5b;
+    color: #ffffff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.button-style:hover {
+    background-color: #1c2d5b;
+}
+
+.form-box {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+input[type="text"],
+input[type="password"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.modal {
+    transition: opacity 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
     }
-    .top-bar-menu {
-        width: auto;
-        justify-content: space-between;
-        margin: 0 auto; /* Centrerar menyn om den inte redan är full bredd */
-        padding: 0;
-        background: #f6b3b3;
-        border-bottom: 2px solid #ccc;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
-    .top-bar-menu h1 {
-        text-align: center;
-        margin: 0; /* Ta bort standardmarginalen för att linjera med menyn */
-        font-size: 28px; /* Eller den storlek du föredrar */
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
     }
-    .top-bar-menu ul {
-        display: flex;
-        list-style-type: none;
-        margin: 0;
-        padding: 10px;
+    to {
+        transform: translateX(0);
     }
-    .top-bar-menu nav > ul > li {
-        display: flex;
-        position: relative;
-        padding-left: 45px;
-    }
-    .top-bar-menu nav > ul > li > a {
-        display: flex;
-        text-decoration: none;
-        color: #333;
-        font-size: 20px;
-    }
-    .top-bar-menu nav > ul > li a:hover {
-        color: deepskyblue;
-    }
-    .top-bar-menu nav > ul > li:hover > .sub-menu {
+}
+
+.side-menu-nav {
+    animation: slideIn 0.5s ease forwards;
+}
+
+@media (max-width: 768px) {
+    .menu-toggle {
         display: block;
-        list-style-type: none;
-    }
-    header {
-        min-height: 60px;
-        background-color: #f0f0f0;
-        padding: 10px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
     }
 
-    header h2 {
-        margin: 0;
-    }
-    .sub-menu {
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        align-items: center;
-        background-color: burlywood;
+    .menu-container nav {
+        display: none;
+        flex-direction: column;
         width: 100%;
-        height: 30px;
-
-    }
-    .sub-menu nav ul {
-        list-style-type: none;
-        text-decoration: none;
-    }
-    .sub-menu a {
-        padding-left: 20px;
-        margin: 0 0 0 0;
-        color: #f9f9f9;
-        font-size: 16px;
-        font-weight: bold;
-        position: relative;
-    }
-    .sub-menu a:hover {
-        color: black;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        background: #1c2d5b;
+        z-index: 1000;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
     }
 
-    .side-menu {
-        display: flex;
-        flex-grow: 1;
-        max-width: 200px;
-        background-color: #fff3e6;
-        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    .menu-container nav.active {
+        max-height: 500px; /* Justera efter behov */
     }
-    .side-menu-nav ul {
-        list-style-type: none;
+
+    .top-bar-menu ul {
+        flex-direction: column;
+        width: 100%;
         padding: 0;
     }
-    .side-menu-nav ul li {
 
+    .top-bar-menu ul li {
+        padding: 15px;
+        width: 100%;
+        text-align: center;
     }
 
-    .side-menu-nav ul li a {
-        text-decoration: none;
-        margin-left: 10px;
-
-        font-size: 16px;
-        font-weight: bold;
-        font-family: "Segoe UI";
-        color: #333;
+    .top-bar-menu ul li a {
+        font-size: 18px;
     }
+}
     </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <title> {{ sida }} </title>
@@ -120,8 +222,9 @@
 <body>
     <header class="top-bar-menu">
         {% block header %}{% endblock %}
-        <div class="menu-container">
-            <h1> {{ header }} </h1>
+                <div class="menu-container">
+            <h1>{{ header }}</h1>
+            <button class="menu-toggle" onclick="toggleMenu()">&#9776; Meny</button>
             <nav>
                 <ul>
                     {% if current_user.is_authenticated %}
@@ -131,42 +234,49 @@
                         <li><a href="/pmg/settings">Inställningar</a></li>
                         <li><a href="/auth/logout">Logga ut</a></li>
                     {% else %}
-                        <li><a href='/'>Hem</a></li>
-                        <li><a href='/auth/login'>PMG</a></li>
-                        <li><a href='/auth/blog'>Blogg</a></li>
+                        <li><a href="/">Hem</a></li>
+                        <li><a href="/auth/login">PMG</a></li>
+                        <li><a href="/auth/blog">Blogg</a></li>
                     {% endif %}
                 </ul>
             </nav>
         </div>
-        </header>
+    </header>
 
-            <div class="sub-menu">
-                <nav>
-                    <ul>
-                        {% if sub_menu %}
-                            {% for item in sub_menu %}
-                            <li><a href="{{ item.choice }}">{{ item.text }}</a></li>
-                            {% endfor %}
-                        {% endif %}
-                    </ul>
-                </nav>
-            </div>
+    <div class="sub-menu">
+        <nav>
+            <ul>
+                {% if sub_menu %}
+                    {% for item in sub_menu %}
+                        <li><a href="{{ item.choice }}">{{ item.text }}</a></li>
+                    {% endfor %}
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+
     <div class="main-container">
         {% if side_options %}
             <div class="side-menu">
                 <nav class="side-menu-nav">
-                        {% for option in side_options %}
-                            <ul>
-                                <li><a href="{{ url_for((page_url), section_name=(option)) }}"> {{ option }} </a></li>
-                            </ul>
-                        {% endfor %}
+                    {% for option in side_options %}
+                        <ul>
+                            <li><a href="{{ url_for((page_url), section_name=(option)) }}">{{ option }}</a></li>
+                        </ul>
+                    {% endfor %}
                 </nav>
             </div>
         {% endif %}
-            <div class="main-content">
-                {% block body %} {% endblock %}
-            </div>
+        <div class="main-content">
+            {% block body %}{% endblock %}
         </div>
-                </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            var nav = document.querySelector('.menu-container nav');
+            nav.classList.toggle('active');
+        }
+    </script>
 </body>
 </html>
