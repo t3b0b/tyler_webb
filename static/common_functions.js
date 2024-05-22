@@ -57,9 +57,6 @@ function saveActivity(totTime) {
         return;
     }
 
-    console.log("Mål:", goal);
-    console.log("Aktivitet:", activity);
-
     var completeForm = openerDoc.getElementById('complete-form');
     if (!completeForm) {
         console.error('Kan inte hitta complete-form.');

@@ -1,8 +1,118 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
+
     <meta name="viewport" content="width=device-width" initial-scale="1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style>
+    .menu-container {
+        width: auto; /* Sätter bredden på menyn till att täcka hela sidans bredd */
+        display: flex;
+        justify-content: space-between; /* Separerar logotypen och menyn */
+        align-items: center;
+        padding: 0 20px;
+        box-sizing: border-box; /* Inkluderar padding i elementets totala bredd */
+    }
+    .top-bar-menu {
+        width: auto;
+        justify-content: space-between;
+        margin: 0 auto; /* Centrerar menyn om den inte redan är full bredd */
+        padding: 0;
+        background: #f6b3b3;
+        border-bottom: 2px solid #ccc;
+    }
+    .top-bar-menu h1 {
+        text-align: center;
+        margin: 0; /* Ta bort standardmarginalen för att linjera med menyn */
+        font-size: 28px; /* Eller den storlek du föredrar */
+    }
+    .top-bar-menu ul {
+        display: flex;
+        list-style-type: none;
+        margin: 0;
+        padding: 10px;
+    }
+    .top-bar-menu nav > ul > li {
+        display: flex;
+        position: relative;
+        padding-left: 45px;
+    }
+    .top-bar-menu nav > ul > li > a {
+        display: flex;
+        text-decoration: none;
+        color: #333;
+        font-size: 20px;
+    }
+    .top-bar-menu nav > ul > li a:hover {
+        color: deepskyblue;
+    }
+    .top-bar-menu nav > ul > li:hover > .sub-menu {
+        display: block;
+        list-style-type: none;
+    }
+    header {
+        min-height: 60px;
+        background-color: #f0f0f0;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    header h2 {
+        margin: 0;
+    }
+    .sub-menu {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        background-color: burlywood;
+        width: 100%;
+        height: 30px;
+
+    }
+    .sub-menu nav ul {
+        list-style-type: none;
+        text-decoration: none;
+    }
+    .sub-menu a {
+        padding-left: 20px;
+        margin: 0 0 0 0;
+        color: #f9f9f9;
+        font-size: 16px;
+        font-weight: bold;
+        position: relative;
+    }
+    .sub-menu a:hover {
+        color: black;
+    }
+
+    .side-menu {
+        display: flex;
+        flex-grow: 1;
+        max-width: 200px;
+        background-color: #fff3e6;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    }
+    .side-menu-nav ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    .side-menu-nav ul li {
+
+    }
+
+    .side-menu-nav ul li a {
+        text-decoration: none;
+        margin-left: 10px;
+
+        font-size: 16px;
+        font-weight: bold;
+        font-family: "Segoe UI";
+        color: #333;
+    }
+    </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <title> {{ sida }} </title>
     {% block head %}{% endblock head %}
@@ -17,8 +127,6 @@
                     {% if current_user.is_authenticated %}
                         <li><a href="/pmg/myday">Start</a></li>
                         <li><a href="/pmg/month">Kalender</a></li>
-                        <li><a href="/pmg/streak">Streak</a></li>
-                        <li><a href="/pmg/goals">Mål</a></li>
                         <li><a href="/pmg/journal">Text</a></li>
                         <li><a href="/pmg/settings">Inställningar</a></li>
                         <li><a href="/auth/logout">Logga ut</a></li>

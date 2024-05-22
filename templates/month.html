@@ -1,54 +1,67 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<title>{{ sida }}</title>
 <style>
     .calendar-container {
         display: flex;
         flex-direction: column;
-        align-content: center;
         flex-wrap: wrap;
-        margin: auto; /* Centrerar kalendern */
+        align-content: center;
+        margin-inline: auto; /* Centrerar kalendern */
     }
-    .calendar-table {
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        grid-gap: 0;
+        min-height: 60%;
         max-width: 90%; /* Maxbredd för kalendern */
-        border-collapse: collapse;
-        table-layout: fixed; /* Säkerställer jämn kolumnbredd */
+        margin-inline: auto;
     }
-    .calendar-table th {
+    .calendar-header {
+        grid-column: span 7;
+        text-align: center;
+        font-size: 22px;
+    }
+    .day-header {
         background-color: #e7e6d2;
         border: 1px solid #505050;
         color: #333;
-        padding: 5px; /* Minskar höjden på veckodagarna */
+        padding: 5px;
         text-align: center;
+        font-weight: bold;
     }
-    .calendar-table th.month-header {
-        font-size: 20px; /* Ökar storleken på texten för månadsnamnet */
-        font-weight: bold; /* Gör texten fet */
-        text-align: center;
-        padding: 20px;
-        grid-column: span 7;
-    }
-    .calendar-table td {
+    .day {
         border: 1px solid #505050;
         padding: 30px;
         text-align: center;
         vertical-align: top;
-        max-width: 100px;
-    }
-    .calendar-table td:not(:empty) {
         background-color: #fff;
-    }
-        .other-month {
-        background-color: #f0f0f0; /* En gråare nyans för dagar som inte tillhör den aktuella månaden */
-        color: #ccc; /* Grå textfärg */
-    }
-
-    .calendar-table td.clickable {
         cursor: pointer;
-        background-color: #fff; /* Vit bakgrund för dagar som tillhör den aktuella månaden */
+        transition: all 0.5s ease;
     }
-
+    .other-month {
+        background-color: #f0f0f0;
+        color: #ccc;
+        cursor: default;
+    }
+    .day.expand {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 100vw;
+        height: 100vh;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        background: white;
+        font-size: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .today {
+        border: 2px solid red; /* Ändra denna stil som du vill för att markera dagens datum */
+        background-color: #ffeb3b; /* Gul bakgrund för dagens datum */
+    }
 </style>
 {% endblock head %}
 
@@ -56,47 +69,55 @@
 
 {% block main %}
 <div class="calendar-container">
-    <table class="calendar-table">
-        <thead>
-            <tr>
-                <th><button onclick="changeMonth(-1)"> < </button></th>
-                <th class="month-header" colspan="5">{{ month_name }} {{ year }}</th>
-                <th><button onclick="changeMonth(1)"> > </button></th>
-            </tr>
-            <tr>
-                <th>Måndag</th>
-                <th>Tisdag</th>
-                <th>Onsdag</th>
-                <th>Torsdag</th>
-                <th>Fredag</th>
-                <th>Lördag</th>
-                <th>Söndag</th>
-            </tr>
-        </thead>
-        <tbody>
-                {% for week in weeks %}
-                <tr>
-                    {% for day in week %}
-                    <td class="{{ 'clickable' if day.current_month else 'other-month' }}"
-                        onclick="onDateClick('{{ day.date }}')">
-                        {{ day.day }}
-                    </td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
-        </tbody>
-    </table>
+    <div class="calendar-grid">
+        <div class="calendar-header">
+            <button onclick="changeMonth(-1)"> < </button>
+            <span>{{ month_name }} {{ year }}</span>
+            <button onclick="changeMonth(1)"> > </button>
+        </div>
+        <div class="day-header">Måndag</div>
+        <div class="day-header">Tisdag</div>
+        <div class="day-header">Onsdag</div>
+        <div class="day-header">Torsdag</div>
+        <div class="day-header">Fredag</div>
+        <div class="day-header">Lördag</div>
+        <div class="day-header">Söndag</div>
+        {% for week in weeks %}
+            {% for day in week %}
+            <div class="day {{ 'clickable' if day.current_month else 'other-month' }}"
+                 data-date="{{ day.date }}" onclick="onDateClick(this, '{{ day.date }}')">
+                {{ day.day }}
+            </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
 </div>
 <script>
-function onDateClick(date) {
-    window.location.href = '/pmg/myday/' + date;
+function onDateClick(element, date) {
+    if (!element.classList.contains('other-month')) {
+        element.classList.add('expand');
+        setTimeout(function() {
+            window.location.href = '/pmg/myday/' + date;
+        }, 500); // Väntar på att animationen ska slutföras innan omdirigering
+    }
 }
+
 function changeMonth(change) {
     var currentYear = {{ year }};
     var currentMonth = {{ month }};
     var newDate = new Date(currentYear, currentMonth - 1 + change);
     window.location.href = `/pmg/month/${newDate.getFullYear()}/${newDate.getMonth() + 1}`;
 }
+
+function markToday() {
+    const today = new Date().toISOString().split('T')[0]; // Få dagens datum i YYYY-MM-DD format
+    const todayCell = document.querySelector(`.day[data-date="${today}"]`);
+    if (todayCell) {
+        todayCell.classList.add('today');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', markToday);
 </script>
 {% endblock main %}
 {% endblock body %}

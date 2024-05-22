@@ -60,9 +60,10 @@
 {% endblock head %}
 
 {% block body %}
-{% if sida == 'Mina Ord' %}
+{% if act_id %}
             <div class="blogg-container">
                 <form method="POST">
+
                 <div class="ordet">
                     <button name="option" style="width: 60px" onclick="fetchNewWord()">New</button>
                     <label id="ordet-label" name="post-ord">{{ ordet }}</label>
@@ -71,54 +72,31 @@
                         <img src="{{ url_for('static', filename='images/plus-icon-större.png') }}" class="edit-icon" onclick="editTitle()" alt="Redigera" />
                     </div>
                 </div>
+
                 <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
+
             <div id="activityForm" class="button-center">
                 <button type="submit" class="button-style" name="option" value="timeless">Skicka</button>
                 <button class="button-style" onclick="startTimerFromSelection()">Start Timer</button>
+                <input id="goalSelect" value="{{ goal.id }}" style="display: none">
+                <input id="activitySelect" value="{{ act_id }}" style="display: none">
                 <input id="timeSelect" value="{{ time }}" style="display: none">
                 <button id="startaAktivitet" style="display: none">A</button>
             </div>
-        </form>
-        <form>
-            <div id=id="completed-form", class="list-item">
-                <input id="gID" value="{{ goal.id }}" style="display: none">
-                <input id="aID" value="{{ act_id }}" style="display: none">
-                <input type="text" id="aDate" name="aDate" value='{{ current_date }}' style="display: none">
-                <input type="text" id="score" name="score" style="display: block">
+
+            <div id=id="completed-form", class="list-item" style="display: none;">
+                <input type="text" id="gID" name="gID" value='{{ goal.id }}'>
+                <input type="text" id="aID" name="aID" value=" {{ act_id }}">
+                <input type="text" id="aDate" name="aDate" value='{{ current_date }}'>
+                <input type="text" id="score" name="score">
             </div>
             <div class="button-center" id="complete-form" style="display: none">
-                <button type="submit" id="save-btn" class="button-style" name="option" value="time">Save</button>
+                <button type="submit" id="save-btn" class="button-style" name="option" value="write-on-time">Save</button>
             </div>
         </form>
     </div>
 {% endif %}
-{% if sida == 'Dagbok' %}
-            <div class="blogg-container">
-                <form method="POST">
-                <div class="ordet" style="justify-content: center;">
-                    <label id="ordet-label" name="post-ord">{{ current_date }}</label>
-                </div>
-                <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
-            <div id="activityForm" class="button-center">
-                <button type="submit" class="button-style" name="option" value="timeless">Skicka</button>
-                <button class="button-style" onclick="startTimerFromSelection()">Start Timer</button>
-                <input id="timeSelect" value="{{ time }}" style="display: none">
-                <button id="startaAktivitet" style="display: none">A</button>
-            </div>
-        </form>
-        <form>
-            <div id=id="completed-form", class="list-item">
-                <input id="gID" value="{{ goal.id }}" style="display: none">
-                <input id="aID" value="{{ act_id }}" style="display: none">
-                <input type="text" id="aDate" name="aDate" value='{{ current_date }}' style="display: none">
-                <input type="text" id="score" name="score" style="display: block">
-            </div>
-            <div class="button-center" id="complete-form" style="display: none">
-                <button type="submit" id="save-btn" class="button-style" name="option" value="time">Save</button>
-            </div>
-        </form>
-    </div>
-        {% endif %}
+
 {% if not act_id %}
     <div class="blogg-container">
     {% if myPosts %}
@@ -134,39 +112,7 @@
 {% endif %}
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
-    function saveActivity(totTime) {
-    var openerDoc = window.opener.document;
-    if (!openerDoc) {
-        console.error('Kan inte hitta huvudfönstret.');
-        return;
-    }
 
-    console.log("Hämtar målet och aktiviteten från huvudfönstret");
-    goal = openerDoc.getElementById('goalSelect')?.value;
-    activity = openerDoc.getElementById('activitySelect')?.value;
-
-    if (!goal || !activity) {
-        console.error('Kan inte hitta målet eller aktiviteten.');
-        return;
-    }
-
-    console.log("Mål:", goal);
-    console.log("Aktivitet:", activity);
-
-    var completeForm = openerDoc.getElementById('complete-form');
-    if (!completeForm) {
-        console.error('Kan inte hitta complete-form.');
-        return;
-    }
-
-    completeForm.style.display = 'block';
-    openerDoc.getElementById('aID').value = activity;
-    openerDoc.getElementById('gID').value = goal;
-    let elapsedTime = (closeTime - openTime) / 1000 / 60; // Konvertera millisekunder till minuter
-    openerDoc.getElementById('score').value = elapsedTime;
-
-    console.log(`Activity saved with goal: ${goal}, activity: ${activity}, elapsedTime: ${elapsedTime}`);
-}
 function fetchNewWord() {
     fetch('/get-new-word')
         .then(response => response.json())
@@ -176,5 +122,6 @@ function fetchNewWord() {
         })
         .catch(error => console.error('Error fetching new word:', error));
 }
+
 </script>
 {% endblock body %}

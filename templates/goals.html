@@ -3,13 +3,7 @@
 {% block head %}
     <style>
 
-        .toggle-button {
-            background: none;
-            border: none;
-            color: #000000; /* Röd färg */
-            font-size: 16px;
-            cursor: pointer;
-        }
+
 
         .form-box button {
             height: 30px;
@@ -41,7 +35,7 @@
 {% endblock head %}
 
 {% block body %}
-
+<div class="goal-streak-container">
         {% if goals %}
             {% for goal in goals %}
             <div class="items-container", style="flex-direction: column; align-items: flex-start;">
@@ -49,7 +43,7 @@
                     <button class="toggle-button" style="justify-content: flex-start" onclick="toggleActivities(event, this)">&#5125;</button>
                     <h3 style="margin-left: 10px;">{{ goal.name }}</h3>
                     <button class="toggle-button" onclick="deleteGoal({{ goal.id }})">&#10060;</button>
-                </div>
+
                 <div id="activity-list" style="display: none;">
                     {% for activity in goal.activities %}
                     <div class="activity">{{ activity.name }}</div>
@@ -66,18 +60,20 @@
                         <button type="button" onclick="hideAddActivityForm(event, this)">Cancel</button>
                     </form>
                 </div>
+            </div>
+                </div>
             {% endfor %}
         {% endif %}
-        </div>
+
+</div>
         <button class="button-style" id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
-        <div class="form-box">
-            <form method="POST" id="new-goal-form" style="display: none;">
+        <div class="form-box" id="new-goal-form" style="display: none;">
+            <form method="POST">
                 <input type="text" placeholder="Goal Name" name="goalName">
                 <button class="button-style" type="button" style="background-color: firebrick;" onclick="cancelNewGoalForm()">Cancel</button>
                 <button class="button-style" type="submit" name="action" value="addGoal" style="background-color: cornflowerblue;">Save</button>
             </form>
         </div>
-</div>
 <script>
     function deleteGoal(goalId) {
         if (confirm('Är du säker på att du vill radera detta mål?')) {

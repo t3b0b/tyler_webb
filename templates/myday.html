@@ -2,28 +2,28 @@
 
 {% block head %}
 <style>
-.score-style {
-    width: 100%;
-    font-size: 22px;
-    font-weight: bold;
-    line-height: 50px;
-    text-align: center;
-    display: block;
-}
+    .score-style {
+        width: 100%;
+        font-size: 22px;
+        font-weight: bold;
+        line-height: 50px;
+        text-align: center;
+        display: block;
+    }
 
-.repetitions{
-    align-self: center;
-}
-        #my_plot {
-            margin: 20px;
-            border: 1px solid #ccc;
-            box-shadow: 2px 2px 10px #888888;
-        }
-    </style>
+    .repetitions {
+        align-self: center;
+    }
+    #my_plot {
+        margin: 20px;
+        border: 1px solid #ccc;
+        box-shadow: 2px 2px 10px #888888;
+    }
+
+</style>
 {% endblock head %}
 
 {% block body %}
-
 <div id="timerModal" class="modal" style="display: none">
     <div class="modal-content">
         <span class="close">&times;</span>
@@ -35,20 +35,18 @@
     </div>
 </div>
 
-
-
 <div class="sub-header">
     <h2 class="sub-header-text"> {{ current_date }} </h2>
 </div>
 <div class="timer" id="timer"></div>
-<div class="day-container">
 
-    <div class="items-container">
+<div class="day-container">
+    <div class="list-container" style="grid-column: span">
         <h2>Goals</h2>
         {% if my_score %}
         <ul>
             {% for score in my_score %}
-            <li>
+            <li class="items-container">
                 <strong>Mål:</strong> {{ score.goal_name }}
                 <strong>Aktivitet:</strong> {{ score.activity_name }}
                 <strong>Poäng:</strong> {{ score.Time }}
@@ -56,59 +54,54 @@
             {% endfor %}
         </ul>
         {% endif %}
-        <div class="score-style">
+    </div>
+        <div class="score-style" style="align-self: center">
             {% if total_score %}
-                <span>{{ total_score }} min</span>
+                <span>{{ total_score }} p</span>
             {% else %}
                 <span>0min</span>
             {% endif %}
         </div>
-    </div>
     {% if my_streaks %}
-    <div class="items-container">
-        <div class="list-item">
+    <div class="list-container">
         <h2>Streaks</h2>
-        </div>
         {% for streak in my_streaks %}
         <div class="items-container">
-                <label> {{ streak.name }}</label>
-                <label> {{ streak.condition }}</label>
-                    <div class="streak-icon">
-                        <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post">
-                            <button type="submit" style="border: none; background: none;">
-                                <img src="{{ url_for('static', filename='images/check.png') }}">
-                            </button>
-                        </form>
-                    </div>
-                    <div class="streak-icon">
-                        <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='cross') }}" method="post">
-                            <button type="submit" style="border: none; background: none;">
-                                <img src="{{ url_for('static', filename='images/kryss.png') }}">
-                            </button>
-                        </form>
-                    </div>
-                </div>
+            <label> {{ streak.name }}</label>
+            <label> {{ streak.condition }}</label>
+            <div class="streak-icon">
+                <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post">
+                    <button type="submit" style="border: none; background: none;">
+                        <img src="{{ url_for('static', filename='images/check.png') }}">
+                    </button>
+                </form>
             </div>
+            <div class="streak-icon">
+                <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='cross') }}" method="post">
+                    <button type="submit" style="border: none; background: none;">
+                        <img src="{{ url_for('static', filename='images/kryss.png') }}">
+                    </button>
+                </form>
+            </div>
+        </div>
         {% endfor %}
-
-
+    </div>
     {% endif %}
 </div>
 <div class="repetitions" style="display: none">
     <h2 id="repetitons">0</h2>
 </div>
-<div id="completed-form" class="list-item">
+<div id="completed-form"  class="list-item" style="display: none;">
     <form method="POST">
-        <input type="" id="gID" name="gID" style="display: none">
-        <input type="text" id="aID" name="aID" style="display: none">
-        <input type="text" style="display: none" id="aDate" name="aDate" value='{{ current_date }}'>
+        <input type="text" id="gID" name="gID">
+        <input type="text" id="aID" name="aID">
+        <input type="text" id="aDate" name="aDate" value='{{ current_date }}'>
         <input type="text" id="score" name="score">
-</div>
 <div class="button-center" id="complete-form" style="display: none">
     <button type="submit" id="save-btn" class="button-style">Save</button>
 </div>
     </form>
-
+</div>
 <div id="activityForm" style="display: none;">
     <select id="goalSelect" class="select-style">
         <option value="----"></option>
@@ -116,7 +109,7 @@
         <option value="{{ goal.id }}">{{ goal.name }}</option>
         {% endfor %}
     </select>
-   <select id="activitySelect" class="select-style">
+    <select id="activitySelect" class="select-style">
         <!-- Aktiviteter kommer att laddas här -->
     </select>
     <select id="timeSelect" class="select-style">
@@ -125,14 +118,13 @@
         <option value="10">10 min</option>
         <option value="15">15 min</option>
     </select>
-   <button onclick="startTimerFromSelection()" class="button-style">Starta</button>
+    <button onclick="startTimerFromSelection()" class="button-style">Starta</button>
 </div>
 <div class="button-center">
-    <button id ="startaAktivitet" class="button-style" type="submit">Starta Aktivitet</button>
+    <button id="startaAktivitet" class="button-style" type="submit">Starta Aktivitet</button>
 </div>
 <div id="my_plot">{{html_string}}</div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
 <script>
 $(document).ready(function() {
     $('#goalSelect').change(function() {
@@ -154,8 +146,7 @@ $(document).ready(function() {
     });
 });
 </script>
-<script src="{{ url_for('static', filename='common_functions.js') }}">
-</script>
+<script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
     document.getElementById('startaAktivitet').addEventListener('click', toggleActivityForm);
 </script>

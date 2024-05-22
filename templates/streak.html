@@ -2,18 +2,7 @@
 
 {% block head %}
 <style xmlns="http://www.w3.org/1999/html">
-    .streak-main {
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        justify-content: space-evenly;
-    }
-    .streak-container {
-        margin-top: 20px;
-        flex-grow: 3; /* Ger streck-containern förmågan att växa */
-        flex-shrink: 1;
-        flex-basis: 70%; /* Startbredd innan flex-grow tillämpas */
-    }
+
     .add-form-container{
         display: flex;
         width: 100%;
@@ -24,11 +13,6 @@
         width: 50%;
         margin-inline: auto;
         margin-bottom: 10px;
-    }
-    .streak-input {
-        min-width: 300px;
-        max-width: 800px;
-        margin-inline: auto; /* Ta bort alla ytterligare marginaler */
     }
 /* Om du vill att de ska vara centrerade */
 
@@ -54,7 +38,7 @@
 
 {% endblock %}
 {% block body %}
-        <div class="streak-container">
+        <div class="goal-streak-container">
             <!-- Exempel på hur du kan använda en Jinja2 loop för att skapa en container för varje streak -->
             {% if streaks %}
             {% for streak in streaks %}
@@ -64,6 +48,9 @@
                 </div>
                 <div class="list-item">
                     <h3 disabled> {{ streak.count }} </h3>
+                </div>
+                <div class="streak-actions">
+                    <button class="toggle-button" onclick="deleteStreak({{ streak.id }})">&#10060;</button>
                 </div>
             </div>
             {% endfor %}
@@ -97,6 +84,27 @@ function expandNewStreakForm() {
 function cancelNewStreakForm() {
     document.getElementById('new-streak-form').style.display = 'none';
     document.getElementById('new-streak-button').style.display = 'block';
+}
+
+function deleteStreak(streakId) {
+    if (confirm('Är du säker på att du vill radera denna streak?')) {
+        fetch('/pmg/delete-streak/' + streakId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ streakId: streakId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Streaken har raderats!');
+                location.reload(); // Ladda om sidan för att uppdatera listan
+            } else {
+                alert('Ett fel inträffade. Försök igen.');
+            }
+        });
+    }
 }
 
 </script>

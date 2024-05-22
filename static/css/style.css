@@ -9,57 +9,9 @@ body {
 .main-content {
     margin-inline: auto;
     padding: 20px;
-}
-.sub-menu {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
-    background-color: burlywood;
-    width: 100%;
-    height: 30px;
-
-}
-.sub-menu nav ul {
-    list-style-type: none;
-    text-decoration: none;
-}
-.sub-menu a {
-    padding-left: 20px;
-    margin: 0 0 0 0;
-    color: #f9f9f9;
-    font-size: 16px;
-    font-weight: bold;
-    position: relative;
-}
-.sub-menu a:hover {
-    color: black;
+    transition: transition: all 0.5s ease;
 }
 
-.side-menu {
-    display: flex;
-    flex-grow: 1;
-    max-width: 200px;
-    background-color: #fff3e6;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-}
-.side-menu-nav ul {
-    list-style-type: none;
-    padding: 0;
-}
-.side-menu-nav ul li {
-
-}
-
-.side-menu-nav ul li a {
-    text-decoration: none;
-    margin-left: 10px;
-
-    font-size: 16px;
-    font-weight: bold;
-    font-family: "Segoe UI";
-    color: #333;
-}
 .form-box {
     border: 1px solid #000000;
     padding: 0 20px 20px 20px;
@@ -80,7 +32,8 @@ body {
     width:300px;
 }
 .day-container {
-    display: flex;
+    display: grid;
+    grid-template-columns: 2fr 1fr 2fr;
     flex: 1 0 auto; /* Tar upp tillgängligt utrymme */
     gap: 50px;
     justify-content: space-evenly;
@@ -88,7 +41,13 @@ body {
     box-sizing: border-box;
     flex-wrap: wrap; /* Ser till att innehåll kan rymmas på mindre skärmar */
 }
-
+.toggle-button {
+    background: none;
+    border: none;
+    color: #000000; /* Röd färg */
+    font-size: 16px;
+    cursor: pointer;
+}
 .select-style {
     display: block; /* Block-nivå-element tar upp hela radens bredd */
     font-size: 1.2em; /* Ökar fontstorleken */
@@ -99,26 +58,35 @@ body {
 .list-container {
     display: flex;
     justify-content: space-evenly;;
-    flex-direction: row;
+    flex-direction: column;
     width: 80%; /* Ökar bredden på select-elementen */
     padding: 5px; /* Lägger till lite padding för bättre utseende */
+}
+
+.goal-streak-container {
+    margin-top: 20px;
+    flex-grow: 3; /* Ger streck-containern förmågan att växa */
+    flex-shrink: 1;
+    flex-basis: 70%; /* Startbredd innan flex-grow tillämpas */
 }
 .items-container {
     display: flex;
     flex-direction: row;
-    justify-content: flex-start;
+    justify-content: space-evenly;
     align-items: center;
     width: 500px;
     margin-inline: auto;
     margin-bottom: 10px;
     border: 1px solid #ccc; /* Ramborder */
 }
+
 .list-item {
         display: flex;
         flex-direction: row;
         width: 100%;
         justify-content: space-between;
     }
+
 .button-center {
     width: 100%; /* Tar full bredd */
     display: flex;
@@ -143,18 +111,7 @@ body {
     width: 30px;
     cursor: pointer;
 }
-header {
-    min-height: 60px;
-    background-color: #f0f0f0;
-    padding: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
 
-header h2 {
-    margin: 0;
-}
 
 nav ul {
     list-style: none;
@@ -186,48 +143,5 @@ nav a.active {
 footer {
     margin-top: auto;
 }
-.menu-container {
-    width: auto; /* Sätter bredden på menyn till att täcka hela sidans bredd */
-    display: flex;
-    justify-content: space-between; /* Separerar logotypen och menyn */
-    align-items: center;
-    padding: 0 20px;
-    box-sizing: border-box; /* Inkluderar padding i elementets totala bredd */
-}
-.top-bar-menu {
-    width: auto;
-    justify-content: space-between;
-    margin: 0 auto; /* Centrerar menyn om den inte redan är full bredd */
-    padding: 0;
-    background: #f6b3b3;
-    border-bottom: 2px solid #ccc;
-}
-.top-bar-menu h1 {
-    text-align: center;
-    margin: 0; /* Ta bort standardmarginalen för att linjera med menyn */
-    font-size: 28px; /* Eller den storlek du föredrar */
-}
-.top-bar-menu ul {
-    display: flex;
-    list-style-type: none;
-    margin: 0;
-    padding: 10px;
-}
-.top-bar-menu nav > ul > li {
-    display: flex;
-    position: relative;
-    padding-left: 45px;
-}
-.top-bar-menu nav > ul > li > a {
-    display: flex;
-    text-decoration: none;
-    color: #333;
-    font-size: 20px;
-}
-.top-bar-menu nav > ul > li a:hover {
-    color: deepskyblue;
-}
-.top-bar-menu nav > ul > li:hover > .sub-menu {
-    display: block;
-    list-style-type: none;
-}
+
+
