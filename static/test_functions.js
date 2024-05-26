@@ -25,7 +25,6 @@ function startTimer(duration, display) {
 }
 
 function saveActivity(totTime) {
-
     goal = document.getElementById('goalSelect')?.value;
     activity = document.getElementById('activitySelect')?.value;
     document.getElementById('aID').value = activity;
