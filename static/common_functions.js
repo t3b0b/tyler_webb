@@ -107,6 +107,7 @@ function stopTimer() {
 function startTimerFromSelection() {
     document.getElementById('activityForm').style.display = 'none';
     var duration = document.getElementById('timeSelect').value * 60; // Konverterar minuter till sekunder
+    var display2 = document.getElementById('time-display-2')
     var timerURL = '/pmg/timer?duration=' + duration;
     window.open(timerURL, 'TimerWindow', 'width=400,height=400');
 }

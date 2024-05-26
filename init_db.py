@@ -1,5 +1,5 @@
 from main import app
-from models import db  # anta att dina modeller och db objekt är definierade här
+from models import db, BloggPost, User
 
 with app.app_context():
     db.create_all()

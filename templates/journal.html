@@ -2,51 +2,7 @@
 
 {% block head %}
     <style>
-      .blogg-container {
-          display: flex;
-          height: 100%;
-          flex-direction: column; /* Elementen staplas vertikalt */
-          justify-content: flex-start; /* Starta från toppen av container */
-          align-items: center; /* Centrera elementen horisontellt */
-          min-height: 300px; /* Justera höjden efter innehållet */
-      }
 
-      label, textarea, button {
-          margin: 10px; /* Ger lite utrymme mellan select och textarea */
-      }
-      .post-content {
-          white-space: pre-wrap;
-      }
-      textarea {
-          flex-wrap: wrap;
-          width: 60vw;
-          font-size: 12px;
-          min-height: 40vh; /* Gör textarea hög så den täcker majoriteten av skärmen */
-          padding: 12px 20px; /* Lite intern padding för att texten inte ska vara direkt vid kanten */
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          resize: vertical; /* Tillåter användaren att ändra höjden på textarea */
-      }
-      label {
-          font-family: 'Arial', sans-serif;
-          font-size: x-large;
-          font-weight: bold;
-      }
-    .ordet {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        padding-top: 5px;
-        width: 100%;
-    }
-    .ordet input {
-        margin-inline: auto;
-        height: 30px;
-        font-family: 'Arial', sans-serif;
-        font-size: larger;
-        font-weight: bold;
-    }
 
       button {
           width: 100px;
@@ -63,7 +19,6 @@
 {% if act_id %}
             <div class="blogg-container">
                 <form method="POST">
-
                 <div class="ordet">
                     <button name="option" style="width: 60px" onclick="fetchNewWord()">New</button>
                     <label id="ordet-label" name="post-ord">{{ ordet }}</label>

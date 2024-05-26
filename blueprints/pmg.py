@@ -77,6 +77,33 @@ def myDayScore(date):
         total += float(score.Time)
 
     return myScore,total
+
+def generate_calendar_weeks(year, month):
+    first_day_of_month = datetime(year, month, 1)
+    days = []
+    string_day=[]
+    # Föregående månad
+    previous_month_day = first_day_of_month - timedelta(days=1)
+    while previous_month_day.weekday() != 6:  # Söndag är 6 i weekday() funktionen
+        days.insert(0, {'day': previous_month_day.day, 'date': previous_month_day, 'current_month': False})
+        previous_month_day -= timedelta(days=1)
+
+    # Aktuell månad
+    current_day = first_day_of_month
+    while current_day.month == month:
+        days.append({'day': current_day.day, 'date': current_day, 'current_month': True})
+        current_day += timedelta(days=1)
+
+    # Nästkommande månad
+    while len(days) % 7 != 0:
+        days.append({'day': current_day.day, 'date': current_day, 'current_month': False})
+
+        current_day += timedelta(days=1)
+        string_day.append(current_day)
+    # Dela upp dagarna i veckor
+    weeks = [days[i:i + 7] for i in range(0, len(days), 7)]
+
+    return weeks
 # endregion
 
 @pmg_bp.route('/timer')
@@ -107,7 +134,7 @@ def streak():
 @pmg_bp.route('/update_streak/<int:streak_id>/<action>', methods=['POST'])
 def update_streak(streak_id, action):
     streak = Streak.query.get_or_404(streak_id)
-    today = datetime.utcnow().strftime('%Y.%m.%d')
+    today = datetime.utcnow().strftime('%Y-%m-%d')
     if action == 'check':
         if today != streak.lastReg:
             count = streak.count
@@ -169,7 +196,7 @@ def goals():
 def delete_goal(goal_id):
     # Data från JSON-kroppen, om du behöver den
     data = request.get_json()
-    print(data)  # Debug: se vad som faktiskt tas emot
+ # Debug: se vad som faktiskt tas emot
 
     goal = Goals.query.get(goal_id)
     if goal:
@@ -191,41 +218,41 @@ def myday():
     myStreaks = Streak.query.filter(Streak.user_id == current_user.id).all()
     myScore = query(Score,'user_id',current_user.id)
     myScore,total = myDayScore(date_now)
-    for score in myScore:
-        print(score)
 
     today = datetime.utcnow()
     valid_streaks=[]
     for streak in myStreaks:
-        interval_days = timedelta(days=streak.interval)
+        interval_days = timedelta(days=streak.interval,hours=23,minutes=59,seconds=59)
+
         try:
             last_reg_date = datetime.strptime(streak.lastReg, "%Y-%m-%d")
+            streak_interval = last_reg_date + interval_days
 
             # Kontrollera om streaken ska visas
             if streak.count == 0:
                 valid_streaks.append(streak)
             elif streak.count >= 1:
-                if today == last_reg_date + interval_days:
+                if today == streak_interval:
                     valid_streaks.append(streak)
-                elif today < last_reg_date + interval_days:
+                elif streak_interval > today:
                     continue  # Ignorera streaks där lastReg + interval är större än idag
-                elif today > last_reg_date + interval_days:
+            elif streak_interval < today:
                     streak.count = 0
                     db.session.commit()
         except (ValueError, TypeError):
-            # Hantera ogiltigt datum
-            streak.count = 0
-            streak.lastReg = today.strftime("%Y-%m-%d")
-            db.session.commit()
+            print('Hantera ogiltigt datum')
+
 
 
     sorted_myScore = sorted(myScore, key=lambda score: score[0])
     df = pd.DataFrame(sorted_myScore, columns=['goal', 'activity', 'date', 'score'])
 
     if request.method == 'POST':
-        add2db(Score,request,['gID','aID','aDate','score'],
-               ['Goal','Activity','Date','Time'], current_user)
-        return redirect(url_for('pmg.myday'))
+        score_check = float(request.form['score'])
+        if score_check > 5:
+            add2db(Score,request,['gID','aID','aDate','score'],
+                   ['Goal','Activity','Date','Time'], current_user)
+            return redirect(url_for('pmg.myday'))
 
     return render_template('myday.html',sida=sida,header=sida, current_date=date_now,
                            my_goals=myGoals, my_streaks=valid_streaks, my_score=myScore,total_score=total,sub_menu=sub_menu)
@@ -256,8 +283,10 @@ def myday_date(date):
 #region Kalender
 @pmg_bp.route('/month')
 @pmg_bp.route('/month/<int:year>/<int:month>')
+@pmg_bp.route('/month/<int:year>/<int:month>')
 def month(year=None, month=None):
-    sida, sub_menu = common_route('Kalender',['/pmg/month/','/pmg/week/','/pmg/myday/'],['Min Månad','Min Vecka','Min Dag'])
+    sida, sub_menu = common_route('Kalender', ['/pmg/month/', '/pmg/week/', '/pmg/myday/'],
+                                  ['Min Månad', 'Min Vecka', 'Min Dag'])
     # Det nuvarande året och månaden
     if not year or not month:
         year = datetime.now().year
@@ -266,32 +295,26 @@ def month(year=None, month=None):
     first_day_of_month = datetime(year, month, 1)
     month_name = first_day_of_month.strftime('%B')
 
-    # Skapa en lista som representerar dagarna i månaden, inklusive föregående och nästkommande månad
-    days = []
-    # Föregående månad
-    previous_month_day = first_day_of_month - timedelta(days=1)
-    while previous_month_day.weekday() != 6:  # Söndag är 6 i weekday() funktionen
-        days.insert(0, {'day': previous_month_day.day, 'date': previous_month_day, 'current_month': False})
-        previous_month_day -= timedelta(days=1)
-
-    # Aktuell månad
-    current_day = first_day_of_month
-    while current_day.month == month:
-        days.append({'day': current_day.day, 'date': current_day, 'current_month': True})
-        current_day += timedelta(days=1)
-
-    # Nästkommande månad
-    while len(days) % 7 != 0:
-        days.append({'day': current_day.day, 'date': current_day, 'current_month': False})
-        current_day += timedelta(days=1)
-
-    # Dela upp dagarna i veckor
-    weeks = [days[i:i + 7] for i in range(0, len(days), 7)]
+    # Generera veckor för kalendern
+    weeks = generate_calendar_weeks(year, month)
 
     # Titeln och headern för sidan
     sida = "Min Kalender"
+    today = datetime.now()
+    today_date = datetime(today.year, today.month, today.day, 0, 0, 0)
 
-    return render_template('month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida, sub_menu=sub_menu, month=month, days=days)
+    # Hämta streak-datum (lägg till denna del)
+    streaks = Streak.query.filter_by(user_id=current_user.id).all()
+    streak_dates = [streak.lastReg for streak in streaks if streak.count > 0]
+    streakday_string = []
+    for week in weeks:
+        for day in week:
+            today = datetime.now()
+            todaysdate = datetime.now().strftime(())
+            streakday_string.append(todaysdate.strftime('%Y-%m-%d'))
+            print(todaysdate.strftime('%Y-%m-%d')+ "!")
+    return render_template('month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida,
+                           sub_menu=sub_menu, month=month, today_date=today_date, streak_dates=streak_dates)
 @pmg_bp.route('/week')
 def week():
     sida='My Week'

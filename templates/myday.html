@@ -2,14 +2,6 @@
 
 {% block head %}
 <style>
-    .score-style {
-        width: 100%;
-        font-size: 22px;
-        font-weight: bold;
-        line-height: 50px;
-        text-align: center;
-        display: block;
-    }
 
     .repetitions {
         align-self: center;
@@ -57,9 +49,9 @@
     </div>
         <div class="score-style" style="align-self: center">
             {% if total_score %}
-                <span>{{ total_score }} p</span>
+                <span id="time-display-2">{{ total_score }} p</span>
             {% else %}
-                <span>0min</span>
+                <span id="time-display-2">0min</span>
             {% endif %}
         </div>
     {% if my_streaks %}
@@ -91,17 +83,17 @@
 <div class="repetitions" style="display: none">
     <h2 id="repetitons">0</h2>
 </div>
-<div id="completed-form"  class="list-item" style="display: none;">
-    <form method="POST">
-        <input type="text" id="gID" name="gID">
-        <input type="text" id="aID" name="aID">
-        <input type="text" id="aDate" name="aDate" value='{{ current_date }}'>
-        <input type="text" id="score" name="score">
-<div class="button-center" id="complete-form" style="display: none">
+<form method="POST">
+<div id="completed-form"  class="list-item">
+        <input type="text" id="gID" name="gID" style="display: none;">
+        <input type="text" id="aID" name="aID"style="display: none;">
+        <input type="text" id="aDate" name="aDate" value='{{ current_date }}' style="display: none;">
+        <input type="text" id="score" name="score" style="display: none;">
+    <div class="button-center" id="complete-form" style="display: none">
     <button type="submit" id="save-btn" class="button-style">Save</button>
+    </div>
 </div>
-    </form>
-</div>
+</form>
 <div id="activityForm" style="display: none;">
     <select id="goalSelect" class="select-style">
         <option value="----"></option>
@@ -123,6 +115,12 @@
 <div class="button-center">
     <button id="startaAktivitet" class="button-style" type="submit">Starta Aktivitet</button>
 </div>
+
+<div class="button-center">
+    <button id="stopButton" class="button-style" style="display: none; background-color: red">Stop</button>
+    <button id="continueButton" class="button-style" style="display: none; background-color: green">Continue</button>
+</div>
+
 <div id="my_plot">{{html_string}}</div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>

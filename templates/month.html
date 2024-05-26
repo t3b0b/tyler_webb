@@ -2,66 +2,7 @@
 
 {% block head %}
 <style>
-    .calendar-container {
-        display: flex;
-        flex-direction: column;
-        flex-wrap: wrap;
-        align-content: center;
-        margin-inline: auto; /* Centrerar kalendern */
-    }
-    .calendar-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        grid-gap: 0;
-        min-height: 60%;
-        max-width: 90%; /* Maxbredd för kalendern */
-        margin-inline: auto;
-    }
-    .calendar-header {
-        grid-column: span 7;
-        text-align: center;
-        font-size: 22px;
-    }
-    .day-header {
-        background-color: #e7e6d2;
-        border: 1px solid #505050;
-        color: #333;
-        padding: 5px;
-        text-align: center;
-        font-weight: bold;
-    }
-    .day {
-        border: 1px solid #505050;
-        padding: 30px;
-        text-align: center;
-        vertical-align: top;
-        background-color: #fff;
-        cursor: pointer;
-        transition: all 0.5s ease;
-    }
-    .other-month {
-        background-color: #f0f0f0;
-        color: #ccc;
-        cursor: default;
-    }
-    .day.expand {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        width: 100vw;
-        height: 100vh;
-        transform: translate(-50%, -50%);
-        z-index: 1000;
-        background: white;
-        font-size: 50px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    .today {
-        border: 2px solid red; /* Ändra denna stil som du vill för att markera dagens datum */
-        background-color: #ffeb3b; /* Gul bakgrund för dagens datum */
-    }
+
 </style>
 {% endblock head %}
 
@@ -84,8 +25,12 @@
         <div class="day-header">Söndag</div>
         {% for week in weeks %}
             {% for day in week %}
-            <div class="day {{ 'clickable' if day.current_month else 'other-month' }}"
-                 data-date="{{ day.date }}" onclick="onDateClick(this, '{{ day.date }}')">
+            <div class="day {{ 'clickable' if day.current_month else 'other-month' }} {{ 'today' if day.date.strftime('%Y-%m-%d') == today_date.strftime('%Y-%m-%d') else '' }}"
+                 data-date="{{ day.date.strftime('%Y-%m-%d') }}"
+                 onclick="onDateClick(this, '{{ day.date.strftime('%Y-%m-%d') }}')">
+                {% if day.date.strftime('%Y-%m-%d') in streak_dates %}
+                    <div class="streak-dot"></div>
+                {% endif %}
                 {{ day.day }}
             </div>
             {% endfor %}
@@ -109,15 +54,13 @@ function changeMonth(change) {
     window.location.href = `/pmg/month/${newDate.getFullYear()}/${newDate.getMonth() + 1}`;
 }
 
-function markToday() {
-    const today = new Date().toISOString().split('T')[0]; // Få dagens datum i YYYY-MM-DD format
+document.addEventListener('DOMContentLoaded', function() {
+    const today = '{{ today_date }}';
     const todayCell = document.querySelector(`.day[data-date="${today}"]`);
     if (todayCell) {
         todayCell.classList.add('today');
     }
-}
-
-document.addEventListener('DOMContentLoaded', markToday);
+});
 </script>
 {% endblock main %}
 {% endblock body %}
