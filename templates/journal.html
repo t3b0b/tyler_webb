@@ -31,23 +31,30 @@
                 <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
 
             <div id="activityForm" class="button-center">
-                <button type="submit" class="button-style" name="option" value="timeless">Skicka</button>
-                <button class="button-style" onclick="startTimerFromSelection()">Start Timer</button>
+                <button type="submit" id="time-less" class="button-style" name="option" value="timeless">Skicka</button>
+                <button type="submit" id="write-on-time" class="button-style" name="option" style="display: none;" value="write-on-time">Save</button>
+
+                <button type="button" id="start-timer" class="button-style" onclick="startTimerFromSelection()">Start Timer</button>
+
                 <input id="goalSelect" value="{{ goal.id }}" style="display: none">
                 <input id="activitySelect" value="{{ act_id }}" style="display: none">
                 <input id="timeSelect" value="{{ time }}" style="display: none">
                 <button id="startaAktivitet" style="display: none">A</button>
             </div>
-
+            <div class="button-center">
+                <button type="button" id="stopButton" class="button-style" style="display: none; background-color: red">Stop</button>
+                <button type="button" id="continueButton" class="button-style" style="display: none; background-color: green">Continue</button>
+            </div>
+            <div class="repetitions" style="display: none">
+                <h2 id="repetitons">0</h2>
+            </div>
             <div id=id="completed-form", class="list-item" style="display: none;">
                 <input type="text" id="gID" name="gID" value='{{ goal.id }}'>
                 <input type="text" id="aID" name="aID" value=" {{ act_id }}">
                 <input type="text" id="aDate" name="aDate" value='{{ current_date }}'>
                 <input type="text" id="score" name="score">
             </div>
-            <div class="button-center" id="complete-form" style="display: none">
-                <button type="submit" id="save-btn" class="button-style" name="option" value="write-on-time">Save</button>
-            </div>
+
         </form>
     </div>
 {% endif %}
@@ -65,7 +72,7 @@
     {% endif %}
     </div>
 {% endif %}
-<script src="{{ url_for('static', filename='common_functions.js') }}"></script>
+<script src="{{ url_for('static', filename='test_functions.js') }}"></script>
 <script>
 
 function fetchNewWord() {
@@ -77,6 +84,10 @@ function fetchNewWord() {
         })
         .catch(error => console.error('Error fetching new word:', error));
 }
+function editTitle() {
+    document.getElementById('ordet-input').style.display = 'block'
+    document.getElementById('ordet-label').style.display = 'none'
 
+}
 </script>
 {% endblock body %}

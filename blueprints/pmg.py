@@ -310,9 +310,6 @@ def month(year=None, month=None):
     for week in weeks:
         for day in week:
             today = datetime.now()
-            todaysdate = datetime.now().strftime(())
-            streakday_string.append(todaysdate.strftime('%Y-%m-%d'))
-            print(todaysdate.strftime('%Y-%m-%d')+ "!")
     return render_template('month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida,
                            sub_menu=sub_menu, month=month, today_date=today_date, streak_dates=streak_dates)
 @pmg_bp.route('/week')
@@ -363,6 +360,8 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     if sida == 'Dagbok':
         ordet = current_date
     time = Settings.query.filter_by(user_id=current_user.id).first().stInterval
+    if not time:
+        time = 15
     titles = []  # Initialisera titles här för att säkerställa att den alltid har ett värde
 
     if act_id is not None:
@@ -382,11 +381,13 @@ def journal_section(act_id, sida, sub_menu, my_posts):
         option = request.form.get('option')
         print(option)
         user = User.query.filter_by(id=current_user.id).first()
-        if option == 'timeless':
-            add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
-        elif option == "write-on-time":
-            add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], current_user)
-            add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+        content_check = request.form['blogg-content']
+        if content_check:
+            if option == 'timeless':
+                add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+            elif option == "write-on-time":
+                add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], current_user)
+                add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
 
     return render_template('journal.html', time=time, goal=myGoals, activities=activities, side_options=titles,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
