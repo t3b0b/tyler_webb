@@ -48,15 +48,16 @@
         {% endif %}
     </div>
         <div class="score-style" style="align-self: center">
+            <h2>Score</h2>
             {% if total_score %}
-                <span id="time-display-2">{{ total_score }} p</span>
+                <span>{{ total_score }} P</span>
             {% else %}
-                <span id="time-display-2">0min</span>
+                <span>0 P</span>
             {% endif %}
         </div>
-    {% if my_streaks %}
     <div class="list-container">
         <h2>Streaks</h2>
+        {% if my_streaks %}
         {% for streak in my_streaks %}
         <div class="items-container">
             <label> {{ streak.name }}</label>
@@ -76,8 +77,8 @@
                 </form>
             </div>
         </div>
-        {% endfor %}
     </div>
+    {% endfor %}
     {% endif %}
 </div>
 <div class="repetitions" style="display: none">

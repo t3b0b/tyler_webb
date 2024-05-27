@@ -26,12 +26,32 @@
         {% for week in weeks %}
             {% for day in week %}
             <div class="day {{ 'clickable' if day.current_month else 'other-month' }} {{ 'today' if day.date.strftime('%Y-%m-%d') == today_date.strftime('%Y-%m-%d') else '' }}"
-                 data-date="{{ day.date.strftime('%Y-%m-%d') }}"
-                 onclick="onDateClick(this, '{{ day.date.strftime('%Y-%m-%d') }}')">
-                {% if day.date.strftime('%Y-%m-%d') in streak_dates %}
-                    <div class="streak-dot"></div>
-                {% endif %}
-                {{ day.day }}
+                 data-date="{{ day.date.strftime('%Y-%m-%d') }}" onclick="onDateClick(this, '{{ day.date.strftime('%Y-%m-%d') }}')">
+                <div class="streak-count">
+                    {% if day.current_month %}
+                        {% set dag = dag_data.get(day.date.strftime('%Y-%m-%d')) %}
+                        {% if dag %}
+                            {{ dag.completed_streaks }} / {{ dag.total_streaks }}
+                        {% else %}
+                            0 / 0
+                        {% endif %}
+                    {% else %}
+                        &nbsp;
+                    {% endif %}
+                </div>
+                <div class="day-date">{{ day.day }}</div>
+                <div class="total-points">
+                    {% if day.current_month %}
+                        {% set dag = dag_data.get(day.date.strftime('%Y-%m-%d')) %}
+                        {% if dag %}
+                            {{ dag.total_points }} P
+                        {% else %}
+                            0 P
+                        {% endif %}
+                    {% else %}
+                        &nbsp;
+                    {% endif %}
+                </div>
             </div>
             {% endfor %}
         {% endfor %}

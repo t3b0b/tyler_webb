@@ -99,14 +99,15 @@ header h1 {
 }
 
 .form-box {
+    display: flex;
     border: 1px solid #000000;
     padding: 20px;
-    display: flex;
+    justify-content: center;
+    display: inline-block;
     flex-direction: column;
-    max-width: 800px;
-    margin: 40px auto 10px auto;
-    align-items: center;
-    width: fit-content;
+    max-width: 600px;
+    margin: 5px auto 5px auto;
+    width: 80%;
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -123,7 +124,7 @@ header h1 {
 .day-container {
     display: grid;
     grid-template-columns: 2fr 1fr 2fr;
-    gap: 50px;
+    gap: 20px;
     justify-content: space-evenly;
     padding: 20px;
     box-sizing: border-box;
@@ -141,7 +142,7 @@ header h1 {
     display: flex;
     justify-content: space-evenly;
     flex-direction: column;
-    width: 80%;
+    width: 2fr;
     padding: 5px;
 }
 
@@ -155,13 +156,14 @@ header h1 {
 .items-container {
     display: flex;
     flex-direction: row;
-    justify-content: space-evenly;
+    justify-self: center;
     align-items: center;
-    width: 500px;
-    margin: 0 auto 10px auto;
+    width: 100%;
+    margin: 10px auto 10px auto;
     border: 1px solid #ccc;
+    border-radius: 10px;
     padding: 10px;
-    box-sizing: border-box;
+    box-sizing: content-box;
 }
 
 .list-item {
@@ -396,21 +398,31 @@ textarea {
 }
 
 .day {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-right: 30px;
+    padding-left: 30px;
     border: 1px solid #b7b6b6;
-    padding: 30px;
     text-align: center;
     vertical-align: top;
     background-color: #fff;
     cursor: pointer;
     transition: all 0.5s ease;
 }
-
-.other-month {
-    background-color: #f0f0f0;
-    color: #ccc;
-    cursor: default;
+.day .streak-count {
+    justify-self: flex-start;
+    top: 5px;
+    font-size: 14px;
 }
-
+.day .day-date {
+    font-size: 20px;
+    font-weight: bold;
+}
+.day .total-points {
+    bottom: 5px;
+    font-size: 14px;
+}
 .day.expand {
     position: fixed;
     top: 50%;
@@ -426,9 +438,31 @@ textarea {
     align-items: center;
 }
 
+.other-month {
+    background-color: #f0f0f0;
+    color: #ccc;
+    cursor: default;
+}
+
 .today {
     border: 2px solid #e1c971;
     background-color: rgba(144, 187, 196, 0.4);
+}
+
+
+@keyframes dayDateText {
+    0% {
+        color: black;
+        font-size: 1em;
+    }
+    50% {
+        color: red;
+        font-size: 1.5em;
+    }
+    100% {
+        color: black;
+        font-size: 1em;
+    }
 }
 
 
@@ -474,7 +508,7 @@ textarea {
     }
 
     .main-container {
-        flex-direction: column;
+
     }
 
     .form-box {

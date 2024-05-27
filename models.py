@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
+from sqlalchemy.dialects.postgresql import JSON
 
 db = SQLAlchemy()
 
@@ -12,6 +13,15 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(255), nullable=False)
     def __repr__(self):
         return f'{self.username}, {self.email}, {self.password}'
+
+class Dagbok(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    author = db.Column(db.String(50), nullable=False)
+    title = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, unique=False, nullable=False)
+    def __repr__(self):
+        return f"{self.user_id},{self.author},{self.title},{self.content}"
 
 class BloggPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -26,6 +36,7 @@ class BloggPost(db.Model):
 class Streak(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
+    active = db.Column(db.Boolean, nullable=False)
     interval = db.Column(db.Integer, nullable=False)
     count = db.Column(db.Integer, nullable=False)
     goal = db.Column(db.Integer, nullable=True)
@@ -77,4 +88,18 @@ class Settings(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
         return f'{self.stInterval}, {self.user_id}'
+
+
+class Dagar(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date, nullable=False, unique=True)
+    total_streaks = db.Column(db.Integer)
+    completed_streaks = db.Column(db.Integer)
+    completed_streaks_names = db.Column(db.Text)
+    total_points = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __repr__(self):
+        return f'{self.user_id}, {self.date}, {self.total_streaks}, {self.completed_streaks}, {self.completed_streaks_names}, {self.total_points}'
+
 # endregion
