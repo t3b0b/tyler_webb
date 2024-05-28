@@ -291,7 +291,8 @@ def myday():
     df = pd.DataFrame(sorted_myScore, columns=['goal', 'activity', 'date', 'score'])
 
     if request.method == 'POST':
-        score_check = int(request.form['score'])
+        score_check = float(request.form['score'])
+        print(score_check)
         if score_check > 5:
             add2db(Score, request, ['gID', 'aID', 'aDate', 'score'],
                    ['Goal', 'Activity', 'Date', 'Time'], current_user)
