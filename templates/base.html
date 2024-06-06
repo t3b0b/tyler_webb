@@ -65,6 +65,17 @@
     </div>
 
     <script>
+            document.addEventListener('DOMContentLoaded', function () {
+    const sideMenu = document.querySelector('.side-menu');
+
+    document.addEventListener('mousemove', function (event) {
+        if (event.clientX < 20) { // Om muspekaren är nära vänsterkanten
+            sideMenu.classList.add('expanded');
+        } else if (event.clientX > 200) { // Om muspekaren är långt från vänsterkanten
+            sideMenu.classList.remove('expanded');
+        }
+    });
+});
         function toggleMenu() {
             var nav = document.querySelector('.menu-container nav');
             nav.classList.toggle('active');

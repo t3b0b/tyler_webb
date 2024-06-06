@@ -18,6 +18,7 @@ function startTimer(duration, display) {
             }
             document.getElementById('stopButton').style.display = 'block';
             document.getElementById('continueButton').style.display = 'block';
+            document.getElementById('continueButton').textContent = 'Continue';
         }
     }, 1000);
 }
@@ -42,48 +43,25 @@ function updateAnimation(currentTime, totalTime) {
     }
 }
 function saveActivity(totTime) {
-    var openerDoc = window.opener.document;
-    if (!openerDoc) {
-        console.error('Kan inte hitta huvudfönstret.');
-        return;
-    }
-
-    console.log("Hämtar målet och aktiviteten från huvudfönstret");
-    goal = openerDoc.getElementById('goalSelect')?.value;
-    activity = openerDoc.getElementById('activitySelect')?.value;
-
-    if (!goal || !activity) {
-        console.error('Kan inte hitta målet eller aktiviteten.');
-        return;
-    }
-
-    var completeForm = openerDoc.getElementById('complete-form');
-    if (!completeForm) {
-        console.error('Kan inte hitta complete-form.');
-        return;
-    }
-
-    completeForm.style.display = 'block';
-    openerDoc.getElementById('aID').value = activity;
-    openerDoc.getElementById('gID').value = goal;
+    goal = document.getElementById('goalSelect')?.value;
+    activity = document.getElementById('activitySelect')?.value;
+    document.getElementById('aID').value = activity;
+    document.getElementById('gID').value = goal;
     let elapsedTime = (closeTime - openTime) / 1000 / 60; // Konvertera millisekunder till minuter
-    openerDoc.getElementById('score').value = elapsedTime;
-
+    elapsedTime = Math.round(elapsedTime);
+    document.getElementById('score').value = elapsedTime;
+    document.getElementById('start-timer').textContent = elapsedTime + ' P';
     console.log(`Activity saved with goal: ${goal}, activity: ${activity}, elapsedTime: ${elapsedTime}`);
 }
 
+ document.getElementById('startaAktivitet').addEventListener('click', toggleActivityForm);
+
 function continueTimer() {
-    var params = new URLSearchParams(window.location.search);
-    var duration = parseInt(params.get('duration'), 10);
-    var display = document.getElementById('timerDisplay');
-    var circle = document.querySelector('circle');
-    if (circle) {
-        circle.style.animation = 'none';
-        setTimeout(function() {
-            circle.style.strokeDashoffset = 472;  // Ursprungligt värde
-            circle.style.animation = 'anim ' + duration + 's linear forwards';
-        }, 10);
-    }
+    var display = document.getElementById('continueButton');
+    var duration = document.getElementById('timeSelect').value * 60;
+    document.getElementById('start-timer').style.display = 'none'
+    document.getElementById('stopButton').style.display = 'block';
+    document.getElementById('continueButton').style.display = 'block';
     repetitions += 1;
     var repetitionsDisplay = document.querySelector('.repetitions h2');
     if (repetitionsDisplay) {
@@ -96,7 +74,7 @@ function continueTimer() {
 
 function stopTimer() {
     var params = new URLSearchParams(window.location.search);
-    var duration = parseInt(params.get('duration'), 10);
+    var duration = document.getElementById('timeSelect').value;
     timeTot = repetitions * duration / 60;
     closeTime = new Date();
     window.close(); // Stänger popup-fönstret
@@ -105,11 +83,25 @@ function stopTimer() {
 }
 
 function startTimerFromSelection() {
-    document.getElementById('activityForm').style.display = 'none';
     var duration = document.getElementById('timeSelect').value * 60; // Konverterar minuter till sekunder
-    var display2 = document.getElementById('time-display-2')
-    var timerURL = '/pmg/timer?duration=' + duration;
-    window.open(timerURL, 'TimerWindow', 'width=400,height=400');
+    var display = document.getElementById('continueButton');
+        var continueButton = document.getElementById('continueButton');
+        if (continueButton) {
+            continueButton.addEventListener('click', continueTimer);
+        } else {
+            console.error('Continue button not found');
+        }
+        var stopButton = document.getElementById('stopButton');
+        if (stopButton) {
+            stopButton.addEventListener('click', stopTimer);
+        } else {
+            console.error('Stop button not found');
+        }
+    display.style.backgroundColor = 'green'
+    document.getElementById('activityForm').style.display='none';
+    document.getElementById('stopButton').style.display = 'block';
+    document.getElementById('continueButton').style.display = 'block';
+    startTimer(duration, display);
 }
 
 function toggleActivityForm() {
@@ -122,4 +114,54 @@ function toggleActivityForm() {
     }
 }
 
+function expandNewStreakForm() {
+    document.getElementById('new-streak-button').style.display = 'none';
+    document.getElementById('new-streak-form').style.display = 'block';
+}
+
+function cancelNewStreakForm() {
+    document.getElementById('new-streak-form').style.display = 'none';
+    document.getElementById('new-streak-button').style.display = 'block';
+}
+
+function deleteStreak(streakId) {
+    if (confirm('Är du säker på att du vill radera denna streak?')) {
+        fetch('/pmg/delete-streak/' + streakId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ streakId: streakId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Streaken har raderats!');
+                location.reload(); // Ladda om sidan för att uppdatera listan
+            } else {
+                alert('Ett fel inträffade. Försök igen.');
+            }
+        });
+    }
+}
+
+    $(document).ready(function () {
+        $('#goalSelect').change(function () {
+            var goalId = $(this).val();
+            $.ajax({
+                url: '/pmg/get_activities/' + goalId,
+                type: 'GET',
+                success: function (response) {
+                    var activitySelect = $('#activitySelect');
+                    activitySelect.empty(); // Rensa befintliga optioner
+                    $.each(response, function (index, activity) {
+                        activitySelect.append($('<option>').val(activity.id).text(activity.name));
+                    });
+                },
+                error: function (error) {
+                    console.log('Error:', error);
+                }
+            });
+        });
+    });
 

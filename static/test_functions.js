@@ -83,3 +83,18 @@ function startTimerFromSelection() {
 
     startTimer(duration, display);
 }
+
+function fetchNewWord() {
+    fetch('/get-new-word')
+        .then(response => response.json())
+        .then(text => {
+            var wordLabel = document.getElementById('ordet-label');
+            wordLabel.textContent = text;  // 'text' ska vara den rena strängen från JSON-svaret
+        })
+        .catch(error => console.error('Error fetching new word:', error));
+}
+function editTitle() {
+    document.getElementById('ordet-input').style.display = 'block'
+    document.getElementById('ordet-label').style.display = 'none'
+
+}

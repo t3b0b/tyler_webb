@@ -158,6 +158,7 @@ def streak():
     print(current_date)
     sida, sub_menu = common_route("Mina Streaks", ['/pmg/myday', '/pmg/goals'], ['Score', 'Goals'])
     myStreaks = query(Streak,'user_id',current_user.id)
+    myGoals = query(Goals, 'user_id', current_user.id)
 
     if request.method == 'POST':
         form_fields = ['streakName','streakInterval','streakCount',
@@ -169,22 +170,25 @@ def streak():
         add2db(Streak, request, form_fields, model_fields, current_user)
 
         return redirect(url_for('pmg.streak'))
-    return render_template('streak.html',sida=sida,header=sida,todayDate=current_date,streaks=myStreaks,sub_menu=sub_menu)
+    return render_template('streak.html',sida=sida,header=sida,
+                           todayDate=current_date,streaks=myStreaks,sub_menu=sub_menu,
+                           goals=myGoals)
 @pmg_bp.route('/update_streak/<int:streak_id>/<action>', methods=['POST'])
 def update_streak(streak_id, action):
     streak = Streak.query.get_or_404(streak_id)
     today = date.today()
+
     if action == 'check':
         if today != streak.lastReg:
             count = streak.count
             best_now = streak.best
             count += streak.interval
+            streak.active = True
+            streak.count = count
+            streak.lastReg = today
             if best_now < count:
                 best_now = count
                 streak.best = best_now
-            streak.count = count
-            streak.active = True
-            streak.lastReg = today
             db.session.commit()
 
     elif action == 'cross':
@@ -277,9 +281,10 @@ def myday():
                 elif streak.count >= 1:
                     if today.date() == streak_interval.date():  # Jämför endast datumdelen
                         valid_streaks.append(streak)
-                    elif streak_interval > today:
+                    elif streak_interval.date() < today.date():
                         continue  # Ignorera streaks där lastReg + interval är större än idag
-                elif streak_interval < today:
+                elif streak_interval.date() < today.date():
+                    streak.active = False
                     streak.count = 0
                     db.session.commit()
             except (ValueError, TypeError) as e:
@@ -331,15 +336,15 @@ def myday_date(date):
 @pmg_bp.route('/month')
 @pmg_bp.route('/month/<int:year>/<int:month>')
 def month(year=None, month=None):
-    sida, sub_menu = common_route('Kalender', ['/pmg/month/', '/pmg/week/', '/pmg/myday/'],
+    sida, sub_menu = common_route('Kalender', ['/pmg/month', '/pmg/week', '/pmg/myday'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])
     update_dagar(current_user.id, Dagar)  # Uppdatera Dagar-modellen
     if not year or not month:
         year = datetime.now().year
         month = datetime.now().month
-#    dagar_check = Dagar.query.filter_by(user_id=current_user.id,date=date.today()).first()
- #   print(dagar_check)
-  #  if dagar_check is None:
+        dagar_check = Dagar.query.filter_by(user_id=current_user.id,date=date.today()).first()
+        print(dagar_check)
+    #if dagar_check is None:
 
 
     first_day_of_month = datetime(year, month, 1)
@@ -358,7 +363,7 @@ def month(year=None, month=None):
                            sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data)
 @pmg_bp.route('/week')
 def week():
-    sida='My Week'
+    sida = 'My Week'
     return render_template('myWeek.html',sida=sida, header=sida)
 # endregion
 
@@ -397,7 +402,7 @@ def journal():
 
 @pmg_bp.route('/journal/<section_name>', methods=['GET', 'POST'])
 def journal_section(act_id, sida, sub_menu, my_posts):
-    current_date = date.today
+    current_date = date.today()
     page_url = 'pmg.journal'
     activities = None
     ordet, ord_lista = read('orden.txt')
@@ -409,6 +414,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     titles = []  # Initialisera titles här för att säkerställa att den alltid har ett värde
 
     if act_id is not None:
+        print(act_id)
         myGoals = Goals.query.filter_by(name='Skriva', user_id=current_user.id).first()
         if myGoals:
             activities = Activity.query.filter_by(goal_id=myGoals.id).all()
@@ -428,10 +434,17 @@ def journal_section(act_id, sida, sub_menu, my_posts):
         content_check = request.form['blogg-content']
         if content_check:
             if option == 'timeless':
-                add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+                if sida == 'Dagbok':
+                    add2db(Dagbok, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+                else:
+                    add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+
             elif option == "write-on-time":
                 add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], current_user)
-                add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+                if sida == 'Dagbok':
+                    add2db(Dagbok, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+                else:
+                    add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 update_dagar(current_user,Dagar)
     return render_template('journal.html', time=time, goal=myGoals, activities=activities, side_options=titles,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,

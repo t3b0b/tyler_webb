@@ -36,15 +36,15 @@ class BloggPost(db.Model):
 class Streak(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
-    active = db.Column(db.Boolean, nullable=False)
+    active = db.Column(db.Boolean, nullable=True)
     interval = db.Column(db.Integer, nullable=False)
     count = db.Column(db.Integer, nullable=False)
-    goal = db.Column(db.Integer, nullable=True)
     best = db.Column(db.Integer, nullable=False)
     condition = db.Column(db.String(80),nullable=False)
     lastReg = db.Column(db.String(50), nullable=False)
     dayOne = db.Column(db.String(50), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
     def __repr__(self):
         return f"{self.name}, {self.interval}, {self.count}, {self.goal}, {self.best}, {self.condition}, {self.lastReg}, {self.dayOne}, {self.user_id}"
 
