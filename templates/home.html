@@ -1,147 +1,21 @@
 {% extends 'base.html' %}
 
 {% block head %}
-    <style>
-    body {
-        font-family: 'Arial', sans-serif;
-        line-height: 1.6;
-    }
-    .day-container {
-        width: 80%;
-        margin: auto;
-        overflow: hidden;
-    }
-    .header {
-        text-align: left;
-        margin-left: 110px;
-    }
-    .ord-section {
-        margin-bottom: 10px;
-    }
-    .title {
-        color: darkblue;
-        font-size: 22px;
-        font-weight: bold;
-        margin-bottom: 5px;
-        border-bottom: 5px;
-    }
-    .subtitle {
-        color: cornflowerblue;
-        font-size: 18px;
-    }
-    .text {
-        margin-bottom: 5px;
-    }
-    .skills-list, .experience-list {
-        list-style-type: none;
-        padding: 0;
-    }
-    .skills-list li, .experience-list li {
-        margin-bottom: 5px;
-    }
-    </style>
+    <title> {{ sida }} </title>
 {% endblock head %}
 
 {% block body %}
-<div class="header">
-
-</div>
-<div class="container">
-    <div class="section">
-        <div class="title">Profil</div>
-        <p class="text">
-            Jag är ambitiös och driven som person och motiveras bäst genom höga krav och tydliga målsättningar. Jag
-            strävar alltid efter att lära mig nya saker och utveckla mina befintliga kunskaper, helst i samspel med andra,
-            eftersom det ger mig en känsla av värde och meningsfullhet. Jag är en kreativ tänkare och älskar att möta
-            problem eftersom de presenterar möjligheter för mig att få utlopp för min kreativitet. Problemlösning är
-            bland det bästa jag vet jag tycker det är spännande att kartlägga dess bakomliggande orsaker, att hitta och
-            testa olika lösningar och jag har lätt för att generera idéer.
-            I grupp är jag bekväm med att ta mig an de flesta roller. Jag tror att jag bidrar som bäst om jag kan hålla mig
-            lite i bakgrunden och studera dynamiken till en början. Genom att lyssna uppmärksamt och iaktta
-            beteenden skapar jag ganska snabbt en djupare förståelse för vilka styrkor och svagheter som finns i
-            gruppen. Detta gör mig bra på att utnyttja styrkorna i en grupp på bästa sätt och att täcka upp för
-            eventuella brister. Jag är inte rädd för att argumentera för min sak och heller inte rädd för att erkänna när
-            jag har fel. Jag har en stark känsla för ansvar och drar mig inte för att ta på mig en ledande roll där det
-            behövs.
-        </p>
-    </div>
-    <div class="section">
-        <div class="title">Utbildning</div>
-        <div class="section-info">
-            <strong class="subtitle">
-                Blekinge Tekniska Högskola, Karlskrona — Produktutveckling 2021 — 2023
-            </strong>
-            <p class="text">
-                Denna utbildning har gjort mig säker på vad jag vill jobba med. Ju mer jag lär mig desto mer får jag reda på
-                hur lite jag egentligen vet, vilket gör mig ivrig inför att lära mig mer. Jag har alltid varit kreativ, nyfiken och
-                handlingskraftig men aldrig vetat om att dessa egenskaper utgör passande styrkor för en ingenjör.
-            </p>
-        </div>
-        <div class="section-info">
-            <strong class="subtitle">
-                Linköpingsuniversitet, Linköping — Beteendevetenskaplig-Grundkurs, 2017 — 2018
-            </strong>
-            <p class="text">
-                Denna utbildning sökte jag med anledning att jag var intresserad av människor och ville jobba inom
-                området. Det var en intressant utbildning och jag lärde mig en hel del. Jag valde dock att inte fortsätta inom
-                ämnet.
-            </p>
+    <div class="main-container">
+        <div class="info-box">
+            {% for header, content in start_info %}
+                <h1> {{ header }} </h1>
+                <p > {{ content }} </p>
+            {% endfor %}
+       </div>
+        <div class="image-with-text">
+            <img src="{{ url_for('static', filename='images/vb_NET-(svart).png') }}" class="image" width="auto", height="200" />
+            <h2>Ta dig till nästa nivå!</h2>
+            <p style="white-space: pre-wrap;">Lär dig att programmera i Solidworks. Denna kunskap är ovärderlig för den som jobbar med CAD</p>
         </div>
     </div>
-
-    <div class="section">
-        <div class="title">Erfarenhet</div>
-            <div class="section-info">
-                <strong class="subtitle">
-                    Konstruktör, Columbia Elektronik AB
-                </strong>
-                <p class="text">
-                    Columbia Elektronik AB bygger testfixturer för kretskort. Design av dessa fixturer kräver stor noggrannhet
-                    och precision då man jobbar med väldigt små mått. Att jobba här har hjälpt mig att förstå hur man kan
-                    arbeta ”felsäkert” och samtidigt effektivt.
-                </p>
-            </div>
-            <div class="section-info">
-                <strong class="subtitle">
-                    Butiksbiträde, Hemköp, Norrköping, 2018 — 2023
-                </strong>
-                <p class="text">
-                    Eftersom de flesta kunder är återkommande och besöker butiken frekvent ges möjlighet till att lära känna
-                    kunderna och bygga relationer. Att få lära känna så många olika människor och höra hur de tänker har, för
-                    mig, varit det bästa med detta jobb. Genom denna arbetsplats har jag utvecklat en stark
-                    kommunikationsförmåga och förstått hur denna är avgörande för kvaliteten i en kundupplevelse.
-                </p>
-            </div>
-            <div class="section-info">
-                <strong class="subtitle">
-                    Kock, Lingon Food & Friends, Norrköping - 2015 — 2017
-                </strong>
-                <p class="text">
-                    Ett restaurangbesök av hög kvalitet innebär — förutom smakupplevelsen — att maten serveras på kort tid.
-                    Detta ställde krav på förmåga att leverera under hög-press. I och med detta utvecklade jag förmågan att
-                    hantera mycket stress. De viktigaste lärdomarna jag fick med mig från detta jobb var vikten av noggranna
-                    förberedelser, gemensam planering och kommunikation när man står inför stress-fulla utmaningar och
-                    påfrestande situationer.
-                </p>
-            </div>
-            <div class="section-info">
-                <strong class="subtitle">
-                    Lagerarbetare, Logent AB, Norrköping - 2011 — 2013
-                </strong>
-                <p class="text">
-                    Detta var ett av mina första jobb och gav mig den erfarenhet jag behövde för att ta mig vidare i arbetslivet.
-                    Jobbet bestod mestadels av orderplock. Den viktigaste lärdomen jag tog med mig från denna arbetsplats
-                    var att det lönar sig att göra lite mer och jobba lite
-                </p>
-            </div>
-        </div>
-    <div class="section">
-        <div class="title">Övriga meriter</div>
-        <ul class="skills-list">
-            <li><strong>CAD:</strong> Solidworks, Inventor, Animering, Automatisering</li>
-            <li><strong>Excel:</strong> Datavisualisering, Beräkning, Planering</li>
-            <li><strong>Programmering:</strong> MatLab, VBA, Python, Swift</li>
-        </ul>
-    </div>
-</div>
 {% endblock body %}

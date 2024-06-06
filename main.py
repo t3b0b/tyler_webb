@@ -33,6 +33,9 @@ db.init_app(app)
 mail = Mail(app)
 with app.app_context():
     db.create_all()
+def read_info(filename):
+    with open(filename, "r", encoding="utf-8") as f:
+        return f.read()
 
 #endregion
 @login_manager.user_loader
@@ -42,8 +45,13 @@ def load_user(user_id):
 #region Userless
 @app.route('/')
 def home():
-    sida="Hem"
-    return render_template('home.html',sida=sida,header="Tyler O'Brien",sideOptions=None)
+    sida = "Hem"
+    info = read_info("texts/unikOrg.txt")
+    unik = info.split("*")
+    content_header = [unik[i] for i in range(len(unik)) if i % 2 == 0]
+    content_text = [unik[i] for i in range(len(unik)) if i % 2 != 0]
+    start_info = zip(content_header, content_text)
+    return render_template('home.html',sida=sida,header="Tyler O'Brien",sideOptions=None, start_info=start_info)
 @app.route('/blog')
 def blog():
     sida="Blogg"

@@ -53,11 +53,13 @@ function continueTimer() {
 }
 
 function stopTimer() {
-    document.getElementById('complete-form').style.display = 'block'
-    document.getElementById('stopButton').style.display = 'none';
-    document.getElementById('continueButton').style.display = 'none';
-    closeTime = new Date(); // Stoppa tiden när timern stoppas
-    saveActivity();
+    if (timeEnded) {
+        document.getElementById('complete-form').style.display = 'block'
+        document.getElementById('stopButton').style.display = 'none';
+        document.getElementById('continueButton').style.display = 'none';
+        closeTime = new Date(); // Stoppa tiden när timern stoppas
+        saveActivity();
+    }
 }
 
 function saveActivity() {
@@ -67,7 +69,7 @@ function saveActivity() {
     document.getElementById('gID').value = goal;
     let elapsedTime = (closeTime - openTime) / 1000 / 60; // Konvertera millisekunder till minuter
     elapsedTime = Math.round(elapsedTime);
-    document.getElementById('score').value = elapsedTime;
+    document.getElementById('score-disp').textContent = elapsedTime;
     document.getElementById('start-timer').textContent = elapsedTime + 'xp';
     console.log(`Activity saved with goal: ${goal}, activity: ${activity}, elapsedTime: ${elapsedTime}`);
 }

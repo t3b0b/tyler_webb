@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    {{ sida }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        * {
+            box-sizing: border-box;
+         }
+        .services_container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Två kolumner */
+            gap: 50px; /* Mellanrum mellan kort */
+            padding: 50px;
+            margin: 0 auto;
+        }
+        .card {
+            background-color: #fff; /* Vit bakgrund eller någon annan färg du föredrar */
+            border: 1px solid #ccc; /* Grå ram runt kortet */
+            border-radius: 10px; /* Rundade hörn */>
+            max-width: 350px; /* Maxbredd för responsiv design */
+            width: 100%; /* Beroende av grid-column bredden */
+            margin: 0 auto; /* Centrerar kortet i kolumnen */
+            align-items: center;
+        }
+        .card img {
+            width: 100%; /* Sätt bildens bredd till 100% av föräldrakontainern */
+            border-top-left-radius: 10px; /* Rundade hörn på bilden */
+            border-top-right-radius: 10px;
+        }
+        .description {
+            padding: 15px; /* Lite utrymme runt texten */
+            text-align: center; /* Centrerad text */
+        }
+
+        .service-info-container{
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 50px;
+            padding: 50px;
+            margin: 0 auto;
+        }
+        .service-info-box {
+            width: 100%;
+            padding: 15px;
+            margin: 0 auto;
+            max-width: 500px; /* Maxbredd för responsiv design */
+            border: 1px solid #ccc; /* Grå ram runt kortet */
+            border-radius: 10px; /* Rundade hörn */
+        }
+        .service-info-box h {
+            text-align: center;
+        }
+    </style>
+{% endblock head %}
+
+{% block body %}
+
+
+    {% if image_filename %}
+    <div class="sub-menu">
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('tjanster', section_name='mekanik') }}">Mekanik</a></li>
+            <li><a href="{{ url_for('tjanster', section_name='webbutveckling') }}">Webbutveckling</a></li>
+            <li><a href="{{ url_for('tjanster', section_name='automatisering') }}">Automatisering</a></li>
+            <li><a href="{{ url_for('tjanster', section_name='kvalitetsledning') }}">Organisationsutveckling</a></li>
+        </ul>
+    </nav>
+    </div>
+    <!--        <img src="{{ image_filename }}" class="image" width="auto", height="200" /> -->
+<div class="service-info-container">
+    {% for content, header in contents  %}
+
+        <div class="service-info-box">
+                <h1>
+                    {{ header }}
+                </h1>
+                <p>
+                    {{ content }}
+                </p>
+        </div>
+    {% endfor %}
+</div>
+    {% else %}
+        <div class="services_container">
+            <div class="card">
+                <a href="{{ url_for('tjanster', section_name='mekanik') }}">
+                    <img src='static/images/Guld_Kugg.jpeg'>
+                </a>
+                <div class="description">
+                    Mekanik
+                </div>
+            </div>
+                <div class="card">
+                    <a href="{{ url_for('tjanster', section_name='webbutveckling') }}">
+                        <img src='static/images/browsers.png' height="320">
+                    </a>
+                <div class="description">
+                    Webbutveckling
+                </div>
+            </div>
+                <div class="card">
+                    <a href="{{ url_for('tjanster', section_name='automatisering') }}">
+                        <img src='static/images/Code_2.jpg'>
+                    </a>
+                <div class="description">
+                    <p>
+                        Automatiserings lösningar<br>
+                        (kort beskrivning)
+                    </p>
+                </div>
+            </div>
+                <div class="card">
+                    <a href="{{ url_for('tjanster', section_name='kvalitetsledning') }}">
+                        <img src='static/images/Progress.jpg'>
+                    </a>
+                    <div class="description">
+                        Organisationsutveckling
+                    </div>
+                </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock body %}

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    {{ sida }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock head %}
+
+{% block body %}
+<div class="info-box">
+    {% for header, content in om_content %}
+            <h1>{{ header }}</h1>
+            <p> {{ content }}</p>
+    {% endfor %}
+</div>
+
+{% endblock body %}

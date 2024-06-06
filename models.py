@@ -48,12 +48,24 @@ class Streak(db.Model):
     def __repr__(self):
         return f"{self.name}, {self.interval}, {self.count}, {self.goal}, {self.best}, {self.condition}, {self.lastReg}, {self.dayOne}, {self.user_id}"
 
+class Milestones(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    estimated_time = db.Column(db.Integer, nullable=False)  # Estimated time in minutes
+    deadline = db.Column(db.DateTime, nullable=True)
+    achieved = db.Column(db.Boolean, default=False)
+    date_achieved = db.Column(db.DateTime, nullable=True)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
+    activities = db.relationship('Activity', backref='milestones', lazy=True)
+
 class Goals(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     deadline = db.Column(db.String, nullable=True)
     timeLimit = db.Column(db.Integer, nullable=True)
     activities = db.relationship('Activity', backref='goal', lazy=True)
+    milestones = db.relationship('Milestones', backref='goal', lazy=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
         return f"{self.name}, {self.user_id}"
@@ -62,10 +74,12 @@ class Activity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     measurement = db.Column(db.String(20), nullable=False)
-    goal_id = db.Column(db.Integer, db.ForeignKey(Goals.id), nullable=False)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
+    milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
         return f'{self.name}, {self.measurement}, {self.goal_id}, {self.user_id}'
+
 
 class Score(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -103,10 +117,5 @@ class Dagar(db.Model):
 
     def __repr__(self):
         return f'{self.user_id}, {self.date}, {self.total_streaks}, {self.completed_streaks}, {self.completed_streaks_names}, {self.total_points}'
-
-class Milestone:
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    date = db.Column(db.String, nullable=False)
 
 # endregion

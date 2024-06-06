@@ -79,11 +79,7 @@
     </div>
     <div class="score-style" style="align-self: center">
         <h2>Score</h2>
-        {% if total_score %}
-            <span>{{ total_score }} / 350 xp</span>
-        {% else %}
-            <span>0 / 350 xp</span>
-        {% endif %}
+            <span id="score-disp">{{ total_score }} / 350 xp</span>
     </div>
     <div class="list-container">
         <h2>Streaks</h2>
