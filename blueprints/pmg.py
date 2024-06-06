@@ -31,12 +31,19 @@ def common_route(title,sub_url,sub_text):
     else:
         return sida, None
 
+
 def add2db(db_model, request, form_fields, model_fields, user):
     new_entry = db_model()
     current_date = datetime.now().strftime("%Y.%m.%d")
+
     # Iterera över form_fields och model_fields och sätt attribut på new_entry
-    for form_fields, model_field in zip(form_fields, model_fields):
-        setattr(new_entry, model_field, request.form[form_fields])
+    for form_field, model_field in zip(form_fields, model_fields):
+        value = request.form.get(form_field, '').strip()
+        if value:
+            print(f"Setting {model_field} to {value}")  # Debug
+            setattr(new_entry, model_field, value)
+        else:
+            print(f"Skipping {model_field} because it is empty")
 
     # Lägg till user_id om det är en del av modellen
     if hasattr(new_entry, 'user_id'):
@@ -47,6 +54,7 @@ def add2db(db_model, request, form_fields, model_fields, user):
         setattr(new_entry, 'author', user.username)
     if hasattr(new_entry, 'active'):
         setattr(new_entry, 'active', False)
+
     # Lägg till den nya posten i sessionen och committa
     db.session.add(new_entry)
     db.session.commit()
@@ -296,12 +304,18 @@ def myday():
     df = pd.DataFrame(sorted_myScore, columns=['goal', 'activity', 'date', 'score'])
 
     if request.method == 'POST':
-        score_check = float(request.form['score'])
-        print(score_check)
-        if score_check > 5:
-            add2db(Score, request, ['gID', 'aID', 'aDate', 'score'],
-                   ['Goal', 'Activity', 'Date', 'Time'], current_user)
-            return redirect(url_for('pmg.myday'))
+        score_str = request.form.get('score', '').strip()
+        if score_str:
+            try:
+                score_check = float(score_str)
+                if score_check > 1:
+                    add2db(Score, request, ['gID', 'aID', 'aDate', 'score'],
+                           ['Goal', 'Activity', 'Date', 'Time'], current_user)
+                    return redirect(url_for('pmg.myday'))
+            except ValueError:
+                print(f"Invalid score value: {score_str}")
+        else:
+            print("Score field is empty")
 
     return render_template('myday.html', sida=sida, header=sida, current_date=date_now,
                            my_goals=myGoals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
@@ -415,7 +429,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
 
     if act_id is not None:
         print(act_id)
-        myGoals = Goals.query.filter_by(name='Skriva', user_id=current_user.id).first()
+        myGoals = Goals.query.filter_by(name='Skrivande', user_id=current_user.id).first()
         if myGoals:
             activities = Activity.query.filter_by(goal_id=myGoals.id).all()
             titles_list = Activity.query.filter_by(goal_id=myGoals.id).all()
