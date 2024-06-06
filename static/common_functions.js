@@ -1,21 +1,22 @@
 let repetitions = 1;
+let timeEnded = false;
 let activity = 0;
 let goal = 0;
-let timeTot = 0;
 let openTime;
 let closeTime;
 
 function startTimer(duration, display) {
     var timer = duration, minutes, seconds;
+    timeEnded = false;
+    openTime = new Date(); // Starta tiden när timern börjar
     var interval = setInterval(function () {
         updateTimerDisplay(timer, display);
-        updateAnimation(timer, duration);
-
         if (--timer < 0) {
             clearInterval(interval);
             if (display) {
                 display.textContent = "00:00";
             }
+            timeEnded = true;
             document.getElementById('stopButton').style.display = 'block';
             document.getElementById('continueButton').style.display = 'block';
             document.getElementById('continueButton').textContent = 'Continue';
@@ -33,16 +34,33 @@ function updateTimerDisplay(timer, display) {
     }
 }
 
-function updateAnimation(currentTime, totalTime) {
-    var circle = document.querySelector('circle');
-    if (circle) {
-        var progress = (1 - currentTime / totalTime) * 472; // 472 är det totala stroke-dasharray värdet
-        circle.style.strokeDashoffset = 472 - progress;
-    } else {
-        console.error('Circle element not found');
+function continueTimer() {
+    if (timeEnded) {
+        var display = document.getElementById('continueButton');
+        var duration = document.getElementById('timeSelect').value * 60;
+        document.getElementById('start-timer').style.display = 'none'
+        document.getElementById('stopButton').style.display = 'block';
+        document.getElementById('continueButton').style.display = 'block';
+        repetitions += 1;
+        var repetitionsDisplay = document.querySelector('.repetitions h2');
+        if (repetitionsDisplay) {
+            repetitionsDisplay.textContent = repetitions;
+        } else {
+            console.error('Repetitions display element not found');
+        }
+        startTimer(duration, display);
     }
 }
-function saveActivity(totTime) {
+
+function stopTimer() {
+    document.getElementById('complete-form').style.display = 'block'
+    document.getElementById('stopButton').style.display = 'none';
+    document.getElementById('continueButton').style.display = 'none';
+    closeTime = new Date(); // Stoppa tiden när timern stoppas
+    saveActivity();
+}
+
+function saveActivity() {
     goal = document.getElementById('goalSelect')?.value;
     activity = document.getElementById('activitySelect')?.value;
     document.getElementById('aID').value = activity;
@@ -50,53 +68,13 @@ function saveActivity(totTime) {
     let elapsedTime = (closeTime - openTime) / 1000 / 60; // Konvertera millisekunder till minuter
     elapsedTime = Math.round(elapsedTime);
     document.getElementById('score').value = elapsedTime;
-    document.getElementById('start-timer').textContent = elapsedTime + ' P';
+    document.getElementById('start-timer').textContent = elapsedTime + 'xp';
     console.log(`Activity saved with goal: ${goal}, activity: ${activity}, elapsedTime: ${elapsedTime}`);
-}
-
- document.getElementById('startaAktivitet').addEventListener('click', toggleActivityForm);
-
-function continueTimer() {
-    var display = document.getElementById('continueButton');
-    var duration = document.getElementById('timeSelect').value * 60;
-    document.getElementById('start-timer').style.display = 'none'
-    document.getElementById('stopButton').style.display = 'block';
-    document.getElementById('continueButton').style.display = 'block';
-    repetitions += 1;
-    var repetitionsDisplay = document.querySelector('.repetitions h2');
-    if (repetitionsDisplay) {
-        repetitionsDisplay.textContent = repetitions;
-    } else {
-        console.error('Repetitions display element not found');
-    }
-    startTimer(duration, display);
-}
-
-function stopTimer() {
-    var params = new URLSearchParams(window.location.search);
-    var duration = document.getElementById('timeSelect').value;
-    timeTot = repetitions * duration / 60;
-    closeTime = new Date();
-    window.close(); // Stänger popup-fönstret
-    console.log(`Timer stängd vid: ${closeTime}`);
-    saveActivity(timeTot);
 }
 
 function startTimerFromSelection() {
     var duration = document.getElementById('timeSelect').value * 60; // Konverterar minuter till sekunder
     var display = document.getElementById('continueButton');
-        var continueButton = document.getElementById('continueButton');
-        if (continueButton) {
-            continueButton.addEventListener('click', continueTimer);
-        } else {
-            console.error('Continue button not found');
-        }
-        var stopButton = document.getElementById('stopButton');
-        if (stopButton) {
-            stopButton.addEventListener('click', stopTimer);
-        } else {
-            console.error('Stop button not found');
-        }
     display.style.backgroundColor = 'green'
     document.getElementById('activityForm').style.display='none';
     document.getElementById('stopButton').style.display = 'block';
@@ -144,24 +122,38 @@ function deleteStreak(streakId) {
         });
     }
 }
+function animateCheck(event, form) {
+    event.preventDefault();
+    const checkbox = form.querySelector('.checkbox');
+    const background = form.querySelector('.background');
 
-    $(document).ready(function () {
-        $('#goalSelect').change(function () {
-            var goalId = $(this).val();
-            $.ajax({
-                url: '/pmg/get_activities/' + goalId,
-                type: 'GET',
-                success: function (response) {
-                    var activitySelect = $('#activitySelect');
-                    activitySelect.empty(); // Rensa befintliga optioner
-                    $.each(response, function (index, activity) {
-                        activitySelect.append($('<option>').val(activity.id).text(activity.name));
-                    });
-                },
-                error: function (error) {
-                    console.log('Error:', error);
-                }
-            });
+    checkbox.classList.add('animate-check');
+    background.classList.add('animate-bg');
+
+    setTimeout(() => {
+        form.submit();
+    }, 1000);
+}
+
+$(document).ready(function () {
+    $('#goalSelect').change(function () {
+        var goalId = $(this).val();
+        $.ajax({
+            url: '/pmg/get_activities/' + goalId,
+            type: 'GET',
+            success: function (response) {
+                var activitySelect = $('#activitySelect');
+                activitySelect.empty(); // Rensa befintliga optioner
+                $.each(response, function (index, activity) {
+                    activitySelect.append($('<option>').val(activity.id).text(activity.name));
+                });
+            },
+            error: function (error) {
+                console.log('Error:', error);
+            }
         });
     });
-
+});
+document.getElementById('continueButton').addEventListener('click', continueTimer);
+document.getElementById('stopButton').addEventListener('click', stopTimer);
+document.getElementById('startaAktivitet').addEventListener('click', toggleActivityForm);

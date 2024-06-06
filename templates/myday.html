@@ -58,21 +58,9 @@
 {% endblock head %}
 
 {% block body %}
-<div id="timerModal" class="modal" style="display: none">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Timer</h2>
-        <div class="timer" id="timerDisplay">00:00</div>
-        <button onclick="startTimerFromSelection()">Starta Timer</button>
-        <button onclick="stopTimer()" style="background-color: red">Stop</button>
-        <button onclick="continueTimer()" style="background-color: green">Continue</button>
-    </div>
-</div>
-
 <div class="sub-header">
     <h2 class="sub-header-text"> {{ current_date }} </h2>
 </div>
-<div class="timer" id="timer"></div>
 
 <div class="day-container">
     <div class="list-container" style="grid-column: span">
@@ -179,18 +167,4 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 
-<script>
-function animateCheck(event, form) {
-    event.preventDefault();
-    const checkbox = form.querySelector('.checkbox');
-    const background = form.querySelector('.background');
-
-    checkbox.classList.add('animate-check');
-    background.classList.add('animate-bg');
-
-    setTimeout(() => {
-        form.submit();
-    }, 1000);
-}
-</script>
 {% endblock body %}
