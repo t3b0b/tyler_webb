@@ -7,7 +7,7 @@ from datetime import datetime, timedelta,date
 from flask_login import current_user
 import pandas as pd
 
-pmg_bp = Blueprint('pmg', __name__, template_folder='templates')
+pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
 #region Functions
 
@@ -156,7 +156,7 @@ def generate_calendar_weeks(year, month):
 def timer():
     sida='Timer'
     duration = request.args.get('duration', default=60, type=int)
-    return render_template('timer.html',sida=sida,
+    return render_template('pmg/timer.html',sida=sida,
                            header=sida, duration=duration)
 
 #region Streak
@@ -178,7 +178,7 @@ def streak():
         add2db(Streak, request, form_fields, model_fields, current_user)
 
         return redirect(url_for('pmg.streak'))
-    return render_template('streak.html',sida=sida,header=sida,
+    return render_template('pmg/streak.html',sida=sida,header=sida,
                            todayDate=current_date,streaks=myStreaks,sub_menu=sub_menu,
                            goals=myGoals)
 @pmg_bp.route('/update_streak/<int:streak_id>/<action>', methods=['POST'])
@@ -244,7 +244,7 @@ def goals():
                    ['goal_id','name','measurement'], current_user)
             return redirect(url_for('pmg.goals',sida=sida,header=sida, goals=myGoals))
 
-    return render_template('goals.html',sida=sida,header=sida, goals=myGoals,sub_menu=sub_menu)
+    return render_template('pmg/goals.html',sida=sida,header=sida, goals=myGoals,sub_menu=sub_menu)
 
 @pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
 def delete_goal(goal_id):
@@ -317,7 +317,7 @@ def myday():
         else:
             print("Score field is empty")
 
-    return render_template('myday.html', sida=sida, header=sida, current_date=date_now,
+    return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
                            my_goals=myGoals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
                            sub_menu=sub_menu)
 @pmg_bp.route('/myday/<date>')
@@ -335,11 +335,11 @@ def myday_date(date):
 
     if selected_date < today:
         sida='Past Day'
-        return render_template('pastDays.html', sida=sida, header=sida, current_date=selected_date,
+        return render_template('pmg/pastDays.html', sida=sida, header=sida, current_date=selected_date,
                                my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
     elif selected_date > today:
         sida = 'Post Day'
-        return render_template('postDays.html', sida=sida, header=sida, current_date=selected_date,
+        return render_template('pmg/postDays.html', sida=sida, header=sida, current_date=selected_date,
                                my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
     else:
         return redirect(url_for('pmg.myday'))
@@ -373,12 +373,12 @@ def month(year=None, month=None):
     dag_entries = Dagar.query.filter(Dagar.date >= weeks[0][0]['date'], Dagar.date <= weeks[-1][-1]['date']).all()
     dag_data = {entry.date.strftime('%Y-%m-%d'): entry for entry in dag_entries}
 
-    return render_template('month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida,
+    return render_template('pmg/month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida,
                            sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data)
 @pmg_bp.route('/week')
 def week():
     sida = 'My Week'
-    return render_template('myWeek.html',sida=sida, header=sida)
+    return render_template('pmg/myWeek.html',sida=sida, header=sida)
 # endregion
 
 #region Journal
@@ -460,7 +460,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                 else:
                     add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 update_dagar(current_user,Dagar)
-    return render_template('journal.html', time=time, goal=myGoals, activities=activities, side_options=titles,
+    return render_template('pmg/journal.html', time=time, goal=myGoals, activities=activities, side_options=titles,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
                            current_date=current_date, page_url=page_url, act_id=act_id, myPosts=my_posts)
 @pmg_bp.route('/get-new-word')
@@ -496,5 +496,5 @@ def settings():
                        ['stInterval'], current_user)
             return redirect(url_for('pmg.myday'))
 
-    return render_template('settings.html', sida=sida, header=sida, my_words=mina_Ord,sub_menu=sub_menu)
+    return render_template('pmg/settings.html', sida=sida, header=sida, my_words=mina_Ord,sub_menu=sub_menu)
 # endregion

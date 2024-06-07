@@ -61,10 +61,10 @@
     <div class="sub-menu">
     <nav>
         <ul>
-            <li><a href="{{ url_for('tjanster', section_name='mekanik') }}">Mekanik</a></li>
-            <li><a href="{{ url_for('tjanster', section_name='webbutveckling') }}">Webbutveckling</a></li>
-            <li><a href="{{ url_for('tjanster', section_name='automatisering') }}">Automatisering</a></li>
-            <li><a href="{{ url_for('tjanster', section_name='kvalitetsledning') }}">Organisationsutveckling</a></li>
+            <li><a href="{{ url_for('base.tjanster', section_name='mekanik') }}">Mekanik</a></li>
+            <li><a href="{{ url_for('base.tjanster', section_name='webbutveckling') }}">Webbutveckling</a></li>
+            <li><a href="{{ url_for('base.tjanster', section_name='automatisering') }}">Automatisering</a></li>
+            <li><a href="{{ url_for('base.tjanster', section_name='kvalitetsledning') }}">Organisationsutveckling</a></li>
         </ul>
     </nav>
     </div>
@@ -85,7 +85,7 @@
     {% else %}
         <div class="services_container">
             <div class="card">
-                <a href="{{ url_for('tjanster', section_name='mekanik') }}">
+                <a href="{{ url_for('base.tjanster', section_name='mekanik') }}">
                     <img src='static/images/Guld_Kugg.jpeg'>
                 </a>
                 <div class="description">
@@ -93,7 +93,7 @@
                 </div>
             </div>
                 <div class="card">
-                    <a href="{{ url_for('tjanster', section_name='webbutveckling') }}">
+                    <a href="{{ url_for('base.tjanster', section_name='webbutveckling') }}">
                         <img src='static/images/browsers.png' height="320">
                     </a>
                 <div class="description">
@@ -101,7 +101,7 @@
                 </div>
             </div>
                 <div class="card">
-                    <a href="{{ url_for('tjanster', section_name='automatisering') }}">
+                    <a href="{{ url_for('base.tjanster', section_name='automatisering') }}">
                         <img src='static/images/Code_2.jpg'>
                     </a>
                 <div class="description">
@@ -112,7 +112,7 @@
                 </div>
             </div>
                 <div class="card">
-                    <a href="{{ url_for('tjanster', section_name='kvalitetsledning') }}">
+                    <a href="{{ url_for('base.tjanster', section_name='kvalitetsledning') }}">
                         <img src='static/images/Progress.jpg'>
                     </a>
                     <div class="description">

@@ -71,7 +71,7 @@ function changeMonth(change) {
     var currentYear = {{ year }};
     var currentMonth = {{ month }};
     var newDate = new Date(currentYear, currentMonth - 1 + change);
-    window.location.href = `/pmg/month/${newDate.getFullYear()}/${newDate.getMonth() + 1}`;
+    window.location.href = `pmg/month/${newDate.getFullYear()}/${newDate.getMonth() + 1}`;
 }
 
 document.addEventListener('DOMContentLoaded', function() {

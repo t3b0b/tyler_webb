@@ -118,4 +118,15 @@ class Dagar(db.Model):
     def __repr__(self):
         return f'{self.user_id}, {self.date}, {self.total_streaks}, {self.completed_streaks}, {self.completed_streaks_names}, {self.total_points}'
 
+class Mail(db.Model):
+    _id = db.Column(db.Integer, primary_key=True)
+    company = db.Column(db.String(80))
+    first_name = db.Column(db.String(50))
+    last_name = db.Column(db.String(50))
+    email = db.Column(db.String(80))
+    subject = db.Column(db.String(50))
+    message = db.Column(db.Text)
+    def __repr__(self):
+        return f"{self.company},{self.first_name},{self.last_name},{self.email},{self.subject},{self.message}"
+
 # endregion

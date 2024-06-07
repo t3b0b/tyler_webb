@@ -5,7 +5,7 @@ from models import User, db
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 
-auth_bp = Blueprint('auth', __name__, template_folder='templates')
+auth_bp = Blueprint('auth', __name__, template_folder='auth/templates')
 
 s = URLSafeTimedSerializer("K6SM4x14")
 @auth_bp.route('/login', methods=['GET', 'POST'])
@@ -16,11 +16,11 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
-            return redirect(url_for('pmg.month'))  # Antag att 'month' är korrekt definierad i din Flask app
+            return redirect(url_for('pmg.myday'))  # Antag att 'month' är korrekt definierad i din Flask app
         else:
             flash('Fel användarnamn eller lösenord')
-            return render_template('login.html')  # Se till att returnera templaten även här
-    return render_template('login.html')
+            return render_template('auth/login.html')  # Se till att returnera templaten även här
+    return render_template('auth/login.html')
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -44,7 +44,7 @@ def register():
         return 'En e-post med en verifieringslänk har skickats till din e-postadress. Länken är giltig i 1 timme.'
         return redirect(url_for('auth.login'))
         pass
-    return render_template('register.html')
+    return render_template('auth/register.html')
 
 @auth_bp.route('/logout')
 def logout():

@@ -4,18 +4,12 @@
 {{ sida }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        body, html {
-            background-image: url('static/images/Untitled_Artwork.png');
-            background-size: cover; /* Changed to 'cover' for better background handling */
-            background-position: center;
-            margin: 0; /* Remove default margin */
-        }
         .kontakt-sidebar-container {
             background-color: #cccccc; /* Mörkare färg för sidebar */
             color: black; /* Vit text */
             padding: 20px; /* Lägg till padding runtom */
             border-right: 1px solid #fff; /* Lägger till en vit kantlinje på höger sida */
-            min-height: 100vh; /* Sätter minsta höjd till full viewport height */
+            min-height: 100%; /* Sätter minsta höjd till full viewport height */
             width: 250px; /* Ange önskad bredd för sidebar */
         }
         .kontakt-main-container {
@@ -30,6 +24,7 @@
             height: fit-content;
             flex-direction: column; /* Ordna innehållet vertikalt */
             justify-content: space-between; /* Fördela utrymmet mellan och runt innehållet */
+            margin-inline: auto;
         }
 
         .kontakt-form-container form {
@@ -57,8 +52,8 @@
         .form-message textarea {
             width: 700px;
             height: 220px; /* Adjust height as needed */
-            padding-right: 20px;
-            padding-left: 20px;
+            padding-right: 40px;
+            padding-left: 40px;
             border: 1px solid #ccc;
             border-radius: 4px;
             font-family: Arial, sans-serif;
