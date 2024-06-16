@@ -34,16 +34,11 @@ def common_route(title,sub_url,sub_text):
 
 def add2db(db_model, request, form_fields, model_fields, user):
     new_entry = db_model()
-    current_date = datetime.now().strftime("%Y.%m.%d")
+    current_date = datetime.now().strftime("%Y-%m-%d")  # Använd YYYY-MM-DD format
 
     # Iterera över form_fields och model_fields och sätt attribut på new_entry
     for form_field, model_field in zip(form_fields, model_fields):
-        value = request.form.get(form_field, '').strip()
-        if value:
-            print(f"Setting {model_field} to {value}")  # Debug
-            setattr(new_entry, model_field, value)
-        else:
-            print(f"Skipping {model_field} because it is empty")
+        setattr(new_entry, model_field, request.form[form_field])
 
     # Lägg till user_id om det är en del av modellen
     if hasattr(new_entry, 'user_id'):
@@ -54,6 +49,14 @@ def add2db(db_model, request, form_fields, model_fields, user):
         setattr(new_entry, 'author', user.username)
     if hasattr(new_entry, 'active'):
         setattr(new_entry, 'active', False)
+
+    # Kontrollera och sätt lastReg och dayOne
+    if hasattr(new_entry, 'lastReg'):
+        setattr(new_entry, 'lastReg', current_date)
+    if hasattr(new_entry, 'dayOne'):
+        setattr(new_entry, 'dayOne', current_date)
+    if hasattr(new_entry, 'goal_id') and 'goalSelect' in request.form:
+        setattr(new_entry, 'goal_id', request.form['goalSelect'])
 
     # Lägg till den nya posten i sessionen och committa
     db.session.add(new_entry)
@@ -163,6 +166,7 @@ def timer():
 @pmg_bp.route('/streak',methods=['GET', 'POST'])
 def streak():
     current_date = date.today()
+    current_date = current_date.strftime('%Y-%m-%d')
     print(current_date)
     sida, sub_menu = common_route("Mina Streaks", ['/pmg/myday', '/pmg/goals'], ['Score', 'Goals'])
     myStreaks = query(Streak,'user_id',current_user.id)
@@ -170,10 +174,10 @@ def streak():
 
     if request.method == 'POST':
         form_fields = ['streakName','streakInterval','streakCount',
-                       'streakGoal','streakBest','streakCondition',
+                       'goalSelect','streakBest','streakCondition',
                        'streakLast','streakStart']
         model_fields = ['name', 'interval', 'count',
-                        'goal','best','condition',
+                        'goal_id','best','condition',
                         'lastReg','dayOne']
         add2db(Streak, request, form_fields, model_fields, current_user)
 
@@ -454,12 +458,13 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                     add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
 
             elif option == "write-on-time":
-                add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], current_user)
+                add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], user)
                 if sida == 'Dagbok':
                     add2db(Dagbok, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 else:
                     add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
-                update_dagar(current_user,Dagar)
+
+                update_dagar(current_user.id,Dagar)
     return render_template('pmg/journal.html', time=time, goal=myGoals, activities=activities, side_options=titles,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
                            current_date=current_date, page_url=page_url, act_id=act_id, myPosts=my_posts)

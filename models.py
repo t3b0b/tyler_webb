@@ -44,7 +44,7 @@ class Streak(db.Model):
     lastReg = db.Column(db.String(50), nullable=False)
     dayOne = db.Column(db.String(50), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False)
-    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=True)
     def __repr__(self):
         return f"{self.name}, {self.interval}, {self.count}, {self.goal}, {self.best}, {self.condition}, {self.lastReg}, {self.dayOne}, {self.user_id}"
 

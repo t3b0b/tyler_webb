@@ -1,9 +1,10 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_manager, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import User, db
+from models import db, User, Streak
 from flask_mail import Mail, Message
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired
+from datetime import datetime,timedelta
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
 auth_bp = Blueprint('auth', __name__, template_folder='auth/templates')
 
@@ -16,6 +17,18 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
+            today = datetime.now()
+            streaks = Streak.query.all()
+
+            for streak in streaks:
+                last_reg = datetime.strptime(streak.lastReg, "%Y-%m-%d")
+                reset_date = (last_reg + timedelta(days=streak.interval, hours=23, minutes=59,
+                                                   seconds=59))  # Konvertera till datum
+                print(f'{streak.name} - {reset_date} - {today}')
+                if today > reset_date:
+                    streak.current_streak = 0
+                    streak.active = False  # Exempel: sätt streak till inaktiv om den nollställs
+                    db.session.commit()
             return redirect(url_for('pmg.myday'))  # Antag att 'month' är korrekt definierad i din Flask app
         else:
             flash('Fel användarnamn eller lösenord')
@@ -24,7 +37,6 @@ def login():
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    from main import mail
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form['email']
@@ -40,7 +52,7 @@ def register():
         link = url_for('auth.confirm_email', token=token, _external=True)
         msg = Message('Bekräfta din e-postadress', recipients=[email], sender="pmg.automatic.services@gmail.com")
         msg.body = f'Din länk för att verifiera din e-post är {link}'
-        mail.send(msg)
+        Mail.send(msg)
         return 'En e-post med en verifieringslänk har skickats till din e-postadress. Länken är giltig i 1 timme.'
         return redirect(url_for('auth.login'))
         pass
@@ -55,9 +67,9 @@ def logout():
 def confirm_email(token):
     try:
         email = s.loads(token, salt='email-confirm', max_age=3600)
-        användaren = User.query.filter_by(email=email).first()
-        if användaren:
-            användaren.verifierad = True
+        user = User.query.filter_by(email=email).first()
+        if user:
+            user.verifierad = True
             db.session.commit()
             return 'Din e-post har verifierats!'
         else:

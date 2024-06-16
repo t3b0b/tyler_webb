@@ -18,13 +18,15 @@
             background-color: #fff; /* Vit bakgrund eller någon annan färg du föredrar */
             border: 1px solid #ccc; /* Grå ram runt kortet */
             border-radius: 10px; /* Rundade hörn */>
-            max-width: 350px; /* Maxbredd för responsiv design */
-            width: 100%; /* Beroende av grid-column bredden */
+            max-width: 300px; /* Maxbredd för responsiv design */
+            width: 80%; /* Beroende av grid-column bredden */
+            max-height: 250px;
             margin: 0 auto; /* Centrerar kortet i kolumnen */
             align-items: center;
         }
         .card img {
             width: 100%; /* Sätt bildens bredd till 100% av föräldrakontainern */
+            height:80%;
             border-top-left-radius: 10px; /* Rundade hörn på bilden */
             border-top-right-radius: 10px;
         }
@@ -42,7 +44,7 @@
         }
         .service-info-box {
             width: 100%;
-            padding: 15px;
+            padding: 5px;
             margin: 0 auto;
             max-width: 500px; /* Maxbredd för responsiv design */
             border: 1px solid #ccc; /* Grå ram runt kortet */
@@ -86,7 +88,7 @@
         <div class="services_container">
             <div class="card">
                 <a href="{{ url_for('base.tjanster', section_name='mekanik') }}">
-                    <img src='static/images/Guld_Kugg.jpeg'>
+                    <img src="{{ url_for('static', filename='images/Guld_Kugg.jpeg') }}">
                 </a>
                 <div class="description">
                     Mekanik
@@ -94,7 +96,7 @@
             </div>
                 <div class="card">
                     <a href="{{ url_for('base.tjanster', section_name='webbutveckling') }}">
-                        <img src='static/images/browsers.png' height="320">
+                        <img src="{{ url_for('static', filename='images/browsers.png') }}" height="320">
                     </a>
                 <div class="description">
                     Webbutveckling
@@ -102,18 +104,17 @@
             </div>
                 <div class="card">
                     <a href="{{ url_for('base.tjanster', section_name='automatisering') }}">
-                        <img src='static/images/Code_2.jpg'>
+                        <img src="{{ url_for('static', filename='images/Code_2.jpg') }}">
                     </a>
                 <div class="description">
                     <p>
-                        Automatiserings lösningar<br>
-                        (kort beskrivning)
+                        Automatiserings lösningar
                     </p>
                 </div>
             </div>
                 <div class="card">
                     <a href="{{ url_for('base.tjanster', section_name='kvalitetsledning') }}">
-                        <img src='static/images/Progress.jpg'>
+                        <img src="{{ url_for('static', filename='images/Progress.jpg') }}">
                     </a>
                     <div class="description">
                         Organisationsutveckling
