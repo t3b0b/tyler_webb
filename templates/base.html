@@ -20,6 +20,7 @@
                     {% if current_user.is_authenticated %}
                         <li><a href="/pmg/myday">Start</a></li>
                         <li><a href="/pmg/month">Kalender</a></li>
+                        <li><a href="/pmg/lists">To-Do</a></li>
                         <li><a href="/pmg/journal">Text</a></li>
                         <li><a href="/pmg/settings">Inställningar</a></li>
                         <li><a href="/auth/logout">Logga ut</a></li>
@@ -47,7 +48,15 @@
             </ul>
         </nav>
     </div>
-
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
     <div class="main-container">
         {% if side_options %}
             <div class="side-menu">

@@ -11,6 +11,9 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    firstName = db.Column(db.String(50), nullable=False)
+    lastName = db.Column(db.String(50), nullable=False)
+    verified = db.Column(db.Boolean, default=False)
     def __repr__(self):
         return f'{self.username}, {self.email}, {self.password}'
 
@@ -45,6 +48,7 @@ class Streak(db.Model):
     dayOne = db.Column(db.String(50), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=True)
+    level = db.Column(db.Integer, nullable=True, default=1)
     def __repr__(self):
         return f"{self.name}, {self.interval}, {self.count}, {self.goal}, {self.best}, {self.condition}, {self.lastReg}, {self.dayOne}, {self.user_id}"
 
@@ -73,10 +77,10 @@ class Goals(db.Model):
 class Activity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    measurement = db.Column(db.String(20), nullable=False)
+    measurement = db.Column(db.String(250), nullable=True)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
     milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     def __repr__(self):
         return f'{self.name}, {self.measurement}, {self.goal_id}, {self.user_id}'
 
@@ -100,11 +104,10 @@ class MyWords(db.Model):
 
 class Settings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    stInterval=db.Column(db.Integer, nullable=False)
+    stInterval = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
         return f'{self.stInterval}, {self.user_id}'
-
 
 class Dagar(db.Model):
     id = db.Column(db.Integer, primary_key=True)

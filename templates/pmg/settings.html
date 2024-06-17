@@ -52,9 +52,9 @@
     }
 </style>
 {% endblock head %}
-
 {% block body %}
 <div class="main-section">
+{% if sida == "Blogg-inställningar" %}
     <div class="ord-section">
         <div class="nytt-ord-form">
             <form method="post">
@@ -71,6 +71,7 @@
             </ul>
         </div>
     </div>
+{% elif sida == "Timer-inställningar" %}
     <div class="timer-section">
         <form method="POST">
         <h3>Timer:</h3>
@@ -84,5 +85,9 @@
         <button type="submit" value="timer" name="action">Save</button>
     </form>
     </div>
+
+{% elif sida == "Konto-inställningar" %}
+
+{% endif %}
 </div>
 {% endblock body %}

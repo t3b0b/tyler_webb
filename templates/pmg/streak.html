@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<style xmlns="http://www.w3.org/1999/html">
+<style>
 
 .add-form-container {
     display: flex;
@@ -43,15 +43,17 @@
     width: 100%; /* Fyller hela bredden av sin container */
 }
 
-.button-style:hover {
-    opacity: 0.8;
-}
-
 .toggle-button {
     background: none;
     border: none;
     font-size: 20px;
     cursor: pointer;
+}
+
+.streak-actions {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
 }
 </style>
 {% endblock %}
@@ -63,23 +65,27 @@
         <div class="goal-streak-container">
             <!-- Exempel på hur du kan använda en Jinja2 loop för att skapa en container för varje streak -->
             {% if streaks %}
-            <div class="list-item">
-                <h3 disabled> Name </h3>
-                <h3 disabled> Condition </h3>
-                <h3 disabled> Count </h3>
-                <h3 disabled> Best </h3>
-                <h3 disabled> Last Reg. </h3>
-                <h3 disabled> Interval </h3>
+            <div class="items-container" style="border: none; background-color: #cccccc">
+                <div class="list-item">
+                    <h3 disabled> Name </h3>
+                    <h3 disabled> Condition </h3>
+                    <h3 disabled> Count </h3>
+                    <h3 disabled> Best </h3>
+                    <h3 disabled> Last Reg. </h3>
+                    <h3 disabled> Interval </h3>
+                    <h3 disabled> Lvl. </h3>
+                </div>
             </div>
             {% for streak in streaks %}
-            <div class="items-container">
-                <div class="list-item" style="margin-left: 30px;">
+             <div class="items-container" data-level="{{ streak.level }}">
+                <div class="list-item">
                     <h3 disabled> {{ streak.name }} </h3>
                     <h3 disabled> {{ streak.condition }} </h3>
                     <h3 disabled> {{ streak.count }} </h3>
                     <h3 disabled> {{ streak.best }} </h3>
                     <h3 disabled> {{ streak.lastReg }} </h3>
-                    <h3 disabled> {{ streak.intervall }} </h3>
+                    <h3 disabled> {{ streak.interval }} </h3>
+                    <h3 disabled> {{ streak.level }} </h3>
                 </div>
                 <div class="streak-actions">
                     <button class="toggle-button" onclick="deleteStreak({{ streak.id }})">&#10060;</button>
@@ -96,7 +102,8 @@
                     Namn:<input type="text" placeholder="Enter streak name" name="streakName">
                     Intervall:<input type="number" name="streakInterval" min="1" max="7" placeholder="Set streak interval">
                     Villkor:<input type="text" placeholder="Enter streak condition" name="streakCondition">
-                    Mål:<select id="goalSelect" name="goalSelect" required>
+                    Mål:<select id="goalSelect" name="goalSelect">
+                            <option value="">No Goal</option>
                         {% for goal in goals %}
                             <option value="{{ goal.id }}">{{ goal.name }}</option>
                         {% endfor %}
@@ -112,7 +119,33 @@
         </div>
  </div>
     <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
-</div>
+<script>
+function getColorForLevel(level) {
+    document.getSelection()
+    const colors = {
+        1: '#cce8ff',
+        2: '#99d5ff',
+        3: '#66c4ff',
+        4: '#b6ffa2',
+        5: '#83ff7f',
+        6: '#3cd337',
+        7: '#219900',
+        8: '#dec27c',
+        9: '#bda544',
+        10: '#a28e33'
+    };
+    return colors[level] || '#ffffff'; // Default color if level not found
+}
 
+document.addEventListener("DOMContentLoaded", function() {
+    const streakItems = document.querySelectorAll('.items-container');
+    streakItems.forEach(function(item) {
+        const level = item.getAttribute('data-level');
+        const color = getColorForLevel(level);
+        item.style.backgroundColor = color;
+    });
+});
+</script>
+</div>
 
 {% endblock %}

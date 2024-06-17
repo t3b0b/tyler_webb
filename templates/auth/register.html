@@ -1,29 +1,20 @@
 {% extends 'base.html' %}
 
 {% block head %}
-    <style>
-        button {
-            min-height: 25px;
-            margin: 5px 0 5px 0;
-            padding: 5px 0 5px 0;
-            background-color: cornflowerblue;
-            width: 80%;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
-    </style>
+
 {% endblock head %}
 
 {% block body %}
 <form method="POST", id="new-user-reg">
     <div class="form-box">
         <h3>Register User</h3>
+        <input type="text" name="first-name" placeholder="Name">
+        <input type="text" name="last-name" placeholder="Lastname">
         <input type="text" name="username" placeholder="Username">
         <input type="text" name="email" placeholder="Email">
         <input type="password" name="password" placeholder="Password">
         <input type="password" name="confirm-password" placeholder="Confirm Password">
-        <button type="submit">Register</button>
+        <button id="reg-btn" type="submit">Register</button>
     </div>
 </form>
 {% endblock body %}

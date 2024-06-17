@@ -15,7 +15,6 @@ import mysql.connector
 #region Appconfig
 
 app = Flask(__name__)
-
 app.config['SECRET_KEY'] = "K6SM4x14"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:Tellus420@localhost/pmgonline'
 app.config['MAIL_SERVER'] = "smtp.gmail.com"

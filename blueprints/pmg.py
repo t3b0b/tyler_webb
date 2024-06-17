@@ -31,7 +31,6 @@ def common_route(title,sub_url,sub_text):
     else:
         return sida, None
 
-
 def add2db(db_model, request, form_fields, model_fields, user):
     new_entry = db_model()
     current_date = datetime.now().strftime("%Y-%m-%d")  # Använd YYYY-MM-DD format
@@ -53,10 +52,18 @@ def add2db(db_model, request, form_fields, model_fields, user):
     # Kontrollera och sätt lastReg och dayOne
     if hasattr(new_entry, 'lastReg'):
         setattr(new_entry, 'lastReg', current_date)
+    if hasattr(new_entry, 'level'):
+        setattr(new_entry, 'level', 1)
     if hasattr(new_entry, 'dayOne'):
         setattr(new_entry, 'dayOne', current_date)
+
     if hasattr(new_entry, 'goal_id') and 'goalSelect' in request.form:
-        setattr(new_entry, 'goal_id', request.form['goalSelect'])
+        goal_id_value = request.form.get('goalSelect')
+
+        if goal_id_value:  # Kontrollera om värdet inte är tomt
+            setattr(new_entry, 'goal_id', goal_id_value)
+        else:
+            setattr(new_entry, 'goal_id', None)
 
     # Lägg till den nya posten i sessionen och committa
     db.session.add(new_entry)
@@ -74,32 +81,34 @@ def section_content(db,section):
     list = db.query.filter_by(name=section).first()
     return list.id
 
-
-def update_dagar(user_id,model):
+def update_dagar(user_id, model):
     today = date.today()
-    my_Score, total = myDayScore(today)
+    my_Score, total = myDayScore(today, user_id)
     my_streaks = Streak.query.filter_by(user_id=user_id).all()
     tot_streaks = len(my_streaks)
     print(tot_streaks)
-    active_streaks = Streak.query.filter_by(user_id=user_id,active=True).all()
-    completed = len(active_streaks)
-    streakNames = ""
-    for i, streak in enumerate(active_streaks):
-        if i == completed:
-            streakNames += streak.name
-        elif i < completed:
-            streakNames += streak.name + ','
-    dag = model.query.filter_by(date=today,user_id=user_id).first()
-    if dag is None:
-        dag = model(user_id=user_id, date=today, total_streaks=tot_streaks, completed_streaks=completed, completed_streaks_names=streakNames,total_points=total)
-        db.session.add(dag)
-        db.session.commit()
-    else:
-        dag.completed_streaks = completed
-        dag.total_streaks = tot_streaks
-        dag.completed_streaks_names = streakNames
-        dag.total_points = total
-        db.session.commit()
+
+    if my_streaks:
+        active_streaks = Streak.query.filter_by(user_id=user_id,active=True).all()
+        completed = len(active_streaks)
+        streakNames = ""
+
+        for i, streak in enumerate(active_streaks):
+            if i == completed:
+                streakNames += streak.name
+            elif i < completed:
+                streakNames += streak.name + ','
+        dag = model.query.filter_by(date=today,user_id=user_id).first()
+        if dag is None:
+            dag = model(user_id=user_id, date=today, total_streaks=tot_streaks, completed_streaks=completed, completed_streaks_names=streakNames,total_points=total)
+            db.session.add(dag)
+            db.session.commit()
+        else:
+            dag.completed_streaks = completed
+            dag.total_streaks = tot_streaks
+            dag.completed_streaks_names = streakNames
+            dag.total_points = total
+            db.session.commit()
 
 def completed_streaks(day, model=Dagar):
     dag = model.query.filter_by(user_id=current_user.id, date=day).first()
@@ -108,7 +117,43 @@ def completed_streaks(day, model=Dagar):
         return [name.strip() for name in names_list]
     return []
 
-def myDayScore(date):
+def update_streak_details(streak, today):
+    if today != streak.lastReg:
+        count = streak.count
+        best_now = streak.best
+        count += streak.interval
+        streak.active = True
+        streak.count = count
+        streak.lastReg = today
+        if best_now < count:
+            best_now = count
+            streak.best = best_now
+
+        # Uppdatera level baserat på count
+        if 1 <= count <= 10:
+            streak.level = 1
+        elif 11 <= count <= 20:
+            streak.level = 2
+        elif 21 <= count <= 30:
+            streak.level = 3
+        elif 31 <= count <= 50:
+            streak.level = 4
+        elif 51 <= count <= 70:
+            streak.level = 5
+        elif 71 <= count <= 90:
+            streak.level = 6
+        elif 91 <= count <= 110:
+            streak.level = 7
+        elif 111 <= count <= 130:
+            streak.level = 8
+        elif 131 <= count <= 150:
+            streak.level = 9
+        elif count >= 151:
+            streak.level = 10
+
+        db.session.commit()
+
+def myDayScore(date, user_id):
     total = 0
     myScore = db.session.query(
         Goals.name.label('goal_name'),
@@ -119,12 +164,12 @@ def myDayScore(date):
         Goals, Goals.id == Score.Goal
     ).join(
         Activity, Activity.id == Score.Activity
-    ).filter(Score.Date == date).all()
+    ).filter(Score.Date == date).filter(Score.user_id == user_id).all()
 
     for score in myScore:
         total += float(score.Time)
         total = int(total)
-    return myScore,total
+    return myScore, total
 
 def generate_calendar_weeks(year, month):
     first_day_of_month = datetime(year, month, 1)
@@ -191,25 +236,17 @@ def update_streak(streak_id, action):
     today = date.today()
 
     if action == 'check':
-        if today != streak.lastReg:
-            count = streak.count
-            best_now = streak.best
-            count += streak.interval
-            streak.active = True
-            streak.count = count
-            streak.lastReg = today
-            if best_now < count:
-                best_now = count
-                streak.best = best_now
-            db.session.commit()
+        update_streak_details(streak, today)
 
     elif action == 'cross':
         streak.count = 0
         streak.active = False
         streak.day_one = today  # Reset the start day of the streak
         streak.lastReg = today
+        streak.level = 1  # Återställ nivån till 1
         update_dagar(current_user, Dagar)
         db.session.commit()
+
     update_dagar(current_user.id, Dagar)
     return redirect(url_for('pmg.myday'))
 
@@ -271,41 +308,41 @@ def delete_goal(goal_id):
 def myday():
     sida, sub_menu = common_route("Min Grind", ['/pmg/streak', '/pmg/goals'], ['Streaks', 'Goals'])
     date_now = date.today()
-    update_dagar(current_user.id,Dagar)
+    update_dagar(current_user.id, Dagar)
     myGoals = query(Goals, 'user_id', current_user.id)
     myStreaks = Streak.query.filter(Streak.user_id == current_user.id).all()
-    myScore, total = myDayScore(date_now)
+    myScore, total = myDayScore(date_now,current_user.id)
 
     today = datetime.now()  # Ändra till datetime för att matcha typen
     valid_streaks = []
+    if myStreaks:
+        for streak in myStreaks:
+            interval_days = timedelta(days=streak.interval, hours=23, minutes=59, seconds=59)
 
-    for streak in myStreaks:
-        interval_days = timedelta(days=streak.interval, hours=23, minutes=59, seconds=59)
+            if streak.lastReg:  # Kontrollera om lastReg inte är tomt
+                try:
+                    last_reg_date = datetime.strptime(streak.lastReg, "%Y-%m-%d")
+                    streak_interval = last_reg_date + interval_days
 
-        if streak.lastReg:  # Kontrollera om lastReg inte är tomt
-            try:
-                last_reg_date = datetime.strptime(streak.lastReg, "%Y-%m-%d")
-                streak_interval = last_reg_date + interval_days
-
-                # Kontrollera om streaken ska visas
-                if streak.count == 0:
-                    valid_streaks.append(streak)
-                elif streak.count >= 1:
-                    if today.date() == streak_interval.date():  # Jämför endast datumdelen
+                    # Kontrollera om streaken ska visas
+                    if streak.count == 0:
                         valid_streaks.append(streak)
+                    elif streak.count >= 1:
+                        if today.date() == streak_interval.date():  # Jämför endast datumdelen
+                            valid_streaks.append(streak)
+                        elif streak_interval.date() < today.date():
+                            continue  # Ignorera streaks där lastReg + interval är större än idag
                     elif streak_interval.date() < today.date():
-                        continue  # Ignorera streaks där lastReg + interval är större än idag
-                elif streak_interval.date() < today.date():
-                    streak.active = False
-                    streak.count = 0
-                    db.session.commit()
-            except (ValueError, TypeError) as e:
-                print(f'Hantera ogiltigt datum: {e}, streak ID: {streak.id}, lastReg: {streak.lastReg}')
-        else:
-            valid_streaks.append(streak)
-
-    sorted_myScore = sorted(myScore, key=lambda score: score[0])
-    df = pd.DataFrame(sorted_myScore, columns=['goal', 'activity', 'date', 'score'])
+                        streak.active = False
+                        streak.count = 0
+                        db.session.commit()
+                except (ValueError, TypeError) as e:
+                    print(f'Hantera ogiltigt datum: {e}, streak ID: {streak.id}, lastReg: {streak.lastReg}')
+            else:
+                valid_streaks.append(streak)
+    if myScore:
+        sorted_myScore = sorted(myScore, key=lambda score: score[0])
+        df = pd.DataFrame(sorted_myScore, columns=['goal', 'activity', 'date', 'score'])
 
     if request.method == 'POST':
         score_str = request.form.get('score', '').strip()
@@ -335,7 +372,7 @@ def myday_date(date):
     myGoals = query(Goals, 'user_id', current_user.id)
     myStreaks = Streak.query.filter(Streak.user_id == current_user.id, Streak.lastReg != today).all()
     myScore = query(Score, 'user_id', current_user.id)
-    myScore, total = myDayScore(selected_date)
+    myScore, total = myDayScore(selected_date, current_user.id)
 
     if selected_date < today:
         sida='Past Day'
@@ -356,7 +393,10 @@ def myday_date(date):
 def month(year=None, month=None):
     sida, sub_menu = common_route('Kalender', ['/pmg/month', '/pmg/week', '/pmg/myday'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])
+
+
     update_dagar(current_user.id, Dagar)  # Uppdatera Dagar-modellen
+
     if not year or not month:
         year = datetime.now().year
         month = datetime.now().month
@@ -374,7 +414,7 @@ def month(year=None, month=None):
     today = datetime.now()
     today_date = datetime(today.year, today.month, today.day, 0, 0, 0)
 
-    dag_entries = Dagar.query.filter(Dagar.date >= weeks[0][0]['date'], Dagar.date <= weeks[-1][-1]['date']).all()
+    dag_entries = Dagar.query.filter(Dagar.date >= weeks[0][0]['date'], Dagar.date <= weeks[-1][-1]['date'], Dagar.user_id == current_user.id).all()
     dag_data = {entry.date.strftime('%Y-%m-%d'): entry for entry in dag_entries}
 
     return render_template('pmg/month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida,
@@ -396,24 +436,24 @@ def journal():
 
     if section_name == 'Mina Ord' or section_name == 'skrivande':
         act_id = 1
-        sida, sub_menu = common_route("Mina Ord", [url_for('pmg.journal', section_name='skrivande'),
+        sida, sub_menu = common_route("Mina Ord", [url_for('pmg.journal', section_name='skriva'),
                                                    url_for('pmg.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         return journal_section(act_id, sida, sub_menu,None)
 
     elif section_name in activity_names:
         act_id = section_content(Activity, section_name)
-        sida, sub_menu = common_route(section_name, [url_for('pmg.journal', section_name='skrivande'),
+        sida, sub_menu = common_route(section_name, [url_for('pmg.journal', section_name='skriva'),
                                                      url_for('pmg.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         return journal_section(act_id, sida, sub_menu, None)
 
     elif section_name == 'blogg':
-        sida, sub_menu = common_route("Blogg", [url_for('pmg.journal', section_name='skrivande'),
+        sida, sub_menu = common_route("Blogg", [url_for('pmg.journal', section_name='skriva'),
                                                 url_for('pmg.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         my_posts = BloggPost.query.filter_by(user_id=current_user.id).all()
         return journal_section(None, sida, sub_menu, my_posts)
 
     else:
-        sida, sub_menu = common_route(section_name, [url_for('pmg.journal', section_name='skrivande'),
+        sida, sub_menu = common_route(section_name, [url_for('pmg.journal', section_name='skriva'),
                                                      url_for('pmg.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         my_posts = BloggPost.query.filter_by(title=section_name, user_id=current_user.id).all()
         return journal_section(None, sida, sub_menu, my_posts)
@@ -430,13 +470,14 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     if not time:
         time = 15
     titles = []  # Initialisera titles här för att säkerställa att den alltid har ett värde
-
+    if sida == 'Lista':
+        return render_template('/pmg/list.html')
     if act_id is not None:
         print(act_id)
-        myGoals = Goals.query.filter_by(name='Skrivande', user_id=current_user.id).first()
+        myGoals = Goals.query.filter_by(name='Skriva', user_id=current_user.id).first()
         if myGoals:
-            activities = Activity.query.filter_by(goal_id=myGoals.id).all()
-            titles_list = Activity.query.filter_by(goal_id=myGoals.id).all()
+            activities = Activity.query.filter_by(goal_id=myGoals.id,user_id=current_user.id).all()
+            titles_list = Activity.query.filter_by(goal_id=myGoals.id,user_id=current_user.id).all()
             titles = [item.name for item in titles_list]
 
     elif act_id is None:
@@ -468,6 +509,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     return render_template('pmg/journal.html', time=time, goal=myGoals, activities=activities, side_options=titles,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
                            current_date=current_date, page_url=page_url, act_id=act_id, myPosts=my_posts)
+
 @pmg_bp.route('/get-new-word')
 def get_new_word(section_id):
     orden = MyWords.query.filter_by(user_id=current_user.id).with_entities(MyWords.ord).all()
@@ -480,26 +522,49 @@ def get_new_word(section_id):
 # endregion
 
 # region Settings
-@pmg_bp.route('/settings',methods=['GET','POST'])
-def settings():
-    sida, sub_menu = common_route('Inställningar',['/pmg/settings','/pmg/settings/timer','/pmg/konto'],['Journal','Timer','Konto'])
-    mina_Ord = query(MyWords,'user_id',current_user.id)
+@pmg_bp.route('/settings/<section_name>', methods=['GET', 'POST'])
+@pmg_bp.route('/settings', methods=['GET', 'POST'])
+def settings(section_name=None):
+    if not section_name:
+        section_name = request.args.get('section_name', 'general')
+
+    sida, sub_menu = common_route('Settings', [
+        url_for('pmg.settings', section_name='timer'),
+        url_for('pmg.settings', section_name='skrivande'),
+        url_for('pmg.settings', section_name='konto')
+    ], ['Timer', 'Journal', 'Konto'])
+
+    if section_name == 'timer':
+        sida = 'Timer-inställningar'
+    elif section_name == 'skrivande':
+        sida = 'Blogg-inställningar'
+    elif section_name == 'konto':
+        sida = 'Konto-inställningar'
+    else:
+        sida = 'Allmänna Inställningar'
+
+    mina_Ord = query(MyWords, 'user_id', current_user.id)
+
     if request.method == 'POST':
+        if "word" in request.form.get('action', ''):
+            add2db(MyWords, request, ['nytt-ord'], ['ord'], current_user)
+            flash('Nytt ord har lagts till.', 'success')
+            return redirect(url_for('pmg.settings', section_name=section_name))
 
-        if "word" in request.form['action']:
-            add2db(MyWords,request,['nytt-ord'],['ord'], current_user)
-            return redirect(url_for('pmg.settings'))
-
-        elif "timer" in request.form['action']:
+        elif "timer" in request.form.get('action', ''):
             existing_setting = Settings.query.filter_by(user_id=current_user.id).first()
+            intervall = request.form.get('time-intervall')
             if existing_setting:
-                intervall = request.form['time-intervall']
                 existing_setting.stInterval = int(intervall)
-                db.session.commit()
+                flash('Timer-inställningar har uppdaterats.', 'success')
             else:
-                add2db(Settings, request, ['time-intervall'],
-                       ['stInterval'], current_user)
-            return redirect(url_for('pmg.myday'))
+                add2db(Settings, request, ['time-intervall'], ['stInterval'], current_user)
+                flash('Timer-inställningar har skapats.', 'success')
+            db.session.commit()
+            return redirect(url_for('pmg.settings', section_name=section_name))
 
-    return render_template('pmg/settings.html', sida=sida, header=sida, my_words=mina_Ord,sub_menu=sub_menu)
+    return render_template('pmg/settings.html', sida=sida, header=sida, my_words=mina_Ord, sub_menu=sub_menu)
+
+
+
 # endregion
