@@ -1,6 +1,6 @@
 from random import choice
 import plotly.graph_objects as go
-from flask import Blueprint, render_template, redirect, url_for, request, jsonify
+from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from models import (User, db, Streak, BloggPost, Goals,
                     Activity, Score, MyWords, Settings, Dagbok, Dagar)
 from datetime import datetime, timedelta,date
@@ -118,40 +118,60 @@ def completed_streaks(day, model=Dagar):
     return []
 
 def update_streak_details(streak, today):
+
     if today != streak.lastReg:
         count = streak.count
+        if count == 0:
+            streak.dayOne = today
         best_now = streak.best
         count += streak.interval
         streak.active = True
         streak.count = count
         streak.lastReg = today
+
         if best_now < count:
             best_now = count
             streak.best = best_now
 
+        if streak.goal_id:
+            goal_id = streak.goal_id
+
         # Uppdatera level baserat på count
-        if 1 <= count <= 10:
+        if 0 <= count <= 10:
             streak.level = 1
+            score = 10
         elif 11 <= count <= 20:
             streak.level = 2
+            score = 12
         elif 21 <= count <= 30:
             streak.level = 3
+            score = 13
         elif 31 <= count <= 50:
             streak.level = 4
+            score=14
         elif 51 <= count <= 70:
             streak.level = 5
+            score=15
         elif 71 <= count <= 90:
             streak.level = 6
+            score=16
         elif 91 <= count <= 110:
             streak.level = 7
+            score=17
         elif 111 <= count <= 130:
             streak.level = 8
+            score=18
         elif 131 <= count <= 150:
             streak.level = 9
+            score=19
         elif count >= 151:
             streak.level = 10
+            score=20
 
         db.session.commit()
+
+        return score, goal_id
+
 
 def myDayScore(date, user_id):
     total = 0
@@ -159,17 +179,25 @@ def myDayScore(date, user_id):
         Goals.name.label('goal_name'),
         Activity.name.label('activity_name'),
         Score.Date,
-        Score.Time
-    ).join(
+        Score.Time,
+        Streak.name.label('streak_name')
+    ).outerjoin(
         Goals, Goals.id == Score.Goal
-    ).join(
+    ).outerjoin(
         Activity, Activity.id == Score.Activity
-    ).filter(Score.Date == date).filter(Score.user_id == user_id).all()
+    ).outerjoin(
+        Streak, Streak.id == Score.Streak
+    ).filter(
+        Score.Date == date
+    ).filter(
+        Score.user_id == user_id
+    ).all()
 
     for score in myScore:
         total += float(score.Time)
         total = int(total)
     return myScore, total
+
 
 def generate_calendar_weeks(year, month):
     first_day_of_month = datetime(year, month, 1)
@@ -230,22 +258,38 @@ def streak():
     return render_template('pmg/streak.html',sida=sida,header=sida,
                            todayDate=current_date,streaks=myStreaks,sub_menu=sub_menu,
                            goals=myGoals)
+
 @pmg_bp.route('/update_streak/<int:streak_id>/<action>', methods=['POST'])
 def update_streak(streak_id, action):
     streak = Streak.query.get_or_404(streak_id)
     today = date.today()
+    current_date = today.strftime('%Y-%m-%d')
 
     if action == 'check':
-        update_streak_details(streak, today)
+        score, goal_id = update_streak_details(streak, today)
+        flash(f"Score: {score}, Goal ID: {goal_id}")  # Lägg till denna rad för felsökning
+
+        # Kontrollera att goal_id och score har giltiga värden
+        if goal_id and score:
+            new_score = Score(Goal=goal_id, Activity=None, Time=score, Date=current_date, user_id=current_user.id)
+            db.session.add(new_score)
+            db.session.commit()
+            print("New score added successfully")  # Lägg till denna rad för felsökning
+        else:
+            print("Invalid goal_id or score")  # Lägg till denna rad för felsökning
 
     elif action == 'cross':
         streak.count = 0
         streak.active = False
-        streak.day_one = today  # Reset the start day of the streak
+        streak.dayOne = today  # Reset the start day of the streak
         streak.lastReg = today
         streak.level = 1  # Återställ nivån till 1
         update_dagar(current_user, Dagar)
         db.session.commit()
+        print("Streak reset")  # Lägg till denna rad för felsökning
+
+    update_dagar(current_user.id, Dagar)
+    return redirect(url_for('pmg.myday'))
 
     update_dagar(current_user.id, Dagar)
     return redirect(url_for('pmg.myday'))
@@ -311,7 +355,7 @@ def myday():
     update_dagar(current_user.id, Dagar)
     myGoals = query(Goals, 'user_id', current_user.id)
     myStreaks = Streak.query.filter(Streak.user_id == current_user.id).all()
-    myScore, total = myDayScore(date_now,current_user.id)
+    myScore, total = myDayScore(date_now, current_user.id)
 
     today = datetime.now()  # Ändra till datetime för att matcha typen
     valid_streaks = []
@@ -342,7 +386,7 @@ def myday():
                 valid_streaks.append(streak)
     if myScore:
         sorted_myScore = sorted(myScore, key=lambda score: score[0])
-        df = pd.DataFrame(sorted_myScore, columns=['goal', 'activity', 'date', 'score'])
+
 
     if request.method == 'POST':
         score_str = request.form.get('score', '').strip()
@@ -361,6 +405,7 @@ def myday():
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
                            my_goals=myGoals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
                            sub_menu=sub_menu)
+
 @pmg_bp.route('/myday/<date>')
 def myday_date(date):
     selected_date = datetime.strptime(date, '%Y-%m-%d').date()
@@ -458,8 +503,14 @@ def journal():
         my_posts = BloggPost.query.filter_by(title=section_name, user_id=current_user.id).all()
         return journal_section(None, sida, sub_menu, my_posts)
 
+
+@pmg_bp.route('/list', methods=['GET', 'POST'])
+def list():
+    return render_template('/pmg/list.html')
+
 @pmg_bp.route('/journal/<section_name>', methods=['GET', 'POST'])
 def journal_section(act_id, sida, sub_menu, my_posts):
+
     current_date = date.today()
     page_url = 'pmg.journal'
     activities = None

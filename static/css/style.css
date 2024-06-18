@@ -31,6 +31,25 @@ header h1 {
     margin: 0 auto;
 }
 
+.progress-container {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 25px;
+    margin: 20px 0;
+    height: 30px;
+}
+.progress-bar {
+    height: 100%;
+    background-color: #4caf50;
+    width: 0%;
+    border-radius: 25px;
+    text-align: center;
+    line-height: 30px; /* Justera beroende på höjden av progress-container */
+    color: white;
+    transition: width 0.3s ease-in-out;
+}
+
+
 .side-menu {
     position: fixed;
     top: 0;
@@ -153,7 +172,7 @@ header h1 {
     align-items: center;
     border: 1px solid #000000;
     padding: 5px;
-    flex-direction: row;
+    flex-direction: column;
     max-width: 80%;
     margin: 5px auto 5px auto;
     background-color: #ffffff;
@@ -225,14 +244,14 @@ header h1 {
 .items-container {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-self: center;
     align-items: center;
-    width: 1200px;
-    max-width: 90vw;
+    width: 100%;
     margin: 10px auto 10px auto;
     border: 1px solid #ccc;
     border-radius: 10px;
     padding: 10px;
+    box-sizing: content-box;
 }
 
 .list-item {
@@ -459,6 +478,7 @@ textarea {
 .side-menu-nav {
     animation: slideIn 0.5s ease forwards;
 }
+
 .calendar-container {
     display: flex;
     flex-direction: column;

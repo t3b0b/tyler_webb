@@ -69,18 +69,31 @@
         <ul>
             {% for score in my_score %}
             <li class="items-container">
-                <strong>Mål:</strong> {{ score.goal_name }}
-                <strong>Aktivitet:</strong> {{ score.activity_name }}
+
+                    <strong>Mål:</strong> {{ score.goal_name }}
+
+
+                    <strong>Aktivitet:</strong> {{ score.activity_name }}
+
+
+                    <strong>Streak:</strong> {{ score.streak_name }}
+
                 <strong>Poäng:</strong> {{ score.Time }}
             </li>
             {% endfor %}
         </ul>
         {% endif %}
     </div>
+
     <div class="score-style" style="align-self: center">
         <h2>Score</h2>
             <span id="score-disp">{{ total_score }} / 350 xp</span>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar">0%</div>
+        </div>
     </div>
+
     <div class="list-container">
         <h2>Streaks</h2>
         {% if my_streaks %}

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progressbar med Kugghjul</title>
+    <style>
+        svg:hover #Gear_2 {
+            animation: gear_2 2s linear;
+            transform-origin: center;
+            transform-box: fill-box;
+        }
+        svg:hover #Gear {
+            animation: gear 2s linear;
+        }
+        svg #Progstroke {
+            stroke: url(#paint0_linear_152_9);
+            stroke-width: 25;
+            stroke-dasharray: 170;
+            stroke-dashoffset: 170;
+            animation: dasharray 2s linear forwards;
+        }
+        @keyframes dasharray{
+            100% {stroke-dashoffset: 0}
+        }
+        @keyframes gear_2 {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                    transform: rotate(360deg);
+                }
+        }
+        @keyframes gear {
+            from {
+                transform: translateX(0%);
+            }
+            to {
+                    transform: translateX(85%);
+                }
+        }
+    </style>
+</head>
+<body>
+<svg width="203" height="34" viewBox="0 0 203 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="ProgGear">
+<path id="Progstroke" d="M17 17H190.5" stroke-linecap="round"/>
+<g id="Gear">
+<path id="Gear_2" d="M2.89504 19.34L3.11453 19.1673L3.08263 18.8899C3.02512 18.3897 2.97229 17.5401 3.0044 16.643C3.03689 15.7352 3.15498 14.8316 3.41088 14.1927L3.53424 13.8848L3.2984 13.6514L1.034 11.4109L2.87599 7.85049L5.8497 8.11176L6.14437 8.13765L6.30894 7.89185C6.52293 7.57224 7.0468 7.09847 7.67712 6.60743C8.28874 6.13095 8.94075 5.68329 9.35156 5.4186L9.58075 5.27094V4.99829V1.92621L13.4928 0.583041L15.6172 3.05734L15.8532 3.3322L16.1879 3.19357C16.5831 3.02986 17.2819 2.97854 18.0701 3.00894C18.8338 3.03841 19.595 3.13992 20.0569 3.22361L20.2912 3.26607L20.4719 3.11089L22.9401 0.990496L26.5795 2.57575L26.2049 5.57565L26.1631 5.91046L26.4579 6.07452C27.9423 6.90047 28.961 8.28088 29.2697 8.84257L29.4289 9.1321L29.7576 9.09923L32.8707 8.788L34.4012 12.634L32.0944 14.5523L31.8556 14.7509L31.9278 15.0529C32.0558 15.589 32.0886 16.4428 32.0676 17.3326C32.0469 18.2085 31.9759 19.0683 31.9172 19.5884L31.8958 19.7782L32.0064 19.9339L33.9336 22.6479L32.1338 26.077L28.9922 25.6582L28.6767 25.6162L28.5051 25.8842C28.2308 26.3123 27.7176 26.8416 27.1549 27.3466C26.6008 27.8438 26.0342 28.2863 25.6859 28.5388L25.4794 28.6885V28.9436V32.0723L21.5208 33.4138L19.5146 30.8985L19.2908 30.6179L18.9533 30.7402C18.8325 30.784 18.5969 30.8235 18.2491 30.8453C17.9145 30.8662 17.5183 30.8686 17.1031 30.8586C16.2733 30.8387 15.3968 30.77 14.8453 30.7129L14.6065 30.6882L14.4379 30.8591L12.2153 33.1119L8.29838 31.3686L8.67509 28.248L8.72451 27.8386L8.33201 27.7121C8.1986 27.6691 7.99981 27.5555 7.74584 27.3594C7.49993 27.1696 7.2332 26.927 6.96652 26.6613C6.43321 26.1299 5.92658 25.5328 5.62576 25.1483L5.47562 24.9564H5.23195H2.14165L0.604013 21.1422L2.89504 19.34Z" fill="#D9D9D9" stroke="black"/>
+<g id="Center">
+<g filter="url(#filter0_ii_152_9)">
+<circle cx="17" cy="17" r="7" fill="#2EAC4A"/>
+</g>
+<circle cx="17" cy="17" r="6.5" stroke="black"/>
+</g>
+</g>
+</g>
+<defs>
+<filter id="filter0_ii_152_9" x="10" y="6" width="14" height="22" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="4"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.0477642 0 0 0 0 0.27079 0 0 0 0 0.0968299 0 0 0 0.44 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_152_9"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="-4"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="effect1_innerShadow_152_9" result="effect2_innerShadow_152_9"/>
+</filter>
+<linearGradient id="paint0_linear_152_9" x1="17" y1="17.5" x2="190.5" y2="17.5" gradientUnits="userSpaceOnUse">
+<stop stop-color="#4ED05B"/>
+<stop offset="1" stop-color="#006E0B"/>
+</linearGradient>
+</defs>
+</svg>
+
+
+    <script>
+        function updateProgress(currentScore, maxScore) {
+            const progressFill = document.querySelector('.progress-fill');
+            const gearContainer = document.querySelector('.gear-container');
+            const percentage = (currentScore / maxScore) * 100;
+
+            progressFill.style.width = `${percentage}%`;
+            gearContainer.style.left = `calc(${percentage}% - 25px)`; // Justera för att centrera kugghjulet
+        }
+
+        // Exempelanvändning:
+        const currentScore = 200; // Sätt aktuell poäng
+        const maxScore = 350; // Sätt max poäng
+        updateProgress(currentScore, maxScore);
+    </script>
+</body>
+</html>

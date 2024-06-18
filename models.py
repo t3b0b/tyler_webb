@@ -92,6 +92,7 @@ class Score(db.Model):
     Date = db.Column(db.String(30), nullable=False)
     Time = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    Streak = db.Column(db.Integer, db.ForeignKey('streak.id'), nullable=False)
     def __repr__(self):
         return f'{self.Goal}, {self.Activity}, {self.Date}, {self.Time}, {self.user_id}'
 
