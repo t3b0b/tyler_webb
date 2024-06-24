@@ -29,7 +29,7 @@ def login():
                                                    seconds=59))  # Konvertera till datum
                 print(f'{streak.name} - {reset_date} - {today}')
                 if today > reset_date:
-                    streak.current_streak = 0
+                    streak.count = 0
                     streak.active = False  # Exempel: sätt streak till inaktiv om den nollställs
                     db.session.commit()
             return redirect(url_for('pmg.myday'))  # Antag att 'month' är korrekt definierad i din Flask app

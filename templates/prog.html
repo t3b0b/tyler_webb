@@ -9,6 +9,7 @@
             animation: gear_2 2s linear;
             transform-origin: center;
             transform-box: fill-box;
+            animation-iteration-count: infinite;
         }
         svg:hover #Gear {
             animation: gear 2s linear;
@@ -28,7 +29,7 @@
                 transform: rotate(0deg);
             }
             to {
-                    transform: rotate(360deg);
+                transform: rotate(360deg);
                 }
         }
         @keyframes gear {
@@ -36,7 +37,7 @@
                 transform: translateX(0%);
             }
             to {
-                    transform: translateX(85%);
+                transform: translateX(85%);
                 }
         }
     </style>
@@ -81,19 +82,16 @@
 
 
     <script>
-        function updateProgress(currentScore, maxScore) {
-            const progressFill = document.querySelector('.progress-fill');
-            const gearContainer = document.querySelector('.gear-container');
+        function updateProgress() {
+            const progressFill = document.getElementById('Progstroke');
+            const gearContainer = document.getElementById('gear');
+
             const percentage = (currentScore / maxScore) * 100;
 
             progressFill.style.width = `${percentage}%`;
             gearContainer.style.left = `calc(${percentage}% - 25px)`; // Justera för att centrera kugghjulet
         }
 
-        // Exempelanvändning:
-        const currentScore = 200; // Sätt aktuell poäng
-        const maxScore = 350; // Sätt max poäng
-        updateProgress(currentScore, maxScore);
     </script>
 </body>
 </html>

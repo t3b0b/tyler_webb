@@ -135,7 +135,8 @@ def update_streak_details(streak, today):
 
         if streak.goal_id:
             goal_id = streak.goal_id
-
+        else:
+            goal_id = None
         # Uppdatera level baserat på count
         if 0 <= count <= 10:
             streak.level = 1
