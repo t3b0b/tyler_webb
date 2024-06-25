@@ -51,8 +51,10 @@ header h1 {
 }
 
 .side-menu {
-    position: fixed;
-    top: 0;
+    position: absolute;
+    display: flex;
+    align-content: flex-start;
+    top:0;
     left: -180px; /* Dölj menyn utanför skärmen */
     width: 200px;
     height: 100%;

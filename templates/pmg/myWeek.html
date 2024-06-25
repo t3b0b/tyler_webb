@@ -2,14 +2,101 @@
 
 {% block head %}
     <style>
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            height: 100vh;
+            padding: 20px;
+        }
 
+        .notes {
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notes h2 {
+            margin-top: 0;
+        }
+
+        .notes textarea {
+            width: 100%;
+            flex: 1;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .week-planner {
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .week-planner h2 {
+            margin-top: 0;
+        }
+
+        .week-planner table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .week-planner th, .week-planner td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .week-planner th {
+            background-color: #f4f4f4;
+        }
     </style>
 {% endblock head %}
 
 {% block body %}
-<div class="day-container">
-    <div class="visual-data">
-
+<div class="container">
+    <div class="notes">
+        <h2>Att-göra</h2>
+        <textarea rows="5">{{ weekly_data.get('todos', '') }}</textarea>
+        <h2>Att tänka på</h2>
+        <textarea rows="5">{{ weekly_data.get('thoughts', '') }}</textarea>
+        <h2>Kom-ihåg</h2>
+        <textarea rows="5">{{ weekly_data.get('reminders', '') }}</textarea>
+    </div>
+    <div class="week-planner">
+        <h2>Veckoplanering</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    {% for day in ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag'] %}
+                    <th>{{ day }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for hour in range(6, 22) %}
+                <tr>
+                    <td>{{ hour }}:00</td>
+                    {% for day in ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag'] %}
+                    <td contenteditable="true">
+                        {% for activity in weekly_data.get(day, {}).get(hour, []) %}
+                        {{ activity }}<br>
+                        {% endfor %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock body %}

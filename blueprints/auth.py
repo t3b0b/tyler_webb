@@ -11,6 +11,7 @@ auth_bp = Blueprint('auth', __name__, template_folder='auth/templates')
 s = URLSafeTimedSerializer("K6SM4x14")
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    sida = 'P.M.G'
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -37,7 +38,7 @@ def login():
             flash('Fel användarnamn eller lösenord')
             return render_template('auth/login.html')  # Se till att returnera templaten även här
 
-    return render_template('auth/login.html')
+    return render_template('auth/login.html',sida=sida,header=sida)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():

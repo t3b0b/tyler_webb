@@ -3,13 +3,41 @@ import plotly.graph_objects as go
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from models import (User, db, Streak, BloggPost, Goals,
                     Activity, Score, MyWords, Settings, Dagbok, Dagar)
-from datetime import datetime, timedelta,date
+from datetime import datetime, timedelta, date
 from flask_login import current_user
 import pandas as pd
 
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
 #region Functions
+
+def parse_date(date_str):
+    # Anpassa formatet till din datumsträng
+    return datetime.strptime(date_str, '%Y-%m-%d')
+
+
+def process_weekly_scores(scores, start_week, end_week):
+    week_days = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
+    weekly_data = {day: {} for day in week_days}
+
+    for score in scores:
+        score_date = parse_date(score.Date)  # Konvertera datumet från sträng till datetime objekt
+        day_of_week = (score_date - start_week).days
+        day_name = week_days[day_of_week]
+
+        if isinstance(score.Time, str):
+            hour = int(score.Time.split(':')[0])  # Konvertera tiden till timme som ett heltal om den är en sträng
+        elif isinstance(score.Time, int):
+            hour = score.Time  # Om tiden redan är en int, använd den direkt
+        else:
+            continue  # Om tiden är i ett oväntat format, hoppa över denna post
+
+        if hour not in weekly_data[day_name]:
+            weekly_data[day_name][hour] = []
+
+        weekly_data[day_name][hour].append(score.activity_name)
+
+    return weekly_data
 
 def read(filename):
     with open(filename,'r') as file:
@@ -358,6 +386,21 @@ def myday():
     myStreaks = Streak.query.filter(Streak.user_id == current_user.id).all()
     myScore, total = myDayScore(date_now, current_user.id)
 
+    aggregated_scores = {}
+    for score in myScore:
+        activity_name = score.goal_name if score.goal_name else "?"
+        if activity_name in aggregated_scores:
+            aggregated_scores[activity_name]['total_time'] += float(score.Time)
+        else:
+            aggregated_scores[activity_name] = {
+                'Goal': score.goal_name,
+                'Activity': score.activity_name,
+                'Streak': score.streak_name,
+                'Total score': float(score.Time)
+            }
+
+    print(aggregated_scores)
+
     today = datetime.now()  # Ändra till datetime för att matcha typen
     valid_streaks = []
     if myStreaks:
@@ -440,16 +483,11 @@ def month(year=None, month=None):
     sida, sub_menu = common_route('Kalender', ['/pmg/month', '/pmg/week', '/pmg/myday'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])
 
-
     update_dagar(current_user.id, Dagar)  # Uppdatera Dagar-modellen
 
     if not year or not month:
         year = datetime.now().year
         month = datetime.now().month
-        dagar_check = Dagar.query.filter_by(user_id=current_user.id,date=date.today()).first()
-        print(dagar_check)
-    #if dagar_check is None:
-
 
     first_day_of_month = datetime(year, month, 1)
     month_name = first_day_of_month.strftime('%B')
@@ -467,8 +505,36 @@ def month(year=None, month=None):
                            sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data)
 @pmg_bp.route('/week')
 def week():
-    sida = 'My Week'
-    return render_template('pmg/myWeek.html',sida=sida, header=sida)
+    date_now = datetime.now()
+    user_id = current_user.id
+
+    start_week = date_now - timedelta(days=date_now.weekday())
+    end_week = start_week + timedelta(days=6)
+
+    myScore = db.session.query(
+        Goals.name.label('goal_name'),
+        Activity.name.label('activity_name'),
+        Score.Date,
+        Score.Time,
+        Streak.name.label('streak_name')
+    ).outerjoin(
+        Goals, Goals.id == Score.Goal
+    ).outerjoin(
+        Activity, Activity.id == Score.Activity
+    ).outerjoin(
+        Streak, Streak.id == Score.Streak
+    ).filter(
+        Score.Date >= start_week
+    ).filter(
+        Score.Date <= end_week
+    ).filter(
+        Score.user_id == user_id
+    ).all()
+
+    weekly_data = process_weekly_scores(myScore, start_week, end_week)
+
+    return render_template('pmg/myWeek.html', sida='Veckoplanering', weekly_data=weekly_data, header='Veckoplanering',
+                           total_score=0)
 # endregion
 
 #region Journal
@@ -618,5 +684,14 @@ def settings(section_name=None):
     return render_template('pmg/settings.html', sida=sida, header=sida, my_words=mina_Ord, sub_menu=sub_menu)
 
 
+@pmg_bp.route('/timebox', methods=['GET', 'POST'])
+def timebox():
+    sida = 'Timebox'
+    if request.method == 'POST':
+        date = request.form['date']
+        time = request.form['time']
+
+    date = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
+    return render_template('pmg/timebox.html', date=date,sida=sida, header=sida)
 
 # endregion
