@@ -1,10 +1,10 @@
 from random import choice
 import plotly.graph_objects as go
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
-from models import (User, db, Streak, BloggPost, Goals,
+from models import (User, db, Streak, BloggPost, Goals, Friendship,
                     Activity, Score, MyWords, Settings, Dagbok, Dagar)
 from datetime import datetime, timedelta, date
-from flask_login import current_user
+from flask_login import current_user, login_required
 import pandas as pd
 
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
@@ -257,6 +257,55 @@ def generate_calendar_weeks(year, month):
     return weeks
 # endregion
 
+@pmg_bp.route('/add_friend/<int:friend_id>')
+@login_required
+def add_friend(friend_id):
+    friend = User.query.get_or_404(friend_id)
+    if friend == current_user:
+        flash('You cannot add yourself as a friend.', 'danger')
+        return redirect(url_for('pmg.myday'))
+
+    existing_friendship = Friendship.query.filter_by(user_id=current_user.id, friend_id=friend.id).first()
+    if existing_friendship:
+        flash('Friend request already sent.', 'warning')
+        return redirect(url_for('pmg.myday'))
+
+    new_friendship = Friendship(user_id=current_user.id, friend_id=friend.id, status='pending')
+    db.session.add(new_friendship)
+    db.session.commit()
+    flash('Friend request sent.', 'success')
+    return redirect(url_for('pmg.myday'))
+
+
+@pmg_bp.route('/friends')
+@login_required
+def friends():
+    pending_requests = Friendship.query.filter_by(friend_id=current_user.id, status='pending').all()
+    accepted_friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
+                       Friendship.query.filter_by(friend_id=current_user.id, status='accepted').all()
+    return render_template('/pmg/friends.html', pending_requests=pending_requests, accepted_friends=accepted_friends)
+
+
+@pmg_bp.route('/respond_friend_request/<int:request_id>/<response>')
+@login_required
+def respond_friend_request(request_id, response):
+    friendship = Friendship.query.get_or_404(request_id)
+    if friendship.friend_id != current_user.id:
+        flash('Not authorized.', 'danger')
+        return redirect(url_for('pmg.myday'))
+
+    if response == 'accept':
+        friendship.status = 'accepted'
+        db.session.commit()
+        flash('Friend request accepted.', 'success')
+    elif response == 'decline':
+        db.session.delete(friendship)
+        db.session.commit()
+        flash('Friend request declined.', 'danger')
+
+    return redirect(url_for('pmg.friends'))
+
+
 @pmg_bp.route('/timer')
 def timer():
     sida='Timer'
@@ -270,7 +319,7 @@ def streak():
     current_date = date.today()
     current_date = current_date.strftime('%Y-%m-%d')
     print(current_date)
-    sida, sub_menu = common_route("Mina Streaks", ['/pmg/myday', '/pmg/goals'], ['Score', 'Goals'])
+    sida, sub_menu = common_route("Mina Streaks", ['/pmg/timebox','/pmg/streak', '/pmg/goals'], ['My Day','Streaks', 'Goals'])
     myStreaks = query(Streak,'user_id',current_user.id)
     myGoals = query(Goals, 'user_id', current_user.id)
 
@@ -345,7 +394,7 @@ def get_activities(goal_id):
 
 @pmg_bp.route('/goals',methods=['GET', 'POST'])
 def goals():
-    sida, sub_menu = common_route('Mina Mål', ['/pmg/streak', '/pmg/myday'], ['Streaks', 'Score'])
+    sida, sub_menu = common_route("Mina Mål", ['/pmg/timebox','/pmg/streak', '/pmg/goals'], ['My Day','Streaks', 'Goals'])
     myGoals = query(Goals,'user_id',current_user.id)
 
     if request.method == 'POST':
@@ -379,7 +428,7 @@ def delete_goal(goal_id):
 
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 def myday():
-    sida, sub_menu = common_route("Min Grind", ['/pmg/streak', '/pmg/goals'], ['Streaks', 'Goals'])
+    sida, sub_menu = common_route("Min Grind", ['/pmg/timebox','/pmg/streak', '/pmg/goals'], ['My Day','Streaks', 'Goals'])
     date_now = date.today()
     update_dagar(current_user.id, Dagar)
     myGoals = query(Goals, 'user_id', current_user.id)
@@ -480,7 +529,7 @@ def myday_date(date):
 @pmg_bp.route('/month')
 @pmg_bp.route('/month/<int:year>/<int:month>')
 def month(year=None, month=None):
-    sida, sub_menu = common_route('Kalender', ['/pmg/month', '/pmg/week', '/pmg/myday'],
+    sida, sub_menu = common_route('Min Månad', ['/pmg/month', '/pmg/week', '/pmg/timebox'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])
 
     update_dagar(current_user.id, Dagar)  # Uppdatera Dagar-modellen
@@ -507,6 +556,8 @@ def month(year=None, month=None):
 def week():
     date_now = datetime.now()
     user_id = current_user.id
+    sida, sub_menu = common_route('Min Vecka', ['/pmg/month', '/pmg/week', '/pmg/timebox'],
+                                  ['Min Månad', 'Min Vecka', 'Min Dag'])
 
     start_week = date_now - timedelta(days=date_now.weekday())
     end_week = start_week + timedelta(days=6)
@@ -534,7 +585,7 @@ def week():
     weekly_data = process_weekly_scores(myScore, start_week, end_week)
 
     return render_template('pmg/myWeek.html', sida='Veckoplanering', weekly_data=weekly_data, header='Veckoplanering',
-                           total_score=0)
+                           total_score=0, sub_menu=sub_menu)
 # endregion
 
 #region Journal
@@ -687,11 +738,14 @@ def settings(section_name=None):
 @pmg_bp.route('/timebox', methods=['GET', 'POST'])
 def timebox():
     sida = 'Timebox'
+    sida, sub_menu = common_route('Min Dag', ['/pmg/month', '/pmg/week', '/pmg/timebox'],
+                                  ['Min Månad', 'Min Vecka', 'Min Dag'])
+
     if request.method == 'POST':
         date = request.form['date']
         time = request.form['time']
 
     date = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
-    return render_template('pmg/timebox.html', date=date,sida=sida, header=sida)
+    return render_template('pmg/timebox.html', date=date,sida=sida, header=sida, sub_menu=sub_menu)
 
 # endregion

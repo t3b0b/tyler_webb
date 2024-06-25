@@ -14,8 +14,19 @@ class User(db.Model, UserMixin):
     firstName = db.Column(db.String(50), nullable=False)
     lastName = db.Column(db.String(50), nullable=False)
     verified = db.Column(db.Boolean, default=False)
+
+    friends = db.relationship('Friendship', foreign_keys='Friendship.user_id', backref='user', lazy='dynamic')
+    friend_of = db.relationship('Friendship', foreign_keys='Friendship.friend_id', backref='friend', lazy='dynamic')
+
     def __repr__(self):
         return f'{self.username}, {self.email}, {self.password}'
+
+class Friendship(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    friend_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    status = db.Column(db.String(50), nullable=False)  # t.ex., 'pending', 'accepted', 'declined'
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Dagbok(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -48,6 +59,8 @@ class BloggPost(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     def __repr__(self):
         return f"{self.author}, {self.title}, {self.content},{self.date}, {self.user_id}"
+
+class Vecka()
 
 class Streak(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -97,12 +110,14 @@ class Activity(db.Model):
     def __repr__(self):
         return f'{self.name}, {self.measurement}, {self.goal_id}, {self.user_id}'
 
-
 class Score(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     Goal = db.Column(db.Integer, db.ForeignKey(Goals.id))
     Activity = db.Column(db.Integer, db.ForeignKey(Activity.id), nullable=False)
-    Date = db.Column(db.String(30), nullable=False)
+    Amount = db.Column(db.Integer, nullable=True)
+    Start = db.Column(db.Date, nullable=True)
+    End = db.Column(db.Date, nullable=True)
+    Date = db.Column(db.Date, nullable=False)
     Time = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     Streak = db.Column(db.Integer, db.ForeignKey('streak.id'), nullable=False)
@@ -126,6 +141,8 @@ class Settings(db.Model):
 class Dagar(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False, unique=True)
+    prioriteringar = db.Column(db.String(80), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
     total_streaks = db.Column(db.Integer)
     completed_streaks = db.Column(db.Integer)
     completed_streaks_names = db.Column(db.Text)
@@ -134,6 +151,16 @@ class Dagar(db.Model):
 
     def __repr__(self):
         return f'{self.user_id}, {self.date}, {self.total_streaks}, {self.completed_streaks}, {self.completed_streaks_names}, {self.total_points}'
+
+class Month(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    month = db.Column(db.String(80), nullable=False)
+
+
+class Week(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    week = db.Column(db.Integer, nullable=False)
+
 
 class Mail(db.Model):
     _id = db.Column(db.Integer, primary_key=True)
@@ -147,3 +174,4 @@ class Mail(db.Model):
         return f"{self.company},{self.first_name},{self.last_name},{self.email},{self.subject},{self.message}"
 
 # endregion
+
