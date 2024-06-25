@@ -26,6 +26,19 @@ class Dagbok(db.Model):
     def __repr__(self):
         return f"{self.user_id},{self.author},{self.title},{self.content}"
 
+class BusinessBlogg(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    author = db.Column(db.String(50), nullable=False)
+    topic = db.Column(db.String(50), nullable=False)
+    sub_topic = db.Column(db.String(50), nullable=False)
+    title = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, unique=False, nullable=False)
+    date = db.Column(db.String(30), unique=False, nullable=False, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"{self.author}, {self.topic}, {self.sub_topic}, {self.title}, {self.content},{self.date}"
+
+
 class BloggPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     author = db.Column(db.String(50), nullable=False)

@@ -2,7 +2,7 @@ from random import choice
 import plotly.graph_objects as go
 from flask_mail import Mail, Message
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
-from models import (User, db, Streak, BloggPost, Goals, Mail,
+from models import (User, db, Streak, BloggPost, Goals, Mail, BusinessBlogg,
                     Activity, Score, MyWords, Settings, Dagbok, Dagar)
 from datetime import datetime, timedelta,date
 from flask_login import current_user
@@ -28,47 +28,51 @@ def home_base():
 def get_blog_content_for_section(section_name):
     if section_name:
         section_name = section_name.lower()
-        content = BloggPost.query.filter_by(topic=section_name).all()
+        content = BusinessBlogg.query.filter_by(topic=section_name).all()
     else:
-        content = BloggPost.query.all()
+        content = BusinessBlogg.query.all()
     return content
 @base_bp.route('/blogg')
 def blogg():
+    sida = 'Blogg'
     section_name = request.args.get('section_name')
     if section_name:
+        sida=section_name
         section_name = section_name.lower()
     content = get_blog_content_for_section(section_name)
 
-    topics = BloggPost.query.with_entities(BloggPost.topic).distinct().all()
+    topics = BusinessBlogg.query.with_entities(BusinessBlogg.topic).distinct().all()
     topic_names = [topic[0].title() for topic in topics]
 
-    sub_topics = BloggPost.query.filter_by(topic=section_name).with_entities(BloggPost.sub_topic).distinct().all()
+    sub_topics = BusinessBlogg.query.filter_by(topic=section_name).with_entities(BusinessBlogg.sub_topic).distinct().all()
     sub_topic_names = [sub_topic[0].title() for sub_topic in sub_topics]
 
     return render_template('base/blog.html', posts=content, topics=topic_names,
-                           sub_topics=sub_topic_names, section_name=section_name)
+                           sub_topics=sub_topic_names, section_name=section_name, sida=sida, header=sida)
 
 @base_bp.route('/blogg/<section_name>')
 def blog_content(section_name):
+    sida = section_name
     content = get_blog_content_for_section(section_name)
 
-    topics = BloggPost.query.with_entities(BloggPost.topic).distinct().all()
+    topics = BusinessBlogg.query.with_entities(BusinessBlogg.topic).distinct().all()
     topic_names = [topic[0].title() for topic in topics]
 
-    sub_topics = BloggPost.query.filter_by(topic=section_name).with_entities(BloggPost.sub_topic).distinct().all()
+    sub_topics = BusinessBlogg.query.filter_by(topic=section_name).with_entities(BusinessBlogg.sub_topic).distinct().all()
     sub_topic_names = [sub_topic[0].title() for sub_topic in sub_topics]
 
     return render_template('base/blog.html', posts=content, topics=topic_names,
-                           sub_topics=sub_topic_names,section_name=section_name)
+                           sub_topics=sub_topic_names,section_name=section_name, sida=sida, header=sida)
 @base_bp.route('/om-oss')
 def omOss():
+    sida = 'Om oss'
     vision = read_info("texts/om_oss.txt")
     vision = vision.split("*")
     om_header = [vision[i] for i in range(len(vision)) if i % 2 == 0]
     om_text = [vision[i] for i in range(len(vision)) if i % 2 != 0]
     print(om_text)
     om_content = zip(om_header,om_text)
-    return render_template('base/om.html', om_content=om_content)
+    return render_template('base/om.html', om_content=om_content, sida=sida, header=sida)
 
 #region Tjänster
 def get_services_for_section(section_name,data):
@@ -99,6 +103,7 @@ def get_services_for_section(section_name,data):
 
 @base_bp.route('/tjanster')
 def tjanster():
+    sida = 'Tjänster'
     section_name = request.args.get('section_name')
     if section_name:
         sect_header, sect_text, image_filename = get_services_for_section(section_name, df)
@@ -107,24 +112,26 @@ def tjanster():
         image_filename = ''
         tjanst_content = ['']
 
-    return render_template('base/tjanster.html', contents=tjanst_content, image_filename = image_filename)
+    return render_template('base/tjanster.html', contents=tjanst_content,
+                           image_filename = image_filename, sida=sida, header=sida)
 @base_bp.route('/tjanster/<section_name>')
 def service_content(section_name):
+    sida = 'Tjänster'
     if section_name:
+        sida = section_name
         sect_header, sect_text, image_filename = get_services_for_section(section_name,df)
         tjanst_content = zip(sect_header,sect_text)
-        return redirect('base.tjanster', contents=tjanst_content, image_filename=image_filename)
+        return redirect('base.tjanster', contents=tjanst_content, image_filename=image_filename,
+                        sida=sida, header=sida)
     return render_template('base/tjanster.html')
-
-
 
 #endregion
 
 @base_bp.route('/kontakt', methods=['GET', 'POST'])
 def kontakt():
-
+    from main import app, mail
+    sida = 'Kontakt'
     if request.method == 'POST':
-
         mail_company = request.form['company']
         mail_firstname = request.form['first_name']
         mail_lastName = request.form['last_name']
@@ -147,4 +154,4 @@ def kontakt():
         mail.send(message)
 
 
-    return render_template('base/kontakt.html')
+    return render_template('base/kontakt.html', sida=sida, header=sida)

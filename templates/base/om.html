@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
 {% block head %}
-    {{ sida }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 {% endblock head %}
 
@@ -12,5 +11,4 @@
             <p> {{ content }}</p>
     {% endfor %}
 </div>
-
 {% endblock body %}

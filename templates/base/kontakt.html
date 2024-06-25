@@ -1,103 +1,101 @@
 {% extends 'base.html' %}
 
 {% block head %}
-{{ sida }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        .kontakt-sidebar-container {
-            background-color: #cccccc; /* Mörkare färg för sidebar */
-            color: black; /* Vit text */
-            padding: 20px; /* Lägg till padding runtom */
-            border-right: 1px solid #fff; /* Lägger till en vit kantlinje på höger sida */
-            min-height: 100%; /* Sätter minsta höjd till full viewport height */
-            width: 250px; /* Ange önskad bredd för sidebar */
-        }
-        .kontakt-main-container {
-            display: flex; /* This will align the sidebar and form side-by-side */
-            max-width: 100vw;
-            flex-direction: row;
-            margin: 0 auto; /* Center the container */
-        }
+    * {
+        box-sizing: border-box;
+    }
+    .kontakt-main-container {
+        display: flex; /* This will align the sidebar and form side-by-side */
+        max-width: 100vw;
+        flex-direction: row;
+    }
 
-        .kontakt-form-container {
-            display: flex;
-            height: fit-content;
-            flex-direction: column; /* Ordna innehållet vertikalt */
-            justify-content: space-between; /* Fördela utrymmet mellan och runt innehållet */
-            margin-inline: auto;
-        }
+    .kontakt-sidebar-container {
+        position: absolute; /* Fixera sidomenyn */
+        align-content: flex-start;
+        top: 99px;
+        width: 210px; /* Ange önskad bredd för sidebar */
+        left: -190px; /* Flytta sidomenyn till vänsterkanten */
+        background-color: #1c2d5b; /* Mörkblå färg som i headern */
+        color: #1c2d5b;
+        padding: 0 10px 0 10px; /* Lägg till padding runtom */
+        border-right: 1px solid #fff; /* Lägger till en vit kantlinje på höger sida */
+        height: 100%; /* Sätter höjden till full viewport height */
+    }
 
-        .kontakt-form-container form {
-            display: flex;
-            flex-grow: 2;
-            flex-direction: column; /* Ordna innehållet vertikalt */
-            height: 100%; /* Använd all tillgänglig höjd i container */
-        }
+    .kontakt-sidebar-container.expanded {
+        color: white;
+        left: 0;
+    }
 
-        /* Other styles */
-        .form-group {
-            width: 700px;
-            padding-right: 20px;
-            padding-left: 20px;
-            margin-bottom: 10px;
-        }
-        .form-field {
-            width: 700px;
-            height: 30px;
-            padding-right: 20px;
-            padding-left: 20px;
-            font-size: 14px;
-        }
+    .kontakt-form-container {
+        display: flex;
+        height: fit-content;
+        flex-direction: column; /* Ordna innehållet vertikalt */
+        justify-content: center; /* Centrerar innehållet vertikalt */
+        align-items: center; /* Centrerar innehållet horisontellt */
+        margin: 0 auto; /* Centrerar containern inom huvudcontainern */
+        width: 1200px;
+    }
 
-        .form-message textarea {
-            width: 700px;
-            height: 220px; /* Adjust height as needed */
-            padding-right: 40px;
-            padding-left: 40px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            resize: vertical;
-        }
-        .form-submit {
-            display: flex;
-            justify-content: flex-end;
-            margin-right: 10px;
-        }
-        .send-button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            outline: none;
-        }
-        .send-button:hover {
-            background-color: #45a049;
-        }
+    .kontakt-form-container form {
+        display: flex;
+        flex-grow: 2;
+        flex-direction: column; /* Ordna innehållet vertikalt */
+        height: 100%; /* Använd all tillgänglig höjd i container */
+    }
+    .kontakt-form-name {
+        display: flex;
+        flex-direction: row;
+        gap: 30px;
+        width: 900px;
+        max-width: 100%; /* Max bredd för stora skärmar */
+    }
+
+    .form-group, .form-field, .form-message textarea, .send-button {
+        margin-bottom: 5px;
+        width: 900px; /* Gör formulärets element breda */
+        max-width: 100%; /* Max bredd för stora skärmar */
+    }
+
+    .send-button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        outline: none;
+    }
+
+    .send-button:hover {
+        background-color: #45a049;
+    }
+
     </style>
 {% endblock head %}
 
 {% block body %}
+
 <div class="kontakt-main-container">
     <div class="kontakt-sidebar-container">
-        <aside class="sidebar">
+        <div class="kontakt-info">
             <h3>Kontaktuppgifter</h3>
             <p>Namn: Tyler O'Brien</p>
             <p>Telefon: +46 733 10 40 74</p>
             <p>E-post: tylerobri@gmail.com</p>
-        </aside>
+        </div>
     </div>
+</div>
     <div class="kontakt-form-container">
         <h2>Skicka ett meddelande</h2>
         <form method="post">
             <div class="form-group">
                 <input type="text" id="company" name="company" placeholder="Företagsnamn" class="form-field">
             </div>
-            <div class="form-group kontakt-form-name">
+            <div class="kontakt-form-name">
                 <input type="text" id="first_name" name="first_name" placeholder="Förnamn" class="form-field">
                 <input type="text" id="last_name" name="last_name" placeholder="Efternamn" class="form-field">
             </div>
@@ -116,5 +114,17 @@
         </form>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const sideMenu = document.querySelector('.kontakt-sidebar-container');
 
-{% endblock %}
+    document.addEventListener('mousemove', function (event) {
+        if (event.clientX < 20) { // Om muspekaren är nära vänsterkanten
+            sideMenu.classList.add('expanded');
+        } else if (event.clientX > 200) { // Om muspekaren är långt från vänsterkanten
+            sideMenu.classList.remove('expanded');
+        }
+    });
+});
+</script>
+{% endblock body %}

@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
 {% block head %}
-    {{ sida }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         * {
@@ -57,8 +56,6 @@
 {% endblock head %}
 
 {% block body %}
-
-
     {% if image_filename %}
     <div class="sub-menu">
     <nav>

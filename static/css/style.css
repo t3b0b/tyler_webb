@@ -16,7 +16,8 @@ body {
 header {
     background-color: #1c2d5b;
     width:100%;
-    height:fit-content;
+    max-height: 100px;
+    min-height: fit-content;
     color: #ffffff;
     display: flex;
     justify-content: space-between;
@@ -48,7 +49,6 @@ header h1 {
     color: white;
     transition: width 0.3s ease-in-out;
 }
-
 
 .side-menu {
     position: fixed;
