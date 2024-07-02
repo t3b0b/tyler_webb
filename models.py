@@ -14,7 +14,6 @@ class User(db.Model, UserMixin):
     firstName = db.Column(db.String(50), nullable=False)
     lastName = db.Column(db.String(50), nullable=False)
     verified = db.Column(db.Boolean, default=False)
-
     friends = db.relationship('Friendship', foreign_keys='Friendship.user_id', backref='user', lazy='dynamic')
     friend_of = db.relationship('Friendship', foreign_keys='Friendship.friend_id', backref='friend', lazy='dynamic')
 
@@ -60,8 +59,6 @@ class BloggPost(db.Model):
     def __repr__(self):
         return f"{self.author}, {self.title}, {self.content},{self.date}, {self.user_id}"
 
-class Vecka()
-
 class Streak(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -72,6 +69,8 @@ class Streak(db.Model):
     condition = db.Column(db.String(80),nullable=False)
     lastReg = db.Column(db.String(50), nullable=False)
     dayOne = db.Column(db.String(50), nullable=False)
+    amount = db.Column(db.Integer, default=0)
+    type = db.Column(db.String(20), default='check', nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=True)
     level = db.Column(db.Integer, nullable=True, default=1)
@@ -141,7 +140,7 @@ class Settings(db.Model):
 class Dagar(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False, unique=True)
-    prioriteringar = db.Column(db.String(80), nullable=True)
+    prioriteringar = db.Column(db.Text, nullable=True)
     notes = db.Column(db.Text, nullable=True)
     total_streaks = db.Column(db.Integer)
     completed_streaks = db.Column(db.Integer)

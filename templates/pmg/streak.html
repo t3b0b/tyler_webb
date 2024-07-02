@@ -99,10 +99,14 @@
         <!-- Dold form för att lägga till ny streak, initialt gömd och visas när knappen klickas -->
             <div class="add-form-container">
                 <form method="POST" id="new-streak-form" style="display: none;">
-                    Namn:<input type="text" placeholder="Enter streak name" name="streakName">
-                    Intervall:<input type="number" name="streakInterval" min="1" max="7" placeholder="Set streak interval">
-                    Villkor:<input type="text" placeholder="Enter streak condition" name="streakCondition">
-                    Mål:<select id="goalSelect" name="goalSelect">
+                    Name:<input type="text" placeholder="Enter streak name" name="streakName">
+                    Interval:<input type="number" name="streakInterval" min="1" max="7" placeholder="Set streak interval">
+                    Condition:<input type="text" placeholder="Enter streak condition" name="streakCondition">
+                    Type:<select id="streakType" name="streakType">
+                            <option value="check">Check</option>
+                            <option value="number">Amount</option>
+                        </select>
+                    Goal:<select id="goalSelect" name="goalSelect">
                             <option value="">No Goal</option>
                         {% for goal in goals %}
                             <option value="{{ goal.id }}">{{ goal.name }}</option>

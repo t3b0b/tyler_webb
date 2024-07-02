@@ -5,24 +5,6 @@ let goal = 0;
 let openTime;
 let closeTime;
 
-function onDateClick(element, date) {
-    if (!element.classList.contains('other-month')) {
-        element.classList.add('expand');
-        setTimeout(function() {
-            window.location.href = '/pmg/myday/' + date;
-        }, 500); // Väntar på att animationen ska slutföras innan omdirigering
-    }
-}
-
-function changeMonth(change) {
-    var currentYear = {{ year }};
-    var currentMonth = {{ month }};
-    var newDate = new Date(currentYear, currentMonth - 1 + change, 1); // JavaScript months are 0-indexed
-    var newYear = newDate.getFullYear();
-    var newMonth = newDate.getMonth() + 1; // Adjust for 0-indexed months
-    window.location.href = `/pmg/month/${newYear}/${newMonth}`;
-}
-
 function startTimer(duration, display) {
     var timer = duration, minutes, seconds;
     timeEnded = false;
@@ -41,6 +23,7 @@ function startTimer(duration, display) {
         }
     }, 1000);
 }
+
 function updateTimerDisplay(timer, display) {
     var minutes = parseInt(timer / 60, 10);
     var seconds = parseInt(timer % 60, 10);
@@ -155,13 +138,6 @@ function animateCheck(event, form) {
     }, 1000);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const today = '{{ today_date.strftime('%Y-%m-%d') }}';
-    const todayCell = document.querySelector(`.day[data-date="${today}"]`);
-    if (todayCell) {
-        todayCell.classList.add('today');
-    }
-});
 $(document).ready(function () {
     $('#goalSelect').change(function () {
         var goalId = $(this).val();

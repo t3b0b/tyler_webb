@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <style>
+        .streak-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        .streak-item:last-child {
+            border-bottom: none;
+        }
+        .streak-name {
+            font-weight: bold;
+        }
+    </style>
+{% endblock head %}
+
+{% block body %}
+    <h2>Bekräfta Nollställning av Streaks</h2>
+    <form method="POST">
+        {% for streak in streaks %}
+        <div class="list-item">
+            <span class="streak-name">{{ streak.name }}</span>
+            <input type="checkbox" name="action_{{ streak.id }}" value="confirm"> Bekräfta nollställning
+        </div>
+        {% endfor %}
+        <button type="submit" class="button-style">OK</button>
+    </form>
+{% endblock body %}

@@ -737,7 +737,7 @@ def settings(section_name=None):
 
 @pmg_bp.route('/timebox', methods=['GET', 'POST'])
 def timebox():
-    sida = 'Timebox'
+    current_date = datetime.now().strftime("%Y-%m-%d")
     sida, sub_menu = common_route('Min Dag', ['/pmg/month', '/pmg/week', '/pmg/timebox'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])
 
@@ -746,6 +746,6 @@ def timebox():
         time = request.form['time']
 
     date = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
-    return render_template('pmg/timebox.html', date=date,sida=sida, header=sida, sub_menu=sub_menu)
+    return render_template('pmg/timebox.html',current_date=current_date, date=date,sida=sida, header=sida, sub_menu=sub_menu)
 
 # endregion
