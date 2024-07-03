@@ -14,8 +14,6 @@ class User(db.Model, UserMixin):
     firstName = db.Column(db.String(50), nullable=False)
     lastName = db.Column(db.String(50), nullable=False)
     verified = db.Column(db.Boolean, default=False)
-    friends = db.relationship('Friendship', foreign_keys='Friendship.user_id', backref='user', lazy='dynamic')
-    friend_of = db.relationship('Friendship', foreign_keys='Friendship.friend_id', backref='friend', lazy='dynamic')
 
     def __repr__(self):
         return f'{self.username}, {self.email}, {self.password}'
@@ -43,10 +41,18 @@ class BusinessBlogg(db.Model):
     sub_topic = db.Column(db.String(50), nullable=False)
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, unique=False, nullable=False)
-    date = db.Column(db.String(30), unique=False, nullable=False, default=datetime.utcnow)
+    date = db.Column(db.Date, unique=False, nullable=False, default=datetime.utcnow)
 
     def __repr__(self):
         return f"{self.author}, {self.topic}, {self.sub_topic}, {self.title}, {self.content},{self.date}"
+
+class Bullet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    author = db.Column(db.String(50), nullable=False)
+    theme = db.Column(db.String(50), nullable=False)
+    content = db.Column(db.Text, unique=False, nullable=False)
+    date = db.Column(db.Date, unique=False, nullable=False, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 
 class BloggPost(db.Model):
@@ -54,7 +60,7 @@ class BloggPost(db.Model):
     author = db.Column(db.String(50), nullable=False)
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, unique=False, nullable=False)
-    date = db.Column(db.String(30), unique=False, nullable=False)
+    date = db.Column(db.Date, unique=False, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     def __repr__(self):
         return f"{self.author}, {self.title}, {self.content},{self.date}, {self.user_id}"
@@ -154,12 +160,18 @@ class Dagar(db.Model):
 class Month(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     month = db.Column(db.String(80), nullable=False)
-
+    todos = db.Column(db.Text, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    remember = db.Column(db.Text, nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 class Week(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     week = db.Column(db.Integer, nullable=False)
-
+    todos = db.Column(db.Text, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    remember = db.Column(db.Text, nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 class Mail(db.Model):
     _id = db.Column(db.Integer, primary_key=True)
@@ -169,6 +181,7 @@ class Mail(db.Model):
     email = db.Column(db.String(80))
     subject = db.Column(db.String(50))
     message = db.Column(db.Text)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
         return f"{self.company},{self.first_name},{self.last_name},{self.email},{self.subject},{self.message}"
 

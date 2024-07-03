@@ -27,7 +27,7 @@ def login():
 
             streaks = Streak.query.all()
             for streak in streaks:
-                last_reg = datetime.strptime(streak.lastReg, "%Y-%m-%d")
+                last_reg = streak.lastReg
                 reset_date = last_reg + timedelta(days=streak.interval, hours=23, minutes=59, seconds=59)
 
                 if today > reset_date and streak.active is True:

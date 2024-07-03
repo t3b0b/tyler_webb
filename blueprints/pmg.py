@@ -1,6 +1,6 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
-from models import (User, db, Streak, BloggPost, Goals, Friendship,
+from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet,
                     Activity, Score, MyWords, Settings, Dagbok, Dagar)
 from datetime import datetime, timedelta, date
 from flask_login import current_user, login_required
@@ -581,11 +581,17 @@ def journal():
     if not section_name:
         return redirect(url_for('pmg.journal', section_name='Mina Ord'))
 
-    if section_name == 'Mina Ord' or section_name == 'skrivande':
+    if section_name == 'Mina Ord' or section_name == 'skriva':
         act_id = 1
         sida, sub_menu = common_route("Mina Ord", [url_for('pmg.journal', section_name='skriva'),
                                                    url_for('pmg.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         return journal_section(act_id, sida, sub_menu,None)
+
+    elif section_name == "Bullet" or section_name == "Lista":
+        act_id = section_content(Activity, section_name)
+        sida, sub_menu = common_route("Bullet", [url_for('pmg.journal', section_name='skriva'),
+                                                 url_for('pmg.journal', section_name='blogg')], ['Skriv', 'Blogg'])
+        return journal_section(act_id, sida, sub_menu, None)
 
     elif section_name in activity_names:
         act_id = section_content(Activity, section_name)
@@ -605,14 +611,8 @@ def journal():
         my_posts = BloggPost.query.filter_by(title=section_name, user_id=current_user.id).all()
         return journal_section(None, sida, sub_menu, my_posts)
 
-
-@pmg_bp.route('/list', methods=['GET', 'POST'])
-def list():
-    return render_template('/pmg/list.html')
-
 @pmg_bp.route('/journal/<section_name>', methods=['GET', 'POST'])
 def journal_section(act_id, sida, sub_menu, my_posts):
-
     current_date = date.today()
     page_url = 'pmg.journal'
     activities = None
@@ -623,16 +623,15 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     if not time:
         time = 15
     titles = []  # Initialisera titles här för att säkerställa att den alltid har ett värde
-    if sida == 'Lista':
-        return render_template('/pmg/list.html')
+    if sida == "Bullet" or sida == "Lista":
+        return redirect(url_for('pmg.list'))
     if act_id is not None:
         print(act_id)
-        myGoals = Goals.query.filter_by(name='Skriva', user_id=current_user.id).first()
+        myGoals = Goals.query.filter_by(name="Skriva", user_id=current_user.id).first()
         if myGoals:
             activities = Activity.query.filter_by(goal_id=myGoals.id,user_id=current_user.id).all()
             titles_list = Activity.query.filter_by(goal_id=myGoals.id,user_id=current_user.id).all()
             titles = [item.name for item in titles_list]
-
     elif act_id is None:
         myGoals = None
         activities = None
@@ -662,6 +661,25 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     return render_template('pmg/journal.html', time=time, goal=myGoals, activities=activities, side_options=titles,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
                            current_date=current_date, page_url=page_url, act_id=act_id, myPosts=my_posts)
+
+@pmg_bp.route('/list', methods=['GET', 'POST'])
+def list():
+    page_url = 'pmg.list'
+    sida, sub_menu = common_route("Bullet",
+                                  [url_for('pmg.journal', section_name='skriva'),
+                                   url_for('pmg.journal', section_name='blogg')],
+                                  ['Skriv', 'Blogg'])
+    titles = []
+
+    myGoals = Goals.query.filter_by(name="Skriva", user_id=current_user.id).first()
+    if myGoals:
+        titles_list = Activity.query.filter_by(goal_id=myGoals.id, user_id=current_user.id).all()
+        titles = [item.name for item in titles_list]
+
+    if request.method == 'POST':
+        add2db(Bullet, request,[],[],current_user)
+
+    return render_template('/pmg/list.html',page_url=page_url, ordet="Tacksam", sida=sida, header=sida,sub_menu=sub_menu, side_options=titles)
 
 @pmg_bp.route('/get-new-word')
 def get_new_word(section_id):

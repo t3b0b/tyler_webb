@@ -35,7 +35,6 @@ mail = Mail(app)
 with app.app_context():
     db.create_all()
 
-
 #endregion
 @login_manager.user_loader
 def load_user(user_id):
