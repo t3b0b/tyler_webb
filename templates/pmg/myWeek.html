@@ -2,65 +2,64 @@
 
 {% block head %}
     <style>
+        .container {
+            display: flex;
+            gap: 0;
+            padding: 10px;
+            height: 100%; /* Ger hela container full höjd på sidan */
+        }
 
-.container {
-    display: flex;
-    gap: 0;
-    padding: 10px;
-    height: 100%; /* Ger hela container full höjd på sidan */
-}
+        .notes {
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
+            flex: 1;
+        }
 
-.notes {
-    display: flex;
-    flex-direction: column;
-    background-color: #fff;
-    padding: 20px;
-    border: 1px solid #ccc;
-    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
-    flex: 1;
-}
+        .notes h2 {
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
 
-.notes h2 {
-    margin-top: 15px;
-    margin-bottom: 10px;
-}
+        .notes input {
+            width: 100%;
+            margin-bottom: 0;
+            padding: 0;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+            flex-grow: 1;
+        }
 
-.notes input {
-    width: 100%;
-    margin-bottom: 0;
-    padding: 0;
-    border: 1px solid #ccc;
-    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-    flex-grow: 1;
-}
+        .week-planner {
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            flex: 2;
+        }
 
-.week-planner {
-    background-color: #fff;
-    padding: 20px;
-    border: 1px solid #ccc;
-    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
-    overflow-y: auto;
-    flex: 2;
-}
+        .week-planner h2 {
+            margin-top: 0;
+        }
 
-.week-planner h2 {
-    margin-top: 0;
-}
+        .week-planner table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-.week-planner table {
-    width: 100%;
-    border-collapse: collapse;
-}
+        .week-planner th, .week-planner td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
 
-.week-planner th, .week-planner td {
-    border: 1px solid #ccc;
-    padding: 10px;
-    text-align: center;
-}
-
-.week-planner th {
-    background-color: #f4f4f4;
-}
+        .week-planner th {
+            background-color: #f4f4f4;
+        }
     </style>
 {% endblock head %}
 
@@ -69,7 +68,7 @@
     <div class="notes">
         <h2>Att-göra</h2>
         {% for num in range(1, 6) %}
-            <input type="text">{{ weekly_data.get('todos',"") }}</input>
+            <input type="text">{{ weekly_data.get('todos', '') }}</input>
         {% endfor %}
         <h2>Att tänka på</h2>
         {% for num in range(1, 6) %}
@@ -97,6 +96,9 @@
                     <td>{{ hour }}:00</td>
                     {% for day in ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag'] %}
                     <td contenteditable="true">
+                        {% for activity in activities.get(day, {}).get(hour, []) %}
+                        {{ activity['activity_name'] }} <br>
+                        {% endfor %}
                         {% for activity in weekly_data.get(day, {}).get(hour, []) %}
                         {{ activity }}<br>
                         {% endfor %}

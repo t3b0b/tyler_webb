@@ -3,12 +3,45 @@ from flask import Blueprint, render_template, redirect, url_for, request, jsonif
 from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet,
                     Activity, Score, MyWords, Settings, Dagbok, Dagar)
 from datetime import datetime, timedelta, date
+from pytz import timezone
 from flask_login import current_user, login_required
 
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
 #region Functions
+def get_activities_for_user(user_id, start_date, end_date):
+    tz = timezone('Europe/Stockholm')  # Byt till din aktuella tidszon om den skiljer sig
+    start_date = start_date.astimezone(tz)
+    end_date = end_date.astimezone(tz)
+    return db.session.query(
+        Score,
+        Activity.name.label('activity_name'),
+        Goals.name.label('goal_name')
+    ).join(
+        Activity, Activity.id == Score.Activity
+    ).outerjoin(
+        Goals, Goals.id == Score.Goal
+    ).filter(
+        Score.user_id == user_id,
+        Score.Start >= start_date,
+        Score.End <= end_date
+    ).all()
 
+def organize_activities_by_time(activities):
+    activities_dict = {}
+    for score, activity_name, goal_name in activities:
+        day = score.Start.strftime('%A')
+        hour = score.Start.hour
+        print(hour)
+        if day not in activities_dict:
+            activities_dict[day] = {}
+        if hour not in activities_dict[day]:
+            activities_dict[day][hour] = []
+        activities_dict[day][hour].append({
+            'activity_name': activity_name,
+            'goal_name': goal_name
+        })
+    return activities_dict
 def parse_date(date_str):
     return datetime.strptime(date_str, '%Y-%m-%d')
 def process_weekly_scores(scores, start_week, end_week):
@@ -106,7 +139,6 @@ def update_dagar(user_id, model):
     my_Score, total = myDayScore(today, user_id)
     my_streaks = Streak.query.filter_by(user_id=user_id).all()
     tot_streaks = len(my_streaks)
-    print(tot_streaks)
 
     if my_streaks:
         active_streaks = Streak.query.filter_by(user_id=user_id,active=True).all()
@@ -304,7 +336,6 @@ def timer():
 def streak():
     current_date = date.today()
     current_date = current_date.strftime('%Y-%m-%d')
-    print(current_date)
     sida, sub_menu = common_route("Mina Streaks", ['/pmg/timebox','/pmg/streak', '/pmg/goals'], ['My Day','Streaks', 'Goals'])
     myStreaks = query(Streak,'user_id',current_user.id)
     myGoals = query(Goals, 'user_id', current_user.id)
@@ -434,8 +465,6 @@ def myday():
                 'total_time': float(score.Time)  # Se till att total_time alltid sätts
             }
 
-    print(aggregated_scores)
-
     today = datetime.now()
     valid_streaks = []
     if myStreaks:
@@ -477,8 +506,7 @@ def myday():
                 print(f"Invalid score value: {score_str}")
         else:
             print("Score field is empty")
-    for item in aggregated_scores:
-        print(item)
+
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
                            my_goals=myGoals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
                            sub_menu=sub_menu, sum_scores=aggregated_scores)
@@ -536,6 +564,7 @@ def month(year=None, month=None):
 
     return render_template('pmg/month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida,
                            sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data)
+
 @pmg_bp.route('/week')
 def week():
     date_now = datetime.now()
@@ -545,6 +574,9 @@ def week():
 
     start_week = date_now - timedelta(days=date_now.weekday())
     end_week = start_week + timedelta(days=6)
+
+    activities = get_activities_for_user(current_user.id, start_week, end_week)
+    activities_dict = organize_activities_by_time(activities)
 
     myScore = db.session.query(
         Goals.name.label('goal_name'),
@@ -565,11 +597,32 @@ def week():
     ).filter(
         Score.user_id == user_id
     ).all()
-
     weekly_data = process_weekly_scores(myScore, start_week, end_week)
 
     return render_template('pmg/myWeek.html', sida='Veckoplanering', weekly_data=weekly_data, header='Veckoplanering',
-                           total_score=0, sub_menu=sub_menu)
+                           total_score=0, sub_menu=sub_menu, activities=activities_dict)
+
+
+
+@pmg_bp.route('/timebox', methods=['GET', 'POST'])
+def timebox():
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.now()
+    sida, sub_menu = common_route('Min Dag', ['/pmg/month', '/pmg/week', '/pmg/timebox'],
+                                  ['Min Månad', 'Min Vecka', 'Min Dag'])
+    start_date = today.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_date = today.replace(hour=23, minute=59, second=59, microsecond=999999)
+    activities = get_activities_for_user(current_user.id, start_date, end_date)
+    activities_dict = organize_activities_by_time(activities)
+
+    if request.method == 'POST':
+        date = request.form['date']
+        time = request.form['time']
+
+    date = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
+    return render_template('pmg/timebox.html', current_date=current_date, date=date,
+                           sida=sida, header=sida, sub_menu=sub_menu, activities=activities_dict)
+
 # endregion
 
 #region Journal
@@ -735,19 +788,5 @@ def settings(section_name=None):
             return redirect(url_for('pmg.settings', section_name=section_name))
 
     return render_template('pmg/settings.html', sida=sida, header=sida, my_words=mina_Ord, sub_menu=sub_menu)
-
-
-@pmg_bp.route('/timebox', methods=['GET', 'POST'])
-def timebox():
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    sida, sub_menu = common_route('Min Dag', ['/pmg/month', '/pmg/week', '/pmg/timebox'],
-                                  ['Min Månad', 'Min Vecka', 'Min Dag'])
-
-    if request.method == 'POST':
-        date = request.form['date']
-        time = request.form['time']
-
-    date = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
-    return render_template('pmg/timebox.html',current_date=current_date, date=date,sida=sida, header=sida, sub_menu=sub_menu)
 
 # endregion
