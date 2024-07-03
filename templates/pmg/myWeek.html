@@ -2,62 +2,65 @@
 
 {% block head %}
     <style>
-        .container {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 20px;
-            height: 100vh;
-            padding: 20px;
-        }
 
-        .notes {
-            background-color: #fff;
-            padding: 20px;
-            border: 1px solid #ccc;
-            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-        }
+.container {
+    display: flex;
+    gap: 0;
+    padding: 10px;
+    height: 100%; /* Ger hela container full höjd på sidan */
+}
 
-        .notes h2 {
-            margin-top: 0;
-        }
+.notes {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    padding: 20px;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
+    flex: 1;
+}
 
-        .notes textarea {
-            width: 100%;
-            flex: 1;
-            margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-        }
+.notes h2 {
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
 
-        .week-planner {
-            background-color: #fff;
-            padding: 20px;
-            border: 1px solid #ccc;
-            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
-            overflow-y: auto;
-        }
+.notes input {
+    width: 100%;
+    margin-bottom: 0;
+    padding: 0;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+    flex-grow: 1;
+}
 
-        .week-planner h2 {
-            margin-top: 0;
-        }
+.week-planner {
+    background-color: #fff;
+    padding: 20px;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    flex: 2;
+}
 
-        .week-planner table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+.week-planner h2 {
+    margin-top: 0;
+}
 
-        .week-planner th, .week-planner td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: center;
-        }
+.week-planner table {
+    width: 100%;
+    border-collapse: collapse;
+}
 
-        .week-planner th {
-            background-color: #f4f4f4;
-        }
+.week-planner th, .week-planner td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+}
+
+.week-planner th {
+    background-color: #f4f4f4;
+}
     </style>
 {% endblock head %}
 
@@ -65,11 +68,17 @@
 <div class="container">
     <div class="notes">
         <h2>Att-göra</h2>
-        <textarea rows="5">{{ weekly_data.get('todos', '') }}</textarea>
+        {% for num in range(1, 6) %}
+            <input type="text">{{ weekly_data.get('todos',"") }}</input>
+        {% endfor %}
         <h2>Att tänka på</h2>
-        <textarea rows="5">{{ weekly_data.get('thoughts', '') }}</textarea>
+        {% for num in range(1, 6) %}
+            <input type="text">{{ weekly_data.get('thoughts', '') }}</input>
+        {% endfor %}
         <h2>Kom-ihåg</h2>
-        <textarea rows="5">{{ weekly_data.get('reminders', '') }}</textarea>
+        {% for num in range(1, 6) %}
+            <input type="text">{{ weekly_data.get('reminders', '') }}</input>
+        {% endfor %}
     </div>
     <div class="week-planner">
         <h2>Veckoplanering</h2>

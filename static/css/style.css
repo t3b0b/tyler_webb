@@ -586,9 +586,11 @@ textarea {
 
 
 @media (max-width: 768px) {
+
     .menu-toggle {
         display: block;
-
+        width: 20px;
+        height: 15px;
     }
 
     .menu-container nav {
@@ -627,7 +629,7 @@ textarea {
     }
 
     .main-container {
-
+        width:100%
     }
 
     .day-container {
@@ -642,7 +644,7 @@ textarea {
     }
 
     .form-box input {
-        width: 800px;
+        width: 620px;
         max-width: 100%;
     }
 
@@ -674,12 +676,12 @@ textarea {
     }
 
     .list-container {
-        width: 100%;
+        width: 80%;
         display: flex;
     }
 
     .items-container {
-        width: 100%;
+        width: 90%;
         margin-bottom: 10px;
         padding: 10px;
         box-sizing: border-box;

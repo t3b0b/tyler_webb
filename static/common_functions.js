@@ -62,11 +62,17 @@ function stopTimer() {
     }
 }
 
+function formatDateForMySQL(date) {
+    return date.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 function saveActivity() {
     goal = document.getElementById('goalSelect')?.value;
     activity = document.getElementById('activitySelect')?.value;
     document.getElementById('aID').value = activity;
     document.getElementById('gID').value = goal;
+    document.getElementById("start").value = new Date(openTime).toISOString().slice(0, 19).replace('T', ' ');
+    document.getElementById("end").value = new Date(closeTime).toISOString().slice(0, 19).replace('T', ' ');
     let elapsedTime = (closeTime - openTime) / 1000 / 60; // Konvertera millisekunder till minuter
     elapsedTime = Math.round(elapsedTime);
     document.getElementById('score-disp').textContent = elapsedTime;

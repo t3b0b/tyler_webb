@@ -89,20 +89,20 @@
 <div class="day-container">
     <div class="list-container" style="grid-column: span">
         <h2>Goals</h2>
-        {% if my_score %}
+        {% if sum_scores %}
         <ul>
-            {% for score in my_score %}
+            {% for activity, score in sum_scores.items() %}
             <li class="items-container">
-                {% if score.goal_name %}
-                    <strong>Mål:</strong> {{ score.goal_name }}
+                {% if score.Goal %}
+                    <strong>Mål: </strong> {{ score.Goal }}
                 {% endif %}
-                {% if score.activity_name %}
-                    <strong>Aktivitet:</strong> {{ score.activity_name }}
+                {% if score.Activity %}
+                    <strong>Aktivitet: </strong> {{ score.Activity }}
                 {% endif %}
-                {% if score.streak_name %}
-                    <strong>Streak:</strong> {{ score.streak_name }}
+                {% if score.Streak %}
+                    <strong>Streak: </strong> {{ score.Streak }}
                 {% endif %}
-                <strong>Poäng:</strong> {{ score.Time }}
+                <strong>Poäng: </strong> {{ score.total_time }}
             </li>
             {% endfor %}
         </ul>
@@ -191,9 +191,11 @@
 </div>
 <form method="POST">
     <div id="completed-form" class="list-item">
-        <input type="text" id="gID" name="gID" style="display: none;">
-        <input type="text" id="aID" name="aID" style="display: none;">
-        <input type="text" id="aDate" name="aDate" value='{{ current_date }}' style="display: none;">
+        <input type="hidden" id="gID" name="gID" style="display: none;">
+        <input type="hidden" id="aID" name="aID" style="display: none;">
+        <input type="hidden" id="aDate" name="aDate" value='{{ current_date }}' style="display: none;">
+        <input type="hidden" id="start" name="start" style="display: none;">
+        <input type="hidden" id="end" name="end" style="display: none;">
         <input type="text" id="score" name="score" style="display: none;">
         <div class="button-center" id="complete-form" style="display: none">
             <button type="submit" id="save-btn" class="button-style">Save</button>

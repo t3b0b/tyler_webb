@@ -1,28 +1,24 @@
 from random import choice
-import plotly.graph_objects as go
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from models import (User, db, Streak, BloggPost, Goals, Friendship,
                     Activity, Score, MyWords, Settings, Dagbok, Dagar)
 from datetime import datetime, timedelta, date
 from flask_login import current_user, login_required
-import pandas as pd
 
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
 #region Functions
 
 def parse_date(date_str):
-    # Anpassa formatet till din datumsträng
     return datetime.strptime(date_str, '%Y-%m-%d')
-
-
 def process_weekly_scores(scores, start_week, end_week):
     week_days = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
     weekly_data = {day: {} for day in week_days}
 
     for score in scores:
-        score_date = parse_date(score.Date)  # Konvertera datumet från sträng till datetime objekt
-        day_of_week = (score_date - start_week).days
+        score_date = datetime.strftime(score.Date,'%Y-%m-%d')  # Använd datumet direkt som date objekt
+        parsed_date = parse_date(score_date)
+        day_of_week = (parsed_date - start_week).days
         day_name = week_days[day_of_week]
 
         if isinstance(score.Time, str):
@@ -38,14 +34,12 @@ def process_weekly_scores(scores, start_week, end_week):
         weekly_data[day_name][hour].append(score.activity_name)
 
     return weekly_data
-
 def read(filename):
     with open(filename,'r') as file:
         data = file.read()
     data = data.split('\n')
     data_ord = choice(data)
     return data_ord,data
-
 def common_route(title,sub_url,sub_text):
     sida = title
     sub_menu = []
@@ -58,14 +52,16 @@ def common_route(title,sub_url,sub_text):
         return sida, sub_menu
     else:
         return sida, None
-
 def add2db(db_model, request, form_fields, model_fields, user):
     new_entry = db_model()
-    current_date = datetime.now().strftime("%Y-%m-%d")  # Använd YYYY-MM-DD format
+    current_date = datetime.now()  # Använd YYYY-MM-DD format
 
     # Iterera över form_fields och model_fields och sätt attribut på new_entry
     for form_field, model_field in zip(form_fields, model_fields):
-        setattr(new_entry, model_field, request.form[form_field])
+        value = request.form[form_field]
+        if model_field in ['Start', 'End']:
+            value = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+        setattr(new_entry, model_field, value)
 
     # Lägg till user_id om det är en del av modellen
     if hasattr(new_entry, 'user_id'):
@@ -96,19 +92,15 @@ def add2db(db_model, request, form_fields, model_fields, user):
     # Lägg till den nya posten i sessionen och committa
     db.session.add(new_entry)
     db.session.commit()
-
 def query(db, key, filter):
     return db.query.filter_by(**{key: filter}).all()
-
 def unique(db,by_db):
     unique_data = [post.title for post in db.query.with_entities(by_db).distinct().all()]
     list = [item[0] for item in unique_data]
     return list
-
 def section_content(db,section):
     list = db.query.filter_by(name=section).first()
     return list.id
-
 def update_dagar(user_id, model):
     today = date.today()
     my_Score, total = myDayScore(today, user_id)
@@ -137,14 +129,12 @@ def update_dagar(user_id, model):
             dag.completed_streaks_names = streakNames
             dag.total_points = total
             db.session.commit()
-
 def completed_streaks(day, model=Dagar):
     dag = model.query.filter_by(user_id=current_user.id, date=day).first()
     if dag and dag.completed_streaks_names:
         names_list = dag.completed_streaks_names.split(',')
         return [name.strip() for name in names_list]
     return []
-
 def update_streak_details(streak, today):
 
     if today != streak.lastReg:
@@ -200,8 +190,6 @@ def update_streak_details(streak, today):
         db.session.commit()
 
         return score, goal_id
-
-
 def myDayScore(date, user_id):
     total = 0
     myScore = db.session.query(
@@ -226,8 +214,6 @@ def myDayScore(date, user_id):
         total += float(score.Time)
         total = int(total)
     return myScore, total
-
-
 def generate_calendar_weeks(year, month):
     first_day_of_month = datetime(year, month, 1)
     days = []
@@ -425,10 +411,9 @@ def delete_goal(goal_id):
 # endregion
 
 #region MyDay
-
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 def myday():
-    sida, sub_menu = common_route("Min Grind", ['/pmg/timebox','/pmg/streak', '/pmg/goals'], ['My Day','Streaks', 'Goals'])
+    sida, sub_menu = common_route("Min Grind", ['/pmg/timebox', '/pmg/streak', '/pmg/goals'], ['My Day', 'Streaks', 'Goals'])
     date_now = date.today()
     update_dagar(current_user.id, Dagar)
     myGoals = query(Goals, 'user_id', current_user.id)
@@ -436,6 +421,7 @@ def myday():
     myScore, total = myDayScore(date_now, current_user.id)
 
     aggregated_scores = {}
+
     for score in myScore:
         activity_name = score.goal_name if score.goal_name else "?"
         if activity_name in aggregated_scores:
@@ -445,30 +431,28 @@ def myday():
                 'Goal': score.goal_name,
                 'Activity': score.activity_name,
                 'Streak': score.streak_name,
-                'Total score': float(score.Time)
+                'total_time': float(score.Time)  # Se till att total_time alltid sätts
             }
 
     print(aggregated_scores)
 
-    today = datetime.now()  # Ändra till datetime för att matcha typen
+    today = datetime.now()
     valid_streaks = []
     if myStreaks:
         for streak in myStreaks:
             interval_days = timedelta(days=streak.interval, hours=23, minutes=59, seconds=59)
-
-            if streak.lastReg:  # Kontrollera om lastReg inte är tomt
+            if streak.lastReg:
                 try:
-                    last_reg_date = datetime.strptime(streak.lastReg, "%Y-%m-%d")
+                    last_reg_date = streak.lastReg
                     streak_interval = last_reg_date + interval_days
 
-                    # Kontrollera om streaken ska visas
                     if streak.count == 0:
                         valid_streaks.append(streak)
                     elif streak.count >= 1:
-                        if today.date() == streak_interval.date():  # Jämför endast datumdelen
+                        if today.date() == streak_interval.date():
                             valid_streaks.append(streak)
                         elif streak_interval.date() < today.date():
-                            continue  # Ignorera streaks där lastReg + interval är större än idag
+                            continue
                     elif streak_interval.date() < today.date():
                         streak.active = False
                         streak.count = 0
@@ -480,24 +464,24 @@ def myday():
     if myScore:
         sorted_myScore = sorted(myScore, key=lambda score: score[0])
 
-
     if request.method == 'POST':
         score_str = request.form.get('score', '').strip()
         if score_str:
             try:
                 score_check = float(score_str)
-                if score_check > 1:
-                    add2db(Score, request, ['gID', 'aID', 'aDate', 'score'],
-                           ['Goal', 'Activity', 'Date', 'Time'], current_user)
+                if score_check >= 1:
+                    add2db(Score, request, ['gID', 'aID', 'aDate', 'start', 'end', 'score'],
+                           ['Goal', 'Activity', 'Date', 'Start', 'End', 'Time'], current_user)
                     return redirect(url_for('pmg.myday'))
             except ValueError:
                 print(f"Invalid score value: {score_str}")
         else:
             print("Score field is empty")
-
+    for item in aggregated_scores:
+        print(item)
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
                            my_goals=myGoals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
-                           sub_menu=sub_menu)
+                           sub_menu=sub_menu, sum_scores=aggregated_scores)
 
 @pmg_bp.route('/myday/<date>')
 def myday_date(date):
