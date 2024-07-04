@@ -108,12 +108,12 @@ class Goals(db.Model):
 class Activity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    measurement = db.Column(db.String(250), nullable=True)
+    unit = db.Column(db.String(20), nullable=True)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
     milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     def __repr__(self):
-        return f'{self.name}, {self.measurement}, {self.goal_id}, {self.user_id}'
+        return f'{self.name}, {self.unit}, {self.goal_id}, {self.user_id}'
 
 class Score(db.Model):
     id = db.Column(db.Integer, primary_key=True)

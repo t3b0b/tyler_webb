@@ -2,9 +2,6 @@
 
 {% block head %}
     <style>
-
-
-
         .form-box button {
             height: 30px;
             margin: 5px 0 5px 0;
@@ -15,66 +12,100 @@
             color: white;
             cursor: pointer;
         }
+
         input {
             margin-top: 30px;
-            width:300px
+            width: 300px;
         }
 
         .activity {
-            margin-left: 70px;
             padding: 5px;
+            margin-left: 30px;
         }
 
-        .goals-box > div:first-child { /* Assuming the first div contains the header and button */
+        .items-container {
             display: flex;
+            flex-direction: column;
+            align-items: center;
             width: 100%;
-            justify-content: space-between; /* This separates the button and the rest to opposite ends */
         }
 
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .list-item h3 {
+            flex-grow: 1;
+            margin: 0;
+        }
+
+        .toggle-button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .activity-list {
+            margin-left: 20px;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .form-box {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            align-items: center;
+        }
     </style>
 {% endblock head %}
 
 {% block body %}
 <div class="goal-streak-container">
-        {% if goals %}
-            {% for goal in goals %}
-            <div class="items-container", style="flex-direction: column; align-items: flex-start;">
-                <div class="list-item">
-                    <button class="toggle-button" style="justify-content: flex-start" onclick="toggleActivities(event, this)">&#5125;</button>
-                    <h3 style="margin-left: 10px;">{{ goal.name }}</h3>
-                    <button class="toggle-button" onclick="deleteGoal({{ goal.id }})">&#10060;</button>
-
-                <div id="activity-list" style="display: none;">
-                    {% for activity in goal.activities %}
-                    <div class="activity">{{ activity.name }}</div>
-                    {% endfor %}
-                    <button onclick="showAddActivityForm(event, this)">Add Activity</button>
-                    <form method="POST" id="add-activity-form" style="display: none;">
-                        <input type="hidden" name="goalId" value="{{ goal.id }}">
-                        <input type="text" name="activity-name" placeholder="Activity Name" required>
-                        <select id="new-goal-activity" name="activity-measurement">
-                            <option value="tid">Tid</option>
-                            <option value="antal">Antal</option>
-                        </select>
-
-                        <button type="submit" name="action" value="addActivity">Save Activity</button>
-                        <button type="button" onclick="hideAddActivityForm(event, this)">Cancel</button>
-                    </form>
-                </div>
+    {% if goals %}
+        {% for goal in goals %}
+        <div class="items-container">
+            <div class="list-item">
+                <button class="toggle-button" onclick="toggleActivities(this)">&#5125;</button>
+                <h3>{{ goal.name }}</h3>
+                <button class="toggle-button" onclick="deleteGoal({{ goal.id }})">&#10060;</button>
             </div>
+            <div class="activity-list">
+                {% for activity in goal.activities %}
+                <div class="activity">{{ activity.name }}
+                    <button class="toggle-button" onclick="deleteActivity({{ activity.id }})">&#10060;</button>
                 </div>
-            {% endfor %}
-        {% endif %}
-
-</div>
-        <button class="button-style" id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
-        <div class="form-box" id="new-goal-form" style="display: none;">
-            <form method="POST">
-                <input type="text" placeholder="Goal Name" name="goalName">
-                <button class="button-style" type="button" style="background-color: firebrick;" onclick="cancelNewGoalForm()">Cancel</button>
-                <button class="button-style" type="submit" name="action" value="addGoal" style="background-color: cornflowerblue;">Save</button>
-            </form>
+                {% endfor %}
+                <button style="width: 300px; justify-self: center" onclick="showAddActivityForm(this)">Add Activity</button>
+                <form method="POST" class="add-activity-form" style="display: none;">
+                    <input type="hidden" name="goalId" value="{{ goal.id }}">
+                    <input type="text" name="activity-name" placeholder="Activity Name" required>
+                    <select id="new-goal-activity" name="activity-measurement">
+                        <option value="tid">Tid</option>
+                        <option value="antal">Antal</option>
+                    </select>
+                    <button type="submit" name="action" value="addActivity">Save Activity</button>
+                    <button type="button" onclick="hideAddActivityForm(this)">Cancel</button>
+                </form>
+            </div>
         </div>
+        {% endfor %}
+    {% endif %}
+</div>
+<button class="button-style" id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
+<div class="form-box" id="new-goal-form" style="display: none;">
+    <form method="POST">
+        <input type="text" placeholder="Goal Name" name="goalName">
+        <button class="button-style" type="button" style="background-color: firebrick;" onclick="cancelNewGoalForm()">Cancel</button>
+        <button class="button-style" type="submit" name="action" value="addGoal" style="background-color: cornflowerblue;">Save</button>
+    </form>
+</div>
 <script>
     function deleteGoal(goalId) {
         if (confirm('Är du säker på att du vill radera detta mål?')) {
@@ -89,7 +120,7 @@
             .then(data => {
                 if (data.success) {
                     alert('Målet har raderats!');
-                    location.reload(); // Ladda om sidan för att uppdatera listan
+                    location.reload();
                 } else {
                     alert('Ett fel inträffade. Försök igen.');
                 }
@@ -97,34 +128,32 @@
         }
     }
 
-function toggleActivities(event, button) {
-    event.stopPropagation(); // Förhindra bubbling av event till högre element
-    var goalsBox = button.closest('.items-container'); // Hämta närmaste mållåda
-    var activityList = goalsBox.querySelector('#activity-list'); // Hämta aktivitetslistan
-    activityList.style.display = activityList.style.display === 'none' ? 'block' : 'none'; // Visa eller dölj aktivitetslistan
-    button.textContent = activityList.style.display === 'none' ?  'ᐅ' : 'ᐁ' ; // Ändra pilens riktning
-}
-function showAddActivityForm(event, button) {
-    event.stopPropagation(); // Stoppa event-bubbling
-    var form = button.nextElementSibling;
-    form.style.display = 'block';
-    button.style.display = 'none';
-}
+    function toggleActivities(button) {
+        const activityList = button.closest('.items-container').querySelector('.activity-list');
+        activityList.style.display = activityList.style.display === 'none' ? 'flex' : 'none';
+        button.textContent = activityList.style.display === 'none' ? 'ᐅ' : 'ᐁ';
+    }
 
-function hideAddActivityForm(event, button) {
-    event.stopPropagation(); // Stoppa event-bubbling
-    var form = button.parentElement;
-    form.style.display = 'none';
-    form.previousElementSibling.style.display = 'block'; // Visa "Add Activity"-knappen igen
-}
-function expandNewGoalForm() {
-    document.getElementById('new-goal-button').style.display = 'none';
-    document.getElementById('new-goal-form').style.display = 'block';
-}
+    function showAddActivityForm(button) {
+        const form = button.nextElementSibling;
+        form.style.display = 'flex';
+        button.style.display = 'none';
+    }
 
-function cancelNewGoalForm() {
-    document.getElementById('new-goal-form').style.display = 'none';
-    document.getElementById('new-goal-button').style.display = 'block';
-}
+    function hideAddActivityForm(button) {
+        const form = button.parentElement;
+        form.style.display = 'none';
+        form.previousElementSibling.style.display = 'block';
+    }
+
+    function expandNewGoalForm() {
+        document.getElementById('new-goal-button').style.display = 'none';
+        document.getElementById('new-goal-form').style.display = 'flex';
+    }
+
+    function cancelNewGoalForm() {
+        document.getElementById('new-goal-form').style.display = 'none';
+        document.getElementById('new-goal-button').style.display = 'block';
+    }
 </script>
 {% endblock body %}

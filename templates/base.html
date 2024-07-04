@@ -56,6 +56,14 @@
         </ul>
       {% endif %}
     {% endwith %}
+        <div class="info-button" onmouseover="showTooltip()" onmouseout="hideTooltip()">
+        <i>i</i>
+    </div>
+    <div class="info-tooltip" id="info-tooltip">
+        {% if page_info %}
+            <p> {{ page_info }} </p>
+        {% endif %}
+    </div>
     <div class="main-container">
         {% if side_options %}
             <div class="side-menu">
@@ -85,6 +93,13 @@
         }
     });
 });
+    function showTooltip() {
+        document.getElementById('info-tooltip').style.display = 'block';
+    }
+
+    function hideTooltip() {
+        document.getElementById('info-tooltip').style.display = 'none';
+    }
         function toggleMenu() {
             var nav = document.querySelector('.menu-container nav');
             nav.classList.toggle('active');

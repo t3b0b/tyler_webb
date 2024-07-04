@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<style>
+<style xmlns="http://www.w3.org/1999/html">
     .repetitions {
         align-self: center;
     }
@@ -153,34 +153,22 @@
         <h2>Streaks</h2>
         {% if my_streaks %}
         {% for streak in my_streaks %}
-        <div class="items-container" style="justify-content: space-evenly">
+        <div class="items-container" style="justify-content: space-between">
             <label> {{ streak.name }}</label>
             <label> {{ streak.condition }}</label>
-            <div class="streak-icon">
-                <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post" onsubmit="animateCheck(event, this)">
-                    <button type="submit" style="border: none; background: none;">
-                        <svg id="checkbox-{{ streak.id }}" class="checkbox" xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 242 216">
-                            <ellipse id="background-{{ streak.id }}" class="background" cx="121" cy="108" rx="121" ry="108" fill="green" />
-                            <path id="check" d="M38.5133 122.529L65.1039 95.7875L107.94 135.826L215.29 52.7692L101.124 171.413L38.5133 122.529Z" fill="white"/>
-                        </svg>
-                    </button>
-                </form>
-            </div>
-            <div class="streak-icon">
-                <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='cross') }}" method="post">
-                    <button type="submit" style="border: none; background: none;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 233 220" fill="none">
-                            <g id="Crossmark">
-                            <ellipse id="Circle" cx="116.5" cy="110" rx="116.5" ry="110" fill="#D44242"/>
-                            <g id="Cross">
-                            <path d="M157.278 48.6658L173 57.7336L75.8634 172L60.1412 162.932L157.278 48.6658Z" fill="#D9D9D9"/>
-                            <path d="M60 57.0678L75.7222 48L172.859 162.266L157.137 171.334L60 57.0678Z" fill="#D9D9D9"/>
-                            </g>
-                        </g>
-                        </svg>
-                    </button>
-                </form>
-            </div>
+            <form style="display: flex; flex-direction: row; gap: 35px;" action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post" onsubmit="animateCheck(event, this)">
+                {% if streak.type == "number" %}
+                    <input type="number" name="amount" style="width: 30px; background: #f0f0f0">
+                {% endif %}
+                <div class="streak-icon">
+                        <button type="submit" style="border: none; background: none; margin-left: 0;">
+                            <svg id="checkbox-{{ streak.id }}" class="checkbox" xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 242 216">
+                                <ellipse id="background-{{ streak.id }}" class="background" cx="121" cy="108" rx="121" ry="108" fill="green" />
+                                <path id="check" d="M38.5133 122.529L65.1039 95.7875L107.94 135.826L215.29 52.7692L101.124 171.413L38.5133 122.529Z" fill="white"/>
+                            </svg>
+                        </button>
+                </div>
+            </form>
         </div>
         {% endfor %}
         {% endif %}

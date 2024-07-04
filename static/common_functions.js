@@ -81,6 +81,27 @@ function saveActivity() {
     console.log(`Activity saved with goal: ${goal}, activity: ${activity}, elapsedTime: ${elapsedTime}`);
 }
 
+function deleteActivity(activityId) {
+    if (confirm('Är du säker på att du vill radera denna aktivitet?')) {
+        fetch('/pmg/delete-activity/' + activityId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ activityId: activityId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Aktiviteten har raderats!');
+                location.reload(); // Ladda om sidan för att uppdatera listan
+            } else {
+                alert('Ett fel inträffade. Försök igen.');
+            }
+        });
+    }
+}
+
 function startTimerFromSelection() {
     var duration = document.getElementById('timeSelect').value * 60; // Konverterar minuter till sekunder
     var display = document.getElementById('continueButton');

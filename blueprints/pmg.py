@@ -26,7 +26,6 @@ def get_activities_for_user(user_id, start_date, end_date):
         Score.Start >= start_date,
         Score.End <= end_date
     ).all()
-
 def organize_activities_by_time(activities):
     activities_dict = {}
     for score, activity_name, goal_name in activities:
@@ -273,6 +272,10 @@ def generate_calendar_weeks(year, month):
     weeks = [days[i:i + 7] for i in range(0, len(days), 7)]
 
     return weeks
+def getInfo(filename):
+    with open(filename, 'r') as f:
+        text = f.read()
+        return(text)
 # endregion
 
 @pmg_bp.route('/add_friend/<int:friend_id>')
@@ -342,9 +345,9 @@ def streak():
 
     if request.method == 'POST':
         form_fields = ['streakName','streakInterval','streakCount',
-                       'goalSelect','streakBest','streakCondition',
-                       'streakLast','streakStart']
-        model_fields = ['name', 'interval', 'count',
+                       'streakType','goalSelect','streakBest',
+                       'streakCondition','streakLast','streakStart']
+        model_fields = ['name', 'interval', 'count', 'type',
                         'goal_id','best','condition',
                         'lastReg','dayOne']
         add2db(Streak, request, form_fields, model_fields, current_user)
@@ -409,6 +412,15 @@ def get_activities(goal_id):
     activity_list = [{'id': activity.id, 'name': activity.name} for activity in activities]
     return jsonify(activity_list)
 
+@pmg_bp.route('/delete-activity/<int:activity_id>', methods=['POST'])
+def delete_activity(activity_id):
+    activity = Activity.query.get(activity_id)
+    if activity:
+        db.session.delete(activity)
+        db.session.commit()
+        return jsonify(success=True), 200
+    return jsonify(success=False), 404
+
 @pmg_bp.route('/goals',methods=['GET', 'POST'])
 def goals():
     sida, sub_menu = common_route("Mina Mål", ['/pmg/timebox','/pmg/streak', '/pmg/goals'], ['My Day','Streaks', 'Goals'])
@@ -444,6 +456,7 @@ def delete_goal(goal_id):
 #region MyDay
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 def myday():
+    pageInfo = getInfo('mydayInfo.txt')
     sida, sub_menu = common_route("Min Grind", ['/pmg/timebox', '/pmg/streak', '/pmg/goals'], ['My Day', 'Streaks', 'Goals'])
     date_now = date.today()
     update_dagar(current_user.id, Dagar)
@@ -509,7 +522,7 @@ def myday():
 
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
                            my_goals=myGoals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
-                           sub_menu=sub_menu, sum_scores=aggregated_scores)
+                           sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo)
 
 @pmg_bp.route('/myday/<date>')
 def myday_date(date):
