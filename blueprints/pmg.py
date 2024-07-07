@@ -685,12 +685,16 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     ordet, ord_lista = read('orden.txt')
     if sida == 'Dagbok':
         ordet = current_date
+    elif sida == "Bullet":
+        ordet = ['Tacksam för', 'Inför imorgon', "Personer som betyder",
+                 'Distraherar mig', 'Motiverar mig',
+                 'Jag borde...', 'Värt att fundera på', 'Jag ska försöka..']
+
     time = Settings.query.filter_by(user_id=current_user.id).first().stInterval
     if not time:
         time = 15
     titles = []  # Initialisera titles här för att säkerställa att den alltid har ett värde
-    if sida == "Bullet" or sida == "Lista":
-        return redirect(url_for('pmg.list'))
+
     if act_id is not None:
         print(act_id)
         myGoals = Goals.query.filter_by(name="Skriva", user_id=current_user.id).first()

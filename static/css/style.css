@@ -170,12 +170,13 @@ header h1 {
 
 .form-box {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     border: 1px solid #000000;
     padding: 5px;
     flex-direction: column;
-    max-width: 80%;
+    width: 900px;
+    max-width: 100%;
     margin: 5px auto 5px auto;
     background-color: #ffffff;
     border-radius: 3px;
@@ -185,9 +186,10 @@ header h1 {
 .form-box input {
     margin-bottom: 5px;
     margin-top: 5px;
+    margin-right: 10%;
     padding: 5px;
     max-width: 90%;
-    width: 800px;
+    width: 75%;
     box-sizing: border-box;
 }
 
@@ -195,8 +197,8 @@ header h1 {
     margin-bottom: 5px;
     margin-top: 5px;
     justify-content: flex-start;
-    margin-right: 20px;
-    font-weight: bold;
+    margin-left: 10%;
+    font-weight: normal;
 }
 
 #reg-btn {
@@ -423,6 +425,7 @@ textarea {
 .ordet input {
     margin-inline: auto;
     height: 30px;
+    width: 80%;
     font-family: 'Arial', sans-serif;
     font-size: larger;
     font-weight: bold;
@@ -668,7 +671,12 @@ textarea {
         width: 100%;
         padding: 0;
     }
-
+    .form-box {
+        width: 2fr;
+    }
+    .form-box input{
+        width: 80%;
+    }
     .top-bar-menu ul li {
         padding: 15px;
         width: 100%;
