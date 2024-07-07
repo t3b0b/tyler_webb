@@ -67,12 +67,18 @@ def process_weekly_scores(scores, start_week, end_week):
         weekly_data[day_name][hour].append(score.activity_name)
 
     return weekly_data
-def read(filename):
-    with open(filename,'r') as file:
-        data = file.read()
-    data = data.split('\n')
-    data_ord = choice(data)
-    return data_ord,data
+def readWords(filename):
+    encodings = ['utf-8', 'latin-1', 'iso-8859-1', 'utf-8-sig']
+    for encoding in encodings:
+        try:
+            with open(filename, 'r', encoding=encoding) as file:
+                data = file.read()
+                ordet = data.split('\n')[0]
+                ord_lista = data.split('\n')[1:]
+                return ordet, ord_lista
+        except UnicodeDecodeError:
+            continue
+    raise UnicodeDecodeError(f"Could not decode the file {filename} with any of the tried encodings.")
 def common_route(title,sub_url,sub_text):
     sida = title
     sub_menu = []
@@ -273,11 +279,11 @@ def generate_calendar_weeks(year, month):
     weeks = [days[i:i + 7] for i in range(0, len(days), 7)]
 
     return weeks
-def getInfo(filename,page):
+def getInfo(filename, page):
     df = pd.read_csv(filename)
-    row = df.loc[df['page']==page]
+    row = df.loc[df['Page'] == page]
     if not row.empty:
-        return row.iloc[0]['content']
+        return row.iloc[0]['Info']
     else:
         return "Ingen information tillgänglig för den angivna sidan."
 # endregion
@@ -558,6 +564,7 @@ def myday_date(date):
 @pmg_bp.route('/month')
 @pmg_bp.route('/month/<int:year>/<int:month>')
 def month(year=None, month=None):
+    page_info=getInfo('pageInfo.csv', 'myMonth')
     sida, sub_menu = common_route('Min Månad', ['/pmg/month', '/pmg/week', '/pmg/timebox'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])
 
@@ -580,10 +587,11 @@ def month(year=None, month=None):
     dag_data = {entry.date.strftime('%Y-%m-%d'): entry for entry in dag_entries}
 
     return render_template('pmg/month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida,
-                           sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data)
+                           sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data,page_info=page_info)
 
 @pmg_bp.route('/week')
 def week():
+    page_info = getInfo('pageInfo.csv', 'myWeek')
     date_now = datetime.now()
     user_id = current_user.id
     sida, sub_menu = common_route('Min Vecka', ['/pmg/month', '/pmg/week', '/pmg/timebox'],
@@ -617,12 +625,11 @@ def week():
     weekly_data = process_weekly_scores(myScore, start_week, end_week)
 
     return render_template('pmg/myWeek.html', sida='Veckoplanering', weekly_data=weekly_data, header='Veckoplanering',
-                           total_score=0, sub_menu=sub_menu, activities=activities_dict)
-
-
+                           total_score=0, sub_menu=sub_menu, activities=activities_dict,page_info=page_info)
 
 @pmg_bp.route('/timebox', methods=['GET', 'POST'])
 def timebox():
+    page_info = getInfo('pageInfo.csv', 'myDay')
     current_date = datetime.now().strftime("%Y-%m-%d")
     today = datetime.now()
     sida, sub_menu = common_route('Min Dag', ['/pmg/month', '/pmg/week', '/pmg/timebox'],
@@ -638,7 +645,7 @@ def timebox():
 
     date = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
     return render_template('pmg/timebox.html', current_date=current_date, date=date,
-                           sida=sida, header=sida, sub_menu=sub_menu, activities=activities_dict)
+                           sida=sida, header=sida, sub_menu=sub_menu, activities=activities_dict,page_info=page_info)
 
 # endregion
 
@@ -683,10 +690,11 @@ def journal():
 
 @pmg_bp.route('/journal/<section_name>', methods=['GET', 'POST'])
 def journal_section(act_id, sida, sub_menu, my_posts):
+    page_info = getInfo('pageInfo.csv', sida)
     current_date = date.today()
     page_url = 'pmg.journal'
     activities = None
-    ordet, ord_lista = read('orden.txt')
+    ordet, ord_lista = readWords('orden.txt')
     if sida == 'Dagbok':
         ordet = current_date
     elif sida == "Bullet":
@@ -721,39 +729,34 @@ def journal_section(act_id, sida, sub_menu, my_posts):
             if option == 'timeless':
                 if sida == 'Dagbok':
                     add2db(Dagbok, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
-                else:
+                elif sida == 'Mina Ord':
                     add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
-
+                elif sida == 'Bullet':
+                    theme = request.form['post-ord']
+                    bullet_list = [request.form['#1'], request.form['#2'], request.form['#3'], request.form['#4'], request.form['#5']]
+                    newBullet = Bullet(theme=theme, author=f'{user.firstName} {user.lastName}', content=bullet_list, date=current_date, user_id=current_user.id)
+                    db.session.add(newBullet)
+                    db.session.commit()
             elif option == "write-on-time":
                 add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], user)
                 if sida == 'Dagbok':
                     add2db(Dagbok, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
-                else:
+                elif sida == 'Mina Ord':
                     add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+                elif sida == 'Bullet':
+                    theme = request.form['post-ord']
+                    bullet_list = [request.form['#1'], request.form['#2'], request.form['#3'], request.form['#4'],
+                                   request.form['#5']]
+                    newBullet = Bullet(theme=theme, author=f'{user.firstName} {user.lastName}', content=bullet_list,
+                                       date=current_date, user_id=current_user.id)
+                    db.session.add(newBullet)
+                    db.session.commit()
 
                 update_dagar(current_user.id,Dagar)
     return render_template('pmg/journal.html', time=time, goal=myGoals, activities=activities, side_options=titles,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
-                           current_date=current_date, page_url=page_url, act_id=act_id, myPosts=my_posts)
-
-@pmg_bp.route('/list', methods=['GET', 'POST'])
-def list():
-    page_url = 'pmg.list'
-    sida, sub_menu = common_route("Bullet",
-                                  [url_for('pmg.journal', section_name='skriva'),
-                                   url_for('pmg.journal', section_name='blogg')],
-                                  ['Skriv', 'Blogg'])
-    titles = []
-
-    myGoals = Goals.query.filter_by(name="Skriva", user_id=current_user.id).first()
-    if myGoals:
-        titles_list = Activity.query.filter_by(goal_id=myGoals.id, user_id=current_user.id).all()
-        titles = [item.name for item in titles_list]
-
-    if request.method == 'POST':
-        add2db(Bullet, request,[],[],current_user)
-
-    return render_template('/pmg/list.html',page_url=page_url, ordet="Tacksam", sida=sida, header=sida,sub_menu=sub_menu, side_options=titles)
+                           current_date=current_date, page_url=page_url, act_id=act_id, myPosts=my_posts,
+                           page_info=page_info)
 
 @pmg_bp.route('/get-new-word')
 def get_new_word(section_id):
@@ -762,7 +765,7 @@ def get_new_word(section_id):
         ord_lista = [ord[0] for ord in orden]
         ordet = choice(ord_lista)
     else:
-        ordet,ord_lista=read('orden.txt')
+        ordet, ord_lista = readWords('orden.txt')
     return jsonify(ordet)
 # endregion
 
@@ -772,7 +775,6 @@ def get_new_word(section_id):
 def settings(section_name=None):
     if not section_name:
         section_name = request.args.get('section_name', 'general')
-
     sida, sub_menu = common_route('Settings', [
         url_for('pmg.settings', section_name='timer'),
         url_for('pmg.settings', section_name='skrivande'),
@@ -781,12 +783,31 @@ def settings(section_name=None):
 
     if section_name == 'timer':
         sida = 'Timer-inställningar'
+        page_info = getInfo('pageInfo.csv', 'Time-Settings')
     elif section_name == 'skrivande':
         sida = 'Blogg-inställningar'
+        page_info = getInfo('pageInfo.csv', 'Text-Settings')
+
+        Sett = Settings.query.filter_by(user_id=current_user.id).first()
+
+        if not Sett.wImp:
+            ordet, ord_lista = readWords('orden.txt')
+            for ord in ord_lista:
+                # Kontrollera om ordet redan finns i MyWords för den specifika användaren
+                existing_word = MyWords.query.filter_by(ord=ord, user_id=current_user.id).first()
+                if not existing_word:
+                    nyttOrd = MyWords(ord=ord, user_id=current_user.id)
+                    db.session.add(nyttOrd)
+                    db.session.commit()
+                stInt = Settings.query.filter_by(user_id=current_user.id).first()
+                Settings(wImp=True, stInterval=stInt.stInterval, user_id=current_user.id )
+
     elif section_name == 'konto':
         sida = 'Konto-inställningar'
+        page_info = getInfo('pageInfo.csv', 'Account-Settings')
     else:
         sida = 'Allmänna Inställningar'
+        page_info = getInfo('pageInfo.csv', 'Settings')
 
     mina_Ord = query(MyWords, 'user_id', current_user.id)
 
@@ -808,6 +829,7 @@ def settings(section_name=None):
             db.session.commit()
             return redirect(url_for('pmg.settings', section_name=section_name))
 
-    return render_template('pmg/settings.html', sida=sida, header=sida, my_words=mina_Ord, sub_menu=sub_menu)
+    return render_template('pmg/settings.html', sida=sida, header=sida, my_words=mina_Ord,
+                           sub_menu=sub_menu, page_info=page_info, user=current_user)
 
 # endregion

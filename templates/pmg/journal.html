@@ -53,7 +53,7 @@
                         <input type="text" id="score" name="score">
                     </div>
                 {% elif sida == "Bullet" %}
-                    <select id="ordet-input" class="select-style" style="padding-left: 20px; max-width: 80%; font-size:24px; background-color: #f0f0f0; border: none;" name="post-ord">
+                    <select class="select-style" style="padding-left: 20px; max-width: 80%; font-size:24px; background-color: #f0f0f0; border: none;" name="post-ord">
                         {% for ord in ordet %}
                             <option style="text-align: left;" value="{{ ord }}">{{ ord }}</option>
                         {% endfor %}
@@ -61,23 +61,23 @@
                     <div class="list-container" style="gap: 0;">
                         <div class="form-box" style="flex-direction: row; margin-bottom: 0; margin-top: 0;">
                             <label for="todo1" style="font-size: 16px">#1</label>
-                            <input id="todo1" type="text" name="todo1" placeholder="">
+                            <input id="todo1" type="text" name="#1" placeholder="">
                         </div>
                         <div class="form-box" style="flex-direction: row; margin-bottom: 0; margin-top: 0;">
                             <label for="todo2" style="font-size: 16px">#2</label>
-                            <input id="todo2" type="text" name="todo2" placeholder="">
+                            <input id="todo2" type="text" name="#2" placeholder="">
                         </div>
                         <div class="form-box" style="flex-direction: row; margin-bottom: 0; margin-top: 0;">
                             <label for="todo3" style="font-size: 16px">#3</label>
-                            <input id="todo3" type="text" name="todo3" placeholder="">
+                            <input id="todo3" type="text" name="#3" placeholder="">
                         </div>
                         <div class="form-box" style="flex-direction: row; margin-bottom: 0; margin-top: 0;">
                             <label for="todo4" style="font-size: 16px">#4</label>
-                            <input id="todo4" type="text" name="todo4" placeholder="">
+                            <input id="todo4" type="text" name="#4" placeholder="">
                         </div>
                         <div class="form-box" style="flex-direction: row; margin-bottom: 0; margin-top: 0;">
                             <label for="todo5" style="font-size: 16px">#5</label>
-                            <input id="todo5" type="text" name="todo5" placeholder="">
+                            <input id="todo5" type="text" name="#5" placeholder="">
                         </div>
                     </div>
                 </form>
@@ -96,5 +96,6 @@
             </div>
         {% endif %}
     {% endif %}
-<script src="{{ url_for('static', filename='test_functions.js') }}"></script>
+
+<script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 {% endblock body %}

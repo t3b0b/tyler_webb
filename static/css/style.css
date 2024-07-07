@@ -589,7 +589,7 @@ textarea {
 
     .info-button {
         position: absolute;
-        top: 25%;
+        top: 15%;
         right: 10px;
         width: 24px;
         height: 24px;
@@ -612,7 +612,7 @@ textarea {
         width: 200px;
         padding: 10px;
         background-color: white;
-        border: 1px solid #ccc;
+        border: 1px solid #4077ee;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         z-index: 1000;
     }

@@ -138,6 +138,7 @@ class MyWords(db.Model):
 
 class Settings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    wImp = db.Column(db.Boolean, nullable=False, default=False)
     stInterval = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):

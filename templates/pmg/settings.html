@@ -2,15 +2,10 @@
 
 {% block head %}
 <style>
-    .main-section{
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 40px;
-    }
     .ord-section {
         display: flex;
         flex-direction: column;
-        margin-left: 40px;
+        margin-left: 20px; /* Minska vänstermarginalen */
         justify-content: center;
     }
     .timer-section {
@@ -25,69 +20,93 @@
         padding: 8px;
         margin-right: 5px; /* Lägg till marginal mellan fältet och knappen */
     }
-    button {
+    .add-btn {
         padding: 10px 20px;
         background-color: #4CAF50; /* Grön bakgrund */
         color: white;
         border: none;
         cursor: pointer;
     }
-    button:hover {
-        background-color: #45a049;
+    .del-btn {
+        border-radius: 15%;
+        background-color: #da1a2c; /* Röd bakgrund */
+        color: white;
+        cursor: pointer;
+        margin-left: auto; /* Skjuter knappen till höger */
+        font-weight: bold;
+        box-shadow: none; /* Ta bort skugga */
     }
-    .min-ord-lista {
+
+    button:hover {
+        background-color: #ffa7a7;
+        color: black;
+        font-weight: bold;
+    }
+    .column {
         background-color: #f4f4f4;
         border: 1px solid #ccc;
-        width: 100%
-        max-width: 300px;
-        padding: 0 10px 0 10px;
+        width: 100%;
+        max-width: 400px;
+        padding: 0 10px;
     }
-    .min-ord-lista ul {
+    .column ul {
         list-style-type: none; /* Tar bort punkter från listan */
-        padding: 0;
+        padding: 5px;
     }
-    .min-ord-lista ul li {
-        padding: 8px;
+    .column ul li {
+        display: flex; /* Använd flexbox för att placera innehåll */
+        justify-content: space-between; /* Placera innehåll med mellanrum */
+        align-items: center; /* Centrera innehåll vertikalt */
+        padding: 5px;
         border-bottom: 1px solid #ddd; /* Lägg till en linje mellan varje ord */
     }
 </style>
 {% endblock head %}
 {% block body %}
-<div class="main-section">
+<div class="main-container">
 {% if sida == "Blogg-inställningar" %}
     <div class="ord-section">
         <div class="nytt-ord-form">
             <form method="post">
                 <h3>Mina Ord:</h3>
                 <input type="text" id="nytt-ord" name="nytt-ord" placeholder="Skriv ett ord här">
-                <button type="submit" value="word" name="action">Lägg till</button>
+                <button class="add-btn" type="submit" value="word" name="action">Lägg till</button>
             </form>
         </div>
-        <div class="min-ord-lista">
+        <div class="column">
             <ul id="ord-lista">
                 {% for word in my_words %}
-                    <li><strong>{{ word.ord }}</strong></li>
+                    <li>
+                        <strong>{{ word.ord }}</strong>
+                        <form method="post" style="display:inline;">
+                            <input type="hidden" name="delete_word_id" value="{{ word.id }}">
+                            <button class="del-btn" type="submit" value="delete_word" name="action">X</button>
+                        </form>
+                    </li>
                 {% endfor %}
             </ul>
         </div>
     </div>
 {% elif sida == "Timer-inställningar" %}
-    <div class="timer-section">
+    <div class="column">
         <form method="POST">
-        <h3>Timer:</h3>
-        <label for="standard-intervall">Standard intervall:</label>
-        <select id="standard-intervall" class="timer-input" name="time-intervall">
-            <option value="0.1">1 minuter</option>
-            <option value="5">5 minuter</option>
-            <option value="10">10 minuter</option>
-            <option value="15">15 minuter</option>
-        </select>
-        <button type="submit" value="timer" name="action">Save</button>
-    </form>
+            <h3>Timer:</h3>
+            <label for="standard-intervall">Standard intervall:</label>
+            <select id="standard-intervall" class="timer-input" name="time-intervall">
+                <option value="0.1">1 minuter</option>
+                <option value="5">5 minuter</option>
+                <option value="10">10 minuter</option>
+                <option value="15">15 minuter</option>
+            </select>
+            <button type="submit" value="timer" name="action">Save</button>
+        </form>
     </div>
 
 {% elif sida == "Konto-inställningar" %}
+    <div class="column">
+        <h3>{{ user.username }}</h3>
 
+    </div>
 {% endif %}
 </div>
 {% endblock body %}

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session
 from flask_login import login_user, logout_user, login_manager, current_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Streak, Goals, Activity, Settings
+from models import db, User, Streak, Goals, Activity, Settings, MyWords
 from flask_mail import Mail, Message
 from datetime import datetime,timedelta
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
@@ -74,8 +74,6 @@ def confirm_reset():
 
     return render_template('auth/reset.html', sida=sida, header=sida, streaks=streaks_to_reset)
 
-
-
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     from main import mail
@@ -92,37 +90,21 @@ def register():
             flash('Email address already registered. Please use a different email address.', 'error')
             return redirect(url_for('auth.login'))
 
-        hashed_password = generate_password_hash(password)
-        new_user = User(firstName=first, lastName=last, username=username, password=hashed_password, email=email,verified=False)
-        db.session.add(new_user)
-        db.session.commit()
-
-        token = s.dumps(email, salt='email-confirm')
-        link = url_for('auth.confirm_email', token=token, _external=True)
-        msg = Message('Bekräfta din e-postadress', recipients=[email], sender="pmg.automatic.services@gmail.com")
-        msg.body = (f'Hej, {first} {last}! \n\n'
-                    f'För att komma igång med tjänsten behöver du först aktivera ditt konto'
-                    f'Detta gör du genom att klicka på länken nedan:\n{link}')
-        mail.send(msg)
-
-        # Skapa målet "Skriva" och aktiviteterna för den nya användaren
-        skriva_goal = Goals(name="Skriva", user_id=new_user.id)
-        db.session.add(skriva_goal)
-        db.session.commit()
-
-        skriv_goal_id = skriva_goal.id
-        mina_ord = Activity(name="Mina Ord", user_id=new_user.id, goal_id=skriv_goal_id, unit=None)
-        db.session.add(mina_ord)
-        dagbok = Activity(name="Dagbok", user_id=new_user.id, goal_id=skriv_goal_id, unit=None)
-        db.session.add(dagbok)
-        bullet = Activity(name="Bullet", user_id=new_user.id, goal_id=skriv_goal_id, unit=None)
-        db.session.add(bullet)
-        stand_int = Settings(user_id=new_user.id, stInterval=5)
-        db.session.add(stand_int)
-        db.session.commit()
-
-        flash('En e-post med en verifieringslänk har skickats till din e-postadress. Länken är giltig i 1 timme.',
-              'success')
+        if not existing_user:
+            hashed_password = generate_password_hash(password)
+            new_user = User(firstName=first, lastName=last, username=username, password=hashed_password, email=email,verified=False)
+            db.session.add(new_user)
+            db.session.commit()
+            token = s.dumps(email, salt='email-confirm')
+            link = url_for('auth.confirm_email', token=token, _external=True)
+            msg = Message('Bekräfta din e-postadress', recipients=[email], sender="pmg.automatic.services@gmail.com")
+            msg.body = (f'Hej, {first} {last}! \n\n'
+                        f'För att komma igång med tjänsten behöver du först aktivera ditt konto'
+                        f'Detta gör du genom att klicka på länken nedan:\n{link}')
+            mail.send(msg)
+            flash('En e-post med en verifieringslänk har skickats till din e-postadress. Länken är giltig i 1 timme.',
+                  'success')
+            return redirect(url_for('auth.login'))
 
     return render_template('auth/register.html')
 
@@ -133,12 +115,36 @@ def logout():
 
 @auth_bp.route('/confirm_email/<token>')
 def confirm_email(token):
+    from pmg import readWords
     try:
-        email = s.loads(token, salt='email-confirm', max_age=3600)
+
+        email = s.loads(token, salt='email-confirm', max_age=36000)
         user = User.query.filter_by(email=email).first()
+
         if user:
             user.verifierad = True
             db.session.commit()
+
+            # Skapa målet "Skriva" och aktiviteterna för den nya användaren
+            skriva_goal = Goals(name="Skriva", user_id=user.id)
+            db.session.add(skriva_goal)
+            db.session.commit()
+            skriv_goal_id = skriva_goal.id
+            mina_ord = Activity(name="Mina Ord", user_id=user.id, goal_id=skriv_goal_id, unit=None)
+            db.session.add(mina_ord)
+            dagbok = Activity(name="Dagbok", user_id=user.id, goal_id=skriv_goal_id, unit=None)
+            db.session.add(dagbok)
+            bullet = Activity(name="Bullet", user_id=user.id, goal_id=skriv_goal_id, unit=None)
+            db.session.add(bullet)
+            stand_int = Settings(user_id=user.id, stInterval=5)
+            db.session.add(stand_int)
+            db.session.commit()
+
+            ordet, ord_lista = readWords('orden.txt')
+            for ord in ord_lista:
+                nyttOrd = MyWords(ord=ord, user_id=user.id)
+                db.session.add(nyttOrd)
+                db.session.commit()
             return 'Din e-post har verifierats! Du kan nu logga in.'
         else:
             return '<h1>Ogiltig begäran!</h1>', 400
