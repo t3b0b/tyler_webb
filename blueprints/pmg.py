@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, jsonif
 from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet,
                     Activity, Score, MyWords, Settings, Dagbok, Dagar)
 from datetime import datetime, timedelta, date
+import pandas as pd
 from pytz import timezone
 from flask_login import current_user, login_required
 
@@ -272,10 +273,13 @@ def generate_calendar_weeks(year, month):
     weeks = [days[i:i + 7] for i in range(0, len(days), 7)]
 
     return weeks
-def getInfo(filename):
-    with open(filename, 'r') as f:
-        text = f.read()
-        return(text)
+def getInfo(filename,page):
+    df = pd.read_csv(filename)
+    row = df.loc[df['page']==page]
+    if not row.empty:
+        return row.iloc[0]['content']
+    else:
+        return "Ingen information tillgänglig för den angivna sidan."
 # endregion
 
 @pmg_bp.route('/add_friend/<int:friend_id>')
@@ -456,7 +460,7 @@ def delete_goal(goal_id):
 #region MyDay
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 def myday():
-    pageInfo = getInfo('mydayInfo.txt')
+    pageInfo = getInfo('pageInfo.csv', 'Start')
     sida, sub_menu = common_route("Min Grind", ['/pmg/timebox', '/pmg/streak', '/pmg/goals'], ['My Day', 'Streaks', 'Goals'])
     date_now = date.today()
     update_dagar(current_user.id, Dagar)

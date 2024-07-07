@@ -47,7 +47,8 @@ def login():
 @auth_bp.route('/reset', methods=['GET', 'POST'])
 @login_required
 def confirm_reset():
-    sida = 'Bekräfta Nollställning'
+    sida = 'Nollställning'
+    today_date = datetime.now()
     streak_ids = session.get('streaks_to_reset', [])
     streaks_to_reset = Streak.query.filter(Streak.id.in_(streak_ids)).all()
 
@@ -58,6 +59,7 @@ def confirm_reset():
                 # Nollställ streaks
                 streak.count = 0
                 streak.active = False
+                last_reg
             else:
                 # Uppdatera streak.count för streaks som inte nollställs
                 last_reg = datetime.strptime(streak.lastReg, "%Y-%m-%d")
@@ -79,6 +81,8 @@ def register():
     from main import mail
 
     if request.method == 'POST':
+        first = request.form.get('first-name')
+        last = request.form.get('last-name')
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
@@ -89,15 +93,16 @@ def register():
             return redirect(url_for('auth.login'))
 
         hashed_password = generate_password_hash(password)
-        new_user = User(username=username, password=hashed_password, email=email)
+        new_user = User(firstName=first, lastName=last, username=username, password=hashed_password, email=email,verified=False)
         db.session.add(new_user)
         db.session.commit()
 
         token = s.dumps(email, salt='email-confirm')
         link = url_for('auth.confirm_email', token=token, _external=True)
         msg = Message('Bekräfta din e-postadress', recipients=[email], sender="pmg.automatic.services@gmail.com")
-        msg.body = (f'Hej, {username}\n'
-                    f'Din länk för att verifiera din e-post är {link}')
+        msg.body = (f'Hej, {first} {last}! \n\n'
+                    f'För att komma igång med tjänsten behöver du först aktivera ditt konto'
+                    f'Detta gör du genom att klicka på länken nedan:\n{link}')
         mail.send(msg)
 
         # Skapa målet "Skriva" och aktiviteterna för den nya användaren
@@ -106,15 +111,18 @@ def register():
         db.session.commit()
 
         skriv_goal_id = skriva_goal.id
-        mina_ord = Activity(name="Mina Ord", user_id=new_user.id, goal_id=skriv_goal_id, measurement="Tid")
+        mina_ord = Activity(name="Mina Ord", user_id=new_user.id, goal_id=skriv_goal_id, unit=None)
         db.session.add(mina_ord)
-        dagbok = Activity(name="Dagbok", user_id=new_user.id, goal_id=skriv_goal_id, measurement="Tid")
+        dagbok = Activity(name="Dagbok", user_id=new_user.id, goal_id=skriv_goal_id, unit=None)
         db.session.add(dagbok)
+        bullet = Activity(name="Bullet", user_id=new_user.id, goal_id=skriv_goal_id, unit=None)
+        db.session.add(bullet)
         stand_int = Settings(user_id=new_user.id, stInterval=5)
         db.session.add(stand_int)
         db.session.commit()
 
-        return 'En e-post med en verifieringslänk har skickats till din e-postadress. Länken är giltig i 1 timme.'
+        flash('En e-post med en verifieringslänk har skickats till din e-postadress. Länken är giltig i 1 timme.',
+              'success')
 
     return render_template('auth/register.html')
 
