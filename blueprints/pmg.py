@@ -1,6 +1,6 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
-from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet,
+from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet, Milestones,
                     Activity, Score, MyWords, Settings, Dagbok, Dagar,
                     Idag, Week, Month)
 from datetime import datetime, timedelta, date
@@ -92,6 +92,8 @@ def common_route(title,sub_url,sub_text):
         return sida, sub_menu
     else:
         return sida, None
+from datetime import datetime
+
 def add2db(db_model, request, form_fields, model_fields, user):
     new_entry = db_model()
     current_date = datetime.now()  # Använd YYYY-MM-DD format
@@ -99,9 +101,18 @@ def add2db(db_model, request, form_fields, model_fields, user):
     # Iterera över form_fields och model_fields och sätt attribut på new_entry
     for form_field, model_field in zip(form_fields, model_fields):
         value = request.form[form_field]
-        if model_field in ['Start', 'End']:
-            value = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+        if model_field in ['Start', 'End', 'deadline']:  # Lägg till 'deadline' här
+            value = datetime.strptime(value, "%Y-%m-%d")
         setattr(new_entry, model_field, value)
+
+    # Beräkna estimated_time som antal dagar mellan deadline och dagens datum
+    if hasattr(new_entry, 'deadline') and new_entry.deadline:
+        days_difference = (new_entry.deadline - current_date).days
+        new_entry.estimated_time = days_difference
+
+    # Sätt standardvärden för achieved och date_achieved
+    new_entry.achieved = False
+    new_entry.date_achieved = None
 
     # Lägg till user_id om det är en del av modellen
     if hasattr(new_entry, 'user_id'):
@@ -132,6 +143,7 @@ def add2db(db_model, request, form_fields, model_fields, user):
     # Lägg till den nya posten i sessionen och committa
     db.session.add(new_entry)
     db.session.commit()
+
 def query(db, key, filter):
     return db.query.filter_by(**{key: filter}).all()
 def unique(db,by_db):
@@ -347,7 +359,7 @@ def timer():
 def streak():
     current_date = date.today()
     current_date = current_date.strftime('%Y-%m-%d')
-    sida, sub_menu = common_route("Mina Streaks", ['/pmg/streak', '/pmg/goals', '/pmg/milestones'], ['Streaks','Goals','Milestones'])
+    sida, sub_menu = common_route("Mina Streaks", ['/pmg/goals', '/pmg/streak'], ['Goals','Streaks'])
     myStreaks = query(Streak,'user_id',current_user.id)
     myGoals = query(Goals, 'user_id', current_user.id)
 
@@ -430,7 +442,7 @@ def delete_activity(activity_id):
 
 @pmg_bp.route('/goals',methods=['GET', 'POST'])
 def goals():
-    sida, sub_menu = common_route("Mina Mål", ['/pmg/streak', '/pmg/goals', '/pmg/milestones'], ['Streaks','Goals','Milestones'])
+    sida, sub_menu = common_route("Mina Mål", ['/pmg/goals', '/pmg/streak'], ['Goals','Streaks'])
     myGoals = query(Goals,'user_id',current_user.id)
 
     if request.method == 'POST':
@@ -461,10 +473,39 @@ def delete_goal(goal_id):
 # endregion
 
 #region Milestones
-@pmg_bp.route('/milestones', methods=['GET', 'POST'])
-def milestone():
+@pmg_bp.route('milestones/<int:goal_id>', methods=['GET', 'POST'])
+def milestones(goal_id):
+    today = date.today()
+    sida, submenu=common_route('Milestones',['pmg.goals','pmg.streaks'],['Goals','Streak'])
+    goal = Goals.query.get(goal_id)
+    milestones = Milestones.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
+    active_milestones = []
+    completed_milestones = []
 
-    return render_template('pmg/milestones.html')
+    for m in milestones:
+        if m.achieved:
+            completed_milestones.append(m)
+        else:
+            active_milestones.append(m)
+
+    if goal is None:
+        redirect(url_for('pmg.goals'))
+
+    if request.method == 'POST':
+        action = request.form['action']
+        if action == 'check':
+            mId = request.form['m-id']
+            milestone = Milestones.query.filter_by(id=mId, user_id=current_user.id).first()
+            if milestone:
+                milestone.achieved = True
+                milestone.date_achieved = today
+                db.session.commit()
+            return redirect(url_for('pmg.milestones', goal_id=goal_id))
+
+        elif action == 'save':
+            add2db(Milestones, request, ['name','deadline','goal_id'], ['name','deadline','goal_id'], current_user)
+
+    return render_template('pmg/milestones.html',today=today, active_milestones=active_milestones, completed_milestones=completed_milestones, goal=goal, sida=sida, submenu=submenu)
 
 #end region
 
@@ -472,7 +513,7 @@ def milestone():
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 def myday():
     pageInfo = getInfo('pageInfo.csv', 'Start')
-    sida, sub_menu = common_route("Min Grind", ['/pmg/timebox', '/pmg/streak', '/pmg/goals'], ['My Day', 'Streaks', 'Goals'])
+    sida, sub_menu = common_route("Min Grind", ['/pmg/goals', '/pmg/streak'], ['Goals','Streaks'])
     date_now = date.today()
     update_dagar(current_user.id, Dagar)
     myGoals = query(Goals, 'user_id', current_user.id)
@@ -527,8 +568,8 @@ def myday():
             try:
                 score_check = float(score_str)
                 if score_check >= 1:
-                    add2db(Score, request, ['gID', 'aID', 'aDate', 'start', 'end', 'score'],
-                           ['Goal', 'Activity', 'Date', 'Start', 'End', 'Time'], current_user)
+                    add2db(Score, request, ['gID', 'aID', 'aDate', 'start', 'end', 'score','amount'],
+                           ['Goal', 'Activity', 'Date', 'Start', 'End', 'Time','Amount'], current_user)
                     return redirect(url_for('pmg.myday'))
             except ValueError:
                 print(f"Invalid score value: {score_str}")

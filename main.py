@@ -17,13 +17,16 @@ import mysql.connector
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "K6SM4x14"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:Tellus420@localhost/pmgonline'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tylerobri.db'
 app.config['MAIL_SERVER'] = "smtp.gmail.com"
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = "pmg.automatic.services@gmail.com"
 app.config['MAIL_PASSWORD'] = "gygfvycgvmjybgse"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+UPLOAD_FOLDER = 'uploads/'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 login_manager = LoginManager()
 login_manager.init_app(app)

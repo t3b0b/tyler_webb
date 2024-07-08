@@ -1,6 +1,6 @@
 :root {
     --primary-color: #1c2d5b;
-    --secondary-color: #c39e5f;
+    --secondary-color: #ffffff;
     --highlight-color: #45a049;
     --border-color: #978d8d;
     --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -170,6 +170,7 @@ svg #Progstroke {
     box-sizing: border-box;
 }
 .form-box input {
+    border: 1px solid #000000;
     margin-bottom: 5px;
     margin-top: 5px;
     margin-right: 10%;
@@ -290,6 +291,7 @@ textarea {
     text-align: center;
     display: block;
 }
+
 .modal {
     transition: opacity 0.3s ease;
     opacity: 0;

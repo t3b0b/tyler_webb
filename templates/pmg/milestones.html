@@ -1,9 +1,70 @@
 {% extends 'base.html' %}
 
 {% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cal.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/menu.css') }}">
+<style>
+.form-box {
+    display: flex;
+    align-items: center; /* Vertikalt centrerar innehållet i flexboxen */
+    gap: 10px; /* Lägger till mellanrum mellan elementen i flexboxen */
+}
 
+.form-box h3 {
+    margin: 0; /* Tar bort marginalen från h3-elementen */
+}
+</style>
 {% endblock head %}
 
 {% block body %}
-
+<div class="goal-detail-container">
+    <h1>{{ goal.name }}</h1>
+        <div class="list-container" style="gap: 0;">
+        <form method="POST">
+            {% for m in active_milestones %}
+                <div class="form-box" style="flex-direction: row; margin-bottom: 0; margin-top: 0;">
+                <div class="streak-icon">
+                        <button type="submit" name="action" value="check">
+                            <svg id="checkbox-{{ m.id }}" class="checkbox" xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 242 216">
+                                <ellipse id="background-{{ m.id }}" class="background" cx="121" cy="108" rx="121" ry="108" fill="green" />
+                                <path id="check" d="M38.5133 122.529L65.1039 95.7875L107.94 135.826L215.29 52.7692L101.124 171.413L38.5133 122.529Z" fill="white"/>
+                            </svg>
+                        </button>
+                </div>
+                    <input type="hidden" name="m-id" value="{{ m.id }}">
+                    <h3> {{ m.name }} </h3>
+                    <h3> {{ m.estimated_time }} </h3>
+                    <h3>{{ m.deadline.strftime('%Y-%m-%d') }}</h3>
+                </div>
+            {% endfor %}
+            {% for m in completed_milestones %}
+            <div class="form-box" style="flex-direction: row; margin-bottom: 0; margin-top: 0; opacity: 0.5;">
+                <h3>{{ m.name }}</h3>
+                <h3>{{ m.estimated_time }}</h3>
+                <h3>{{ m.deadline.strftime('%Y-%m-%d') }}</h3>
+                <h3>{{ m.deadline.strftime('%Y-%m-%d') }}</h3>
+            </div>
+            {% endfor %}
+            <div id="mForm" class="form-box" style="display: none; background: none">
+                    <input type="text" name="name" placeholder="Milestone Name">
+                    <input type="date" name="deadline" placeholder="Milestone Deadline">
+                    <input type="hidden" name="goal_id" placeholder="goal_id" value="{{ goal.id }}">
+                    <div class="button-center" id="complete-form">
+                        <button type="submit" id="save-btn" class="button-style" name="action" value="save">Save</button>
+                    </div>
+            </div>
+            </form>
+            <button class="send-button" onclick="mStoneForm()">Add Milestone</button>
+        </div>
+    <a href="{{ url_for('pmg.goals') }}">Tillbaka till målen</a>
+</div>
+<script>
+function mStoneForm() {
+    document.getElementById('mForm').style.display = 'block';
+    document.getElementById('mForm').style.flexDirection = 'row';
+    document.getElementById('mForm').style.marginBottom = 0;
+    document.getElementById('mForm').style.marginTop = 0;
+}
+</script>
 {% endblock body %}

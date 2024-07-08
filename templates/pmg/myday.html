@@ -3,6 +3,8 @@
 {% block head %}
 <style xmlns="http://www.w3.org/1999/html"></style>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cal.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/menu.css') }}">
 
 {% endblock head %}
 
@@ -110,6 +112,7 @@
         <input type="hidden" id="start" name="start" style="display: none;">
         <input type="hidden" id="end" name="end" style="display: none;">
         <input type="text" id="score" name="score" style="display: none;">
+        <input type="number" id="amount" name="amount" style="display: none;">
         <div class="button-center" id="complete-form" style="display: none">
             <button type="submit" id="save-btn" class="button-style">Save</button>
         </div>
