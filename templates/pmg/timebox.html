@@ -1,84 +1,23 @@
 {% extends 'base.html' %}
 {% block head %}
-    <style>
-        .container {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 0;
-            padding: 10px;
-            height: 100%; /* Ger hela container full höjd på sidan */
-        }
-
-        .notes {
-            flex-direction: column;
-            background-color: #fff;
-            padding: 20px;
-            border: 1px solid #ccc;
-            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .notes h2 {
-            margin-top: 15px;
-            margin-bottom: 10px;
-        }
-
-        .notes input {
-            width: 100%
-            font-size: 32px;
-            margin-bottom: 0;
-            border: 1px solid #ccc;
-            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .timebox {
-            width: 100%;
-            background-color: #fff;
-            padding: 30px;
-            border: 1px solid #ccc;
-            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
-            height: fit-content;
-        }
-
-        .timebox table {
-            width: 100%;
-            border-collapse: collapse;
-            max-height: 100%;
-        }
-
-        .timebox th, .timebox td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-
-        .timebox th {
-            background-color: #f4f4f4;
-        }
-
-        .timebox label {
-            margin-bottom: 10px;
-        }
-
-        .timebox input[type="date"] {
-            margin-bottom: 20px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            width: 100%;
-        }
-    </style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 {% endblock head %}
 
 {% block body %}
+    {% block body %}
     <div class="container">
         <div class="notes">
-            <h2>Prioriteringar</h2>
-            {% for num in range(1, 6) %}
-                <input type="text">""</input>
-            {% endfor %}
-            <h2>Reflektioner</h2>
-            {% for num in range(1, 6) %}
-                <input type="text">""</input>
-            {% endfor %}
+            <form method="post">
+                <h2>Viktigt</h2>
+                {% for num in range(1, 6) %}
+                    <input type="text" name="viktig_{{ num }}"></input>
+                {% endfor %}
+                <h2>Reflektioner</h2>
+                {% for num in range(1, 6) %}
+                    <input type="text" name="reflektion_{{ num }}">
+                {% endfor %}
+                <button type="submit" class="send-button">Spara</button>
+            </form>
         </div>
         <div class="timebox">
             <h1> {{ current_date }} </h1>

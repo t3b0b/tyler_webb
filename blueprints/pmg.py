@@ -1,7 +1,8 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet,
-                    Activity, Score, MyWords, Settings, Dagbok, Dagar)
+                    Activity, Score, MyWords, Settings, Dagbok, Dagar,
+                    Idag, Week, Month)
 from datetime import datetime, timedelta, date
 import pandas as pd
 from pytz import timezone
@@ -637,10 +638,23 @@ def timebox():
     activities_dict = organize_activities_by_time(activities)
 
     if request.method == 'POST':
-        date = request.form['date']
-        time = request.form['time']
+        viktigt = [request.form.get(f'viktig_{i}') for i in range(1, 6)]
+        tankar = [request.form.get(f'reflektion_{i}') for i in range(1, 6)]
 
-    date = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
+        for data in viktigt:
+            if data:  # Check if the input is not empty
+                ny_viktig_punkt = Idag(date=current_date, viktigt=data, user_id=current_user.id)
+                db.session.add(ny_viktig_punkt)
+
+        for data in tankar:
+            if data:  # Check if the input is not empty
+                ny_reflektion = Idag(date=current_date, tankar=data, user_id=current_user.id)
+                db.session.add(ny_reflektion)
+
+        db.session.commit()
+
+        return redirect(url_for('timebox'))
+
     return render_template('pmg/timebox.html', current_date=current_date, date=date,
                            sida=sida, header=sida, sub_menu=sub_menu, activities=activities_dict,page_info=page_info)
 

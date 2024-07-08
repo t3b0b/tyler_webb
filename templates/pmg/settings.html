@@ -1,66 +1,7 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<style>
-    .ord-section {
-        display: flex;
-        flex-direction: column;
-        margin-left: 20px; /* Minska vänstermarginalen */
-        justify-content: center;
-    }
-    .timer-section {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-    .nytt-ord-form {
-        margin-bottom: 20px;
-    }
-    input[type="text"] {
-        padding: 8px;
-        margin-right: 5px; /* Lägg till marginal mellan fältet och knappen */
-    }
-    .add-btn {
-        padding: 10px 20px;
-        background-color: #4CAF50; /* Grön bakgrund */
-        color: white;
-        border: none;
-        cursor: pointer;
-    }
-    .del-btn {
-        border-radius: 15%;
-        background-color: #da1a2c; /* Röd bakgrund */
-        color: white;
-        cursor: pointer;
-        margin-left: auto; /* Skjuter knappen till höger */
-        font-weight: bold;
-        box-shadow: none; /* Ta bort skugga */
-    }
-
-    button:hover {
-        background-color: #ffa7a7;
-        color: black;
-        font-weight: bold;
-    }
-    .column {
-        background-color: #f4f4f4;
-        border: 1px solid #ccc;
-        width: 100%;
-        max-width: 400px;
-        padding: 0 10px;
-    }
-    .column ul {
-        list-style-type: none; /* Tar bort punkter från listan */
-        padding: 5px;
-    }
-    .column ul li {
-        display: flex; /* Använd flexbox för att placera innehåll */
-        justify-content: space-between; /* Placera innehåll med mellanrum */
-        align-items: center; /* Centrera innehåll vertikalt */
-        padding: 5px;
-        border-bottom: 1px solid #ddd; /* Lägg till en linje mellan varje ord */
-    }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 {% endblock head %}
 {% block body %}
 <div class="main-container">

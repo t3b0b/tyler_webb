@@ -1,66 +1,7 @@
 {% extends 'base.html' %}
 
 {% block head %}
-    <style>
-        .container {
-            display: flex;
-            gap: 0;
-            padding: 10px;
-            height: 100%; /* Ger hela container full höjd på sidan */
-        }
-
-        .notes {
-            display: flex;
-            flex-direction: column;
-            background-color: #fff;
-            padding: 20px;
-            border: 1px solid #ccc;
-            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
-            flex: 1;
-        }
-
-        .notes h2 {
-            margin-top: 15px;
-            margin-bottom: 10px;
-        }
-
-        .notes input {
-            width: 100%;
-            margin-bottom: 0;
-            padding: 0;
-            border: 1px solid #ccc;
-            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-            flex-grow: 1;
-        }
-
-        .week-planner {
-            background-color: #fff;
-            padding: 20px;
-            border: 1px solid #ccc;
-            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
-            overflow-y: auto;
-            flex: 2;
-        }
-
-        .week-planner h2 {
-            margin-top: 0;
-        }
-
-        .week-planner table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .week-planner th, .week-planner td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: center;
-        }
-
-        .week-planner th {
-            background-color: #f4f4f4;
-        }
-    </style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 {% endblock head %}
 
 {% block body %}

@@ -1,0 +1,74 @@
+.services_container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Två kolumner */
+    gap: 50px; /* Mellanrum mellan kort */
+    padding: 50px;
+    margin: 0 auto;
+}
+
+.card img {
+    width: 100%; /* Sätt bildens bredd till 100% av föräldrakontainern */
+    height:80%;
+    border-top-left-radius: 10px; /* Rundade hörn på bilden */
+    border-top-right-radius: 10px;
+}
+.description {
+    padding: 15px; /* Lite utrymme runt texten */
+    text-align: center; /* Centrerad text */
+}
+.service-info-box h {
+    text-align: center;
+}
+.kontakt-main-container {
+    display: flex; /* This will align the sidebar and form side-by-side */
+    max-width: 100%;
+    flex-direction: row;
+}
+
+.kontakt-sidebar-container {
+    position: absolute; /* Fixera sidomenyn */
+    align-content: flex-end;
+    top: 99px;
+    left: 0;
+    width: 200px; /* Ange önskad bredd för sidebar */
+    background-color: #1c2d5b; /* Mörkblå färg som i headern */
+    color: white;
+    padding: 0 5px 0 10px; /* Lägg till padding runtom */
+    border-right: 1px solid #fff; /* Lägger till en vit kantlinje på höger sida */
+    height: 100%; /* Sätter höjden till full viewport height */
+}
+.kontakt-info {
+    margin-bottom: 150px;
+}
+.kontakt-info h3 {
+    margin-left: 5px;
+    font-size: 18px;
+}
+.kontakt-info p {
+    margin-left: 15px;
+    font-size: 14px;
+    font-weight: normal;
+}
+.kontakt-form-container {
+    display: flex;
+    height: fit-content;
+    flex-direction: column; /* Ordna innehållet vertikalt */
+    justify-content: center; /* Centrerar innehållet vertikalt */
+    align-items: center; /* Centrerar innehållet horisontellt */
+    margin: 0 auto; /* Centrerar containern inom huvudcontainern */
+    width: 1200px;
+}
+
+.kontakt-form-container form {
+    display: flex;
+    flex-grow: 2;
+    flex-direction: column; /* Ordna innehållet vertikalt */
+    height: 100%; /* Använd all tillgänglig höjd i container */
+}
+.kontakt-form-name {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    width: 900px;
+    max-width: 100%; /* Max bredd för stora skärmar */
+}

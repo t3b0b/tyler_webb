@@ -1,61 +1,8 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-.add-form-container {
-    display: flex;
-    justify-content: center; /* Centrerar innehållet horisontellt */
-    margin-bottom: 15px;
-}
-
-.add-form-container form {
-    width: 50%;
-    margin-inline: auto;
-    margin-bottom: 10px;
-}
-
-#new-streak-form input,
-#new-streak-form select,
-#new-streak-form button {
-    width: 100%; /* Använd hela bredden av sin container */
-    padding: 10px; /* Ger utrymme inuti inmatningsfälten och knappen */
-    margin-bottom: 10px; /* Lägg till lite mellanrum mellan elementen */
-    box-sizing: border-box; /* Inkluderar padding i elementets totala bredd */
-    font-size: 16px;
-}
-
-#new-streak-form select {
-    line-height: 2; /* Justerar avståndet mellan raderna */
-}
-
-#new-streak-form select option {
-    padding: 10px; /* Lägg till padding runt texten i alternativen */
-    font-size: 16px; /* Justerar textstorleken i alternativen */
-}
-
-.streak-box {
-    width: 100%; /* Fyller hela bredden av sin container */
-    margin: 10px 0; /* Lägger till marginal ovanför och under */
-}
-
-#new-streak-button {
-    width: 100%; /* Fyller hela bredden av sin container */
-}
-
-.toggle-button {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-}
-
-.streak-actions {
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-}
-</style>
 {% endblock %}
 
 {% block header %}

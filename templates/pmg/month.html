@@ -1,67 +1,8 @@
 {% extends 'base.html' %}
 
 {% block head %}
-    <style>
-        .calendar-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-            padding: 20px;
-            height: 100vh;
-        }
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-        }
-
-        .calendar-header {
-            grid-column: span 7;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .day-header, .day {
-            text-align: center;
-            padding: 10px;
-            border: 1px solid #ccc;
-            background-color: #ffffff;
-            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .day-header {
-            background-color: #2b51b1;
-            font-weight: bold;
-        }
-
-        .day.today {
-            background-color: #ffeb3b;
-        }
-
-        .day.clickable {
-            cursor: pointer;
-        }
-
-        .day.other-month {
-            background-color: #f9f9f9;
-        }
-
-        .expand {
-            animation: expand 0.5s forwards;
-        }
-
-        @keyframes expand {
-            0% {
-                transform: scale(1);
-            }
-            100% {
-                transform: scale(1.1);
-            }
-        }
-    </style>
 {% endblock head %}
 
 {% block body %}

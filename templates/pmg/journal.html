@@ -1,16 +1,11 @@
 {% extends 'base.html' %}
 
 {% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
 
 
-      button {
-          width: 100px;
-      }
 
-    .hidden {
-        display: none;
-    }
     </style>
 {% endblock head %}
 
@@ -53,11 +48,13 @@
                         <input type="text" id="score" name="score">
                     </div>
                 {% elif sida == "Bullet" %}
+                <div class="ordet">
                     <select class="select-style" style="padding-left: 20px; max-width: 80%; font-size:24px; background-color: #f0f0f0; border: none;" name="post-ord">
                         {% for ord in ordet %}
                             <option style="text-align: left;" value="{{ ord }}">{{ ord }}</option>
                         {% endfor %}
                     </select>
+                </div>
                     <div class="list-container" style="gap: 0;">
                         <div class="form-box" style="flex-direction: row; margin-bottom: 0; margin-top: 0;">
                             <label for="todo1" style="font-size: 16px">#1</label>
