@@ -167,6 +167,7 @@ class Month(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
         return f'{self.month}, {self.viktigt}, {self.tankar}, {self.remember}'
+
 class Week(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     week = db.Column(db.Integer, nullable=False)

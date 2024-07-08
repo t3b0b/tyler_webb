@@ -1,6 +1,12 @@
-
+:root {
+    --primary-color: #1c2d5b;
+    --secondary-color: #c39e5f;
+    --highlight-color: #45a049;
+    --border-color: #978d8d;
+    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 /* Buttons */
-.button-style, .send-button {
+.button-style {
     width: 30%;
     padding: 15px 20px;
     margin: 20px auto;
@@ -14,7 +20,7 @@
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 .button-style:hover, .send-button:hover {
-    background-color: #45a049;
+    background-color: var(--highlight-color);
 }
 .button-center {
     width: 100%;
@@ -22,14 +28,104 @@
     justify-content: center;
     margin: 20px 0;
 }
-
+.add-btn {
+    padding: 10px 20px;
+    background-color: #4CAF50; /* Grön bakgrund */
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+.del-btn {
+    border-radius: 15%;
+    background-color: #da1a2c; /* Röd bakgrund */
+    color: white;
+    cursor: pointer;
+    margin-left: auto; /* Skjuter knappen till höger */
+    font-weight: bold;
+    box-shadow: none; /* Ta bort skugga */
+}
 .progress-bar, #reg-btn {
     height: 100%;
-    background-color: #4caf50;
+    background-color: var(--highlight-color);
     border-radius: 25px;
     color: white;
     text-align: center;
     transition: width 0.3s ease-in-out;
+}
+.toggle-button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+.streak-actions {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+}
+.ord-section {
+    display: flex;
+    flex-direction: column;
+    margin-left: 20px; /* Minska vänstermarginalen */
+    justify-content: center;
+}
+.timer-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+input[type="text"] {
+    padding: 8px;
+    margin-right: 5px; /* Lägg till marginal mellan fältet och knappen */
+}
+.column {
+    background-color: #f4f4f4;
+    border: 1px solid #ccc;
+    width: 100%;
+    max-width: 400px;
+    padding: 0 10px;
+}
+.column ul {
+    list-style-type: none; /* Tar bort punkter från listan */
+    padding: 5px;
+}
+.column ul li {
+    display: flex; /* Använd flexbox för att placera innehåll */
+    justify-content: space-between; /* Placera innehåll med mellanrum */
+    align-items: center; /* Centrera innehåll vertikalt */
+    padding: 5px;
+    border-bottom: 1px solid #ddd; /* Lägg till en linje mellan varje ord */
+}
+.repetitions {
+    align-self: center;
+}
+.streak-icon {
+    position: relative;
+}
+.checkbox {
+    cursor: pointer;
+    transition: transform 0.5s ease-in-out;
+}
+.checkbox.animate-check {
+    animation: rotateScale 0.5s forwards;
+}
+.background {
+    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+}
+.background.animate-bg {
+    animation: transformBg 0.5s forwards, fadeOut 1s 0.5s forwards;
+}
+svg #Gear_2 {
+    animation: gear_2 2s linear;
+    transform-origin: center;
+    transform-box: fill-box;
+    animation-iteration-count: infinite;
+}
+svg #Progstroke {
+    stroke: url(#paint0_linear_152_9);
+    stroke-width: 25;
+    stroke-dasharray: 170;
+    stroke-dashoffset: 170;
 }
 #reg-btn {
     min-height: 25px;
@@ -65,6 +161,14 @@
     border-radius: 3px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+.day-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr 2fr;
+    gap: 20px;
+    justify-content: space-evenly;
+    padding: 20px;
+    box-sizing: border-box;
+}
 .form-box input {
     margin-bottom: 5px;
     margin-top: 5px;
@@ -81,7 +185,6 @@
     margin-left: 10%;
     font-weight: normal;
 }
-
 .select-style {
     display: block;
     font-size: 1.2em;
@@ -93,7 +196,7 @@
     display: flex;
     justify-content: space-evenly;
     flex-direction: column;
-    width: 2fr;
+    width: 60%;
     padding: 5px;
 }
 .goal-streak-container {
@@ -105,9 +208,9 @@
 .items-container {
     display: flex;
     flex-direction: row;
+    width: 1200px;
     justify-self: center;
-    align-items: center;
-    width: 100%;
+    align-items: flex-start;
     margin: 10px auto 10px auto;
     border: 1px solid #ccc;
     border-radius: 10px;
@@ -125,9 +228,6 @@
     text-align: center;
     flex: 1; /* Gör alla element lika breda */
 }
-
-
-
 .small-icon, img {
     height: 24px;
     width: 24px;
@@ -136,26 +236,21 @@
 .record, .start-date {
     text-align: center;
 }
-
 footer {
     margin-top: auto;
 }
-
 .blogg-container {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 300px;
 }
-
 .blogg-container label textarea button {
     margin: 10px;
 }
-
 .post-content {
     white-space: pre-wrap;
 }
-
 textarea {
     flex-wrap: wrap;
     width: 60vw;
@@ -166,7 +261,6 @@ textarea {
     border-radius: 4px;
     resize: vertical;
 }
-
 .ordet {
     display: flex;
     flex-direction: row;
@@ -213,18 +307,6 @@ textarea {
     margin-bottom: 20px;
     animation: fadeIn 0.5s ease forwards;
 }
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-
 
 .add-form-container {
     display: flex;
@@ -235,32 +317,6 @@ textarea {
     width: 50%;
     margin-inline: auto;
     margin-bottom: 10px;
-}
-#new-streak-form input,
-#new-streak-form select,
-#new-streak-form button {
-    width: 100%; /* Använd hela bredden av sin container */
-    padding: 10px; /* Ger utrymme inuti inmatningsfälten och knappen */
-    margin-bottom: 10px; /* Lägg till lite mellanrum mellan elementen */
-    box-sizing: border-box; /* Inkluderar padding i elementets totala bredd */
-    font-size: 16px;
-}
-#new-streak-form select {
-    line-height: 2; /* Justerar avståndet mellan raderna */
-}
-#new-streak-form select option {
-    padding: 10px; /* Lägg till padding runt texten i alternativen */
-    font-size: 16px; /* Justerar textstorleken i alternativen */
-}
-.streak-box {
-    width: 100%; /* Fyller hela bredden av sin container */
-    margin: 10px 0; /* Lägger till marginal ovanför och under */
-}
-.streak-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    border-bottom: 1px solid #ccc;
 }
 .streak-item:last-child {
     border-bottom: none;
@@ -273,9 +329,17 @@ textarea {
     width: 900px; /* Gör formulärets element breda */
     max-width: 100%; /* Max bredd för stora skärmar */
 }
-#new-streak-button {
-    width: 100%; /* Fyller hela bredden av sin container */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
+
       button {
           width: 100px;
       }
@@ -292,107 +356,6 @@ textarea {
     100% {
         transform: scale(1.1);
     }
-}
-.toggle-button {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-}
-.streak-actions {
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-}
-.ord-section {
-    display: flex;
-    flex-direction: column;
-    margin-left: 20px; /* Minska vänstermarginalen */
-    justify-content: center;
-}
-.timer-section {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-}
-input[type="text"] {
-    padding: 8px;
-    margin-right: 5px; /* Lägg till marginal mellan fältet och knappen */
-}
-.add-btn {
-    padding: 10px 20px;
-    background-color: #4CAF50; /* Grön bakgrund */
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-.del-btn {
-    border-radius: 15%;
-    background-color: #da1a2c; /* Röd bakgrund */
-    color: white;
-    cursor: pointer;
-    margin-left: auto; /* Skjuter knappen till höger */
-    font-weight: bold;
-    box-shadow: none; /* Ta bort skugga */
-}
-button:hover {
-    background-color: #ffa7a7;
-    color: black;
-    font-weight: bold;
-}
-.column {
-    background-color: #f4f4f4;
-    border: 1px solid #ccc;
-    width: 100%;
-    max-width: 400px;
-    padding: 0 10px;
-}
-.column ul {
-    list-style-type: none; /* Tar bort punkter från listan */
-    padding: 5px;
-}
-.column ul li {
-    display: flex; /* Använd flexbox för att placera innehåll */
-    justify-content: space-between; /* Placera innehåll med mellanrum */
-    align-items: center; /* Centrera innehåll vertikalt */
-    padding: 5px;
-    border-bottom: 1px solid #ddd; /* Lägg till en linje mellan varje ord */
-}
-.repetitions {
-    align-self: center;
-}
-#my_plot {
-    margin: 20px;
-    border: 1px solid #ccc;
-    box-shadow: 2px 2px 10px #888888;
-}
-.streak-icon {
-    position: relative;
-}
-.checkbox {
-    cursor: pointer;
-    transition: transform 0.5s ease-in-out;
-}
-.checkbox.animate-check {
-    animation: rotateScale 0.5s forwards;
-}
-.background {
-    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
-}
-.background.animate-bg {
-    animation: transformBg 0.5s forwards, fadeOut 1s 0.5s forwards;
-}
-svg #Gear_2 {
-    animation: gear_2 2s linear;
-    transform-origin: center;
-    transform-box: fill-box;
-    animation-iteration-count: infinite;
-}
-svg #Progstroke {
-    stroke: url(#paint0_linear_152_9);
-    stroke-width: 25;
-    stroke-dasharray: 170;
-    stroke-dashoffset: 170;
 }
 @keyframes gear_2 {
     from {

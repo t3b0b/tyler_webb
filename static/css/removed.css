@@ -1,0 +1,29 @@
+#new-streak-form input,
+#new-streak-form select,
+#new-streak-form button {
+    width: 100%; /* Använd hela bredden av sin container */
+    padding: 10px; /* Ger utrymme inuti inmatningsfälten och knappen */
+    margin-bottom: 10px; /* Lägg till lite mellanrum mellan elementen */
+    box-sizing: border-box; /* Inkluderar padding i elementets totala bredd */
+    font-size: 16px;
+}
+#new-streak-form select {
+    line-height: 2; /* Justerar avståndet mellan raderna */
+}
+#new-streak-form select option {
+    padding: 10px; /* Lägg till padding runt texten i alternativen */
+    font-size: 16px; /* Justerar textstorleken i alternativen */
+}
+#new-streak-button {
+    width: 100%; /* Fyller hela bredden av sin container */
+}
+.streak-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+.streak-box {
+    width: 100%; /* Fyller hela bredden av sin container */
+    margin: 10px 0; /* Lägger till marginal ovanför och under */
+}

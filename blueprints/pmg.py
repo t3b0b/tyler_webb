@@ -347,7 +347,7 @@ def timer():
 def streak():
     current_date = date.today()
     current_date = current_date.strftime('%Y-%m-%d')
-    sida, sub_menu = common_route("Mina Streaks", ['/pmg/timebox','/pmg/streak', '/pmg/goals'], ['My Day','Streaks', 'Goals'])
+    sida, sub_menu = common_route("Mina Streaks", ['/pmg/streak', '/pmg/goals', '/pmg/milestones'], ['Streaks','Goals','Milestones'])
     myStreaks = query(Streak,'user_id',current_user.id)
     myGoals = query(Goals, 'user_id', current_user.id)
 
@@ -411,7 +411,6 @@ def delete_streak(streak_id):
     return jsonify({'success': True})
 # endregion
 
-
 # region Goals
 @pmg_bp.route('/get_activities/<goal_id>')
 def get_activities(goal_id):
@@ -431,7 +430,7 @@ def delete_activity(activity_id):
 
 @pmg_bp.route('/goals',methods=['GET', 'POST'])
 def goals():
-    sida, sub_menu = common_route("Mina Mål", ['/pmg/timebox','/pmg/streak', '/pmg/goals'], ['My Day','Streaks', 'Goals'])
+    sida, sub_menu = common_route("Mina Mål", ['/pmg/streak', '/pmg/goals', '/pmg/milestones'], ['Streaks','Goals','Milestones'])
     myGoals = query(Goals,'user_id',current_user.id)
 
     if request.method == 'POST':
@@ -460,6 +459,14 @@ def delete_goal(goal_id):
     else:
         return jsonify(success=False)
 # endregion
+
+#region Milestones
+@pmg_bp.route('/milestones', methods=['GET', 'POST'])
+def milestone():
+
+    return render_template('pmg/milestones.html')
+
+#end region
 
 #region MyDay
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
@@ -642,31 +649,42 @@ def timebox():
     activities_dict = organize_activities_by_time(activities)
 
     if request.method == 'POST':
+        viktig_list = []
+        tankar_list = []
+
         for i in range(1, 6):
-            viktigt = request.form.get(f'viktig_{i}')
-            tankar = request.form.get(f'tankar_{i}')
+            viktig = request.form.get(f'viktig_{i}')
+            tanke = request.form.get(f'tankar_{i}')
 
-            if viktigt:
-                ny_viktig_punkt = Idag(date=current_date, viktigt=viktigt, user_id=current_user.id)
-                db.session.add(ny_viktig_punkt)
+            if viktig:
+                viktig_list.append(viktig)
+            if tanke:
+                tankar_list.append(tanke)
 
-            if tankar:
-                ny_tanke = Idag(date=current_date, tankar=tankar, user_id=current_user.id)
-                db.session.add(ny_tanke)
+        # Kombinera listorna till en enda sträng
+        viktig_str = ",".join(viktig_list)
+        tankar_str = ",".join(tankar_list)
 
+        # Spara strängarna i databasen
+        ny_viktig_punkt = Idag(date=current_date, viktigt=viktig_str, user_id=current_user.id)
+        ny_tanke = Idag(date=current_date, tankar=tankar_str, user_id=current_user.id)
+        db.session.add(ny_viktig_punkt)
+        db.session.add(ny_tanke)
         db.session.commit()
 
         return redirect(url_for('pmg.timebox'))
 
     # Hämta sparade punkter
-    saved_entries = Idag.query.filter_by(date=current_date, user_id=current_user.id).all()
-    viktigt_saved = [entry.viktigt for entry in saved_entries if entry.viktigt]
-    tankar_saved = [entry.tankar for entry in saved_entries if entry.tankar]
-
+    saved_entry = Idag.query.filter_by(date=current_date, user_id=current_user.id).first()
+    if saved_entry:
+        viktigt_saved = saved_entry.viktigt.split(",") if saved_entry.viktigt else []
+        tankar_saved = saved_entry.tankar.split(",") if saved_entry.tankar else []
+    else:
+        viktigt_saved = [""] * 5
+        tankar_saved = [""] * 5
     return render_template('pmg/timebox.html', current_date=current_date, sida=sida,
-                           header=sida, sub_menu=sub_menu, activities=activities_dict, viktig=viktigt, tankar=tankar,
+                           header=sida, sub_menu=sub_menu, activities=activities_dict,
                            page_info=page_info, viktigt_saved=viktigt_saved, tankar_saved=tankar_saved)
-
 
 # endregion
 

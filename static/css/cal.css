@@ -93,14 +93,7 @@
     color: #ffffff;
     padding: 5px;
 }
-.day-container {
-    display: grid;
-    grid-template-columns: 2fr 1fr 2fr;
-    gap: 20px;
-    justify-content: space-evenly;
-    padding: 20px;
-    box-sizing: border-box;
-}
+
 .day-header, .day {
     text-align: center;
     padding: 10px;
@@ -120,13 +113,7 @@
 .day.other-month {
     background-color: #f9f9f9;
 }
-.notes input {
-    width: 100%;
-    font-size: 32px;
-    margin-bottom: 0;
-    border: 1px solid #ccc;
-    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-}
+
 .timebox {
     width: 100%;
     background-color: #fff;
@@ -167,7 +154,6 @@
     padding: 10px;
     height: 100%; /* Ger hela container full höjd på sidan */
 }
-
 .notes {
     flex-direction: column;
     background-color: #fff;
@@ -178,6 +164,31 @@
 .notes h2 {
     margin-top: 15px;
     margin-bottom: 10px;
+}
+.notes input {
+    width: 100%;
+    font-size: 24px;
+    padding: 5px;
+    margin-bottom: 0;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+}
+.send-button {
+    width: 30%;
+    padding: 10px 15px;
+    margin: 20px auto;
+    display: block;
+    font-size: 1.2em;
+    cursor: pointer;
+    background-color: #1c2d5b;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.send-button:hover{
+    background-color: #2ecc71;
 }
 @keyframes dayDateText {
     0% {

@@ -58,7 +58,6 @@
     margin: 0 auto; /* Centrerar containern inom huvudcontainern */
     width: 1200px;
 }
-
 .kontakt-form-container form {
     display: flex;
     flex-grow: 2;
