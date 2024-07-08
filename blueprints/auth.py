@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, login_manager, current_user, lo
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Streak, Goals, Activity, Settings, MyWords
 from flask_mail import Mail, Message
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
 auth_bp = Blueprint('auth', __name__, template_folder='auth/templates')
@@ -59,7 +59,6 @@ def confirm_reset():
                 # Nollställ streaks
                 streak.count = 0
                 streak.active = False
-                last_reg
             else:
                 # Uppdatera streak.count för streaks som inte nollställs
                 last_reg = datetime.strptime(streak.lastReg, "%Y-%m-%d")

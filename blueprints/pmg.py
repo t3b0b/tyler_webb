@@ -307,7 +307,6 @@ def add_friend(friend_id):
     flash('Friend request sent.', 'success')
     return redirect(url_for('pmg.myday'))
 
-
 @pmg_bp.route('/friends')
 @login_required
 def friends():
@@ -315,7 +314,6 @@ def friends():
     accepted_friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
                        Friendship.query.filter_by(friend_id=current_user.id, status='accepted').all()
     return render_template('/pmg/friends.html', pending_requests=pending_requests, accepted_friends=accepted_friends)
-
 
 @pmg_bp.route('/respond_friend_request/<int:request_id>/<response>')
 @login_required
@@ -335,7 +333,6 @@ def respond_friend_request(request_id, response):
         flash('Friend request declined.', 'danger')
 
     return redirect(url_for('pmg.friends'))
-
 
 @pmg_bp.route('/timer')
 def timer():
@@ -411,8 +408,8 @@ def delete_streak(streak_id):
     db.session.delete(streak)
     db.session.commit()
     return jsonify({'success': True})
-
 # endregion
+
 
 # region Goals
 @pmg_bp.route('/get_activities/<goal_id>')
@@ -784,10 +781,10 @@ def settings(section_name=None):
     if section_name == 'timer':
         sida = 'Timer-inställningar'
         page_info = getInfo('pageInfo.csv', 'Time-Settings')
+
     elif section_name == 'skrivande':
         sida = 'Blogg-inställningar'
         page_info = getInfo('pageInfo.csv', 'Text-Settings')
-
         Sett = Settings.query.filter_by(user_id=current_user.id).first()
 
         if not Sett.wImp:
@@ -812,21 +809,26 @@ def settings(section_name=None):
     mina_Ord = query(MyWords, 'user_id', current_user.id)
 
     if request.method == 'POST':
-        if "word" in request.form.get('action', ''):
+        action = request.form['action']
+
+        if action == "word":
             add2db(MyWords, request, ['nytt-ord'], ['ord'], current_user)
             flash('Nytt ord har lagts till.', 'success')
             return redirect(url_for('pmg.settings', section_name=section_name))
 
-        elif "timer" in request.form.get('action', ''):
+        elif action == "timer":
             existing_setting = Settings.query.filter_by(user_id=current_user.id).first()
             intervall = request.form.get('time-intervall')
             if existing_setting:
                 existing_setting.stInterval = int(intervall)
                 flash('Timer-inställningar har uppdaterats.', 'success')
-            else:
-                add2db(Settings, request, ['time-intervall'], ['stInterval'], current_user)
-                flash('Timer-inställningar har skapats.', 'success')
-            db.session.commit()
+
+        elif action == 'delete_word':
+            word_id = request.form.get('delete_word')
+            word_to_delete = MyWords.query.get(word_id)
+            if word_to_delete and word_to_delete.user_id == current_user.id:
+                db.session.delete(word_to_delete)
+                db.session.commit()
             return redirect(url_for('pmg.settings', section_name=section_name))
 
     return render_template('pmg/settings.html', sida=sida, header=sida, my_words=mina_Ord,
