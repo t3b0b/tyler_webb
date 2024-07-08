@@ -461,10 +461,12 @@ def delete_goal(goal_id):
 # endregion
 
 #region Milestones
-@pmg_bp.route('/milestones', methods=['GET', 'POST'])
-def milestone():
-
-    return render_template('pmg/milestones.html')
+@pmg_bp.route('milestones/<int:goal_id>')
+def milestones(goal_id):
+    goal = Goals.query.get(goal_id)
+    if goal is None:
+        abort(404)
+    return render_template('pmg/milestones.html', goal=goal)
 
 #end region
 

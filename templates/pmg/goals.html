@@ -64,6 +64,17 @@
             width: 100%;
             align-items: center;
         }
+            .milestone-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 20px;
+        color: blue;
+    }
+
+    .milestone-button:hover {
+        color: darkblue;
+    }
     </style>
 {% endblock head %}
 
@@ -76,6 +87,7 @@
                 <button class="toggle-button" onclick="toggleActivities(this)">&#5125;</button>
                 <h3>{{ goal.name }}</h3>
                 <button class="toggle-button" onclick="deleteGoal({{ goal.id }})">&#10060;</button>
+                <a href="{{ url_for('pmg.milestones', goal_id=goal.id) }}" class="milestone-button">&#128197;</a> <!-- Använder en kalender-ikon som knapp -->
             </div>
             <div class="activity-list">
                 {% for activity in goal.activities %}
