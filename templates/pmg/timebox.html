@@ -1,20 +1,18 @@
 {% extends 'base.html' %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cal.css') }}">
 {% endblock head %}
-
-{% block body %}
     {% block body %}
     <div class="container">
         <div class="notes">
-            <form method="post">
+            <form method="POST">
                 <h2>Viktigt</h2>
                 {% for num in range(1, 6) %}
-                    <input type="text" name="viktig_{{ num }}"></input>
+                    <input style="font-size: 14px;" type="text" name="viktig_{{ num }}" value="{{ viktigt_saved[num-1] if viktigt_saved|length >= num else '' }}">
                 {% endfor %}
                 <h2>Reflektioner</h2>
                 {% for num in range(1, 6) %}
-                    <input type="text" name="reflektion_{{ num }}">
+                    <input style="font-size: 14px;" type="text" name="tankar_{{ num }}" value="{{ tankar_saved[num-1] if tankar_saved|length >= num else '' }}">
                 {% endfor %}
                 <button type="submit" class="send-button">Spara</button>
             </form>

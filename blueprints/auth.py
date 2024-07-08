@@ -61,11 +61,11 @@ def confirm_reset():
                 streak.active = False
             else:
                 # Uppdatera streak.count för streaks som inte nollställs
-                last_reg = datetime.strptime(streak.lastReg, "%Y-%m-%d")
+                last_reg = streak.lastReg
                 yesterday = datetime.now() - timedelta(days=1)
                 delta_days = (yesterday - last_reg).days
                 streak.count += delta_days
-                streak.lastReg = yesterday.strftime("%Y-%m-%d")
+                streak.lastReg = yesterday
         db.session.commit()
         session.pop('streaks_to_reset', None)
         flash('Streaks har uppdaterats.', 'success')

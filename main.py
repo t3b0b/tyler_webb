@@ -17,7 +17,7 @@ import mysql.connector
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "K6SM4x14"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tylerobri.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:Tellus420@localhost/pmgonline'
 app.config['MAIL_SERVER'] = "smtp.gmail.com"
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_PORT'] = 465

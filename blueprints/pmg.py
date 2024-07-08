@@ -626,10 +626,14 @@ def week():
                            total_score=0, sub_menu=sub_menu, activities=activities_dict,page_info=page_info)
 
 @pmg_bp.route('/timebox', methods=['GET', 'POST'])
+@login_required
 def timebox():
     page_info = getInfo('pageInfo.csv', 'myDay')
     current_date = datetime.now().strftime("%Y-%m-%d")
     today = datetime.now()
+    viktigt = Idag.query.filter_by(date=today, user_id=current_user.id).all()
+    tankar = Idag.query.filter_by(date=today, user_id=current_user.id).all()
+
     sida, sub_menu = common_route('Min Dag', ['/pmg/month', '/pmg/week', '/pmg/timebox'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])
     start_date = today.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -638,25 +642,31 @@ def timebox():
     activities_dict = organize_activities_by_time(activities)
 
     if request.method == 'POST':
-        viktigt = [request.form.get(f'viktig_{i}') for i in range(1, 6)]
-        tankar = [request.form.get(f'reflektion_{i}') for i in range(1, 6)]
+        for i in range(1, 6):
+            viktigt = request.form.get(f'viktig_{i}')
+            tankar = request.form.get(f'tankar_{i}')
 
-        for data in viktigt:
-            if data:  # Check if the input is not empty
-                ny_viktig_punkt = Idag(date=current_date, viktigt=data, user_id=current_user.id)
+            if viktigt:
+                ny_viktig_punkt = Idag(date=current_date, viktigt=viktigt, user_id=current_user.id)
                 db.session.add(ny_viktig_punkt)
 
-        for data in tankar:
-            if data:  # Check if the input is not empty
-                ny_reflektion = Idag(date=current_date, tankar=data, user_id=current_user.id)
-                db.session.add(ny_reflektion)
+            if tankar:
+                ny_tanke = Idag(date=current_date, tankar=tankar, user_id=current_user.id)
+                db.session.add(ny_tanke)
 
         db.session.commit()
 
-        return redirect(url_for('timebox'))
+        return redirect(url_for('pmg.timebox'))
 
-    return render_template('pmg/timebox.html', current_date=current_date, date=date,
-                           sida=sida, header=sida, sub_menu=sub_menu, activities=activities_dict,page_info=page_info)
+    # Hämta sparade punkter
+    saved_entries = Idag.query.filter_by(date=current_date, user_id=current_user.id).all()
+    viktigt_saved = [entry.viktigt for entry in saved_entries if entry.viktigt]
+    tankar_saved = [entry.tankar for entry in saved_entries if entry.tankar]
+
+    return render_template('pmg/timebox.html', current_date=current_date, sida=sida,
+                           header=sida, sub_menu=sub_menu, activities=activities_dict, viktig=viktigt, tankar=tankar,
+                           page_info=page_info, viktigt_saved=viktigt_saved, tankar_saved=tankar_saved)
+
 
 # endregion
 

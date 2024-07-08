@@ -161,8 +161,8 @@ class Dagar(db.Model):
 class Month(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     month = db.Column(db.String(80), nullable=False)
-    viktigt = db.Column(db.Text, nullable=True)
-    tankar = db.Column(db.Text, nullable=True)
+    viktigt = db.Column(db.String(255), nullable=True)
+    tankar = db.Column(db.String(255), nullable=True)
     remember = db.Column(db.Text, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
@@ -170,8 +170,8 @@ class Month(db.Model):
 class Week(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     week = db.Column(db.Integer, nullable=False)
-    viktigt = db.Column(db.Text, nullable=True)
-    tankar = db.Column(db.Text, nullable=True)
+    viktigt = db.Column(db.String(255), nullable=True)
+    tankar = db.Column(db.String(255), nullable=True)
     remember = db.Column(db.Text, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
@@ -179,11 +179,11 @@ class Week(db.Model):
 
 class Idag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, nullable=False)
-    viktigt = db.Column(db.Text, nullable=True)
-    tankar = db.Column(db.Text, nullable=True)
-    remember = db.Column(db.Text, nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    date = db.Column(db.String(10), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    viktigt = db.Column(db.String(255), nullable=True)
+    tankar = db.Column(db.String(255), nullable=True)
+
     def __repr__(self):
         return f'{self.date}, {self.viktigt}, {self.tankar}, {self.remember}'
 
