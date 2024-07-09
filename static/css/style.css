@@ -202,7 +202,7 @@ header h1 {
 }
 .form-box h3{
     margin-left: 10%;
-    color: black"
+    color: black
 }
 
 #reg-btn {
@@ -558,7 +558,7 @@ textarea {
     left: 50%;
     width: 100%;
     height: 100%;
-    transform: translate(-50v, -50%);
+    transform: translate(-50%, -50%);
     z-index: 1000;
     background: white;
     font-size: 50px;
