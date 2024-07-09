@@ -784,7 +784,8 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                  'Distraherar mig', 'Motiverar mig',
                  'Jag borde...', 'Värt att fundera på', 'Jag ska försöka..']
 
-    time = Settings.query.filter_by(user_id=current_user.id).first().stInterval
+    interval = Settings.query.filter_by(user_id=current_user.id).first()
+    time = interval.stInterval
     if not time:
         time = 15
     titles = []  # Initialisera titles här för att säkerställa att den alltid har ett värde

@@ -34,6 +34,7 @@ def login():
             skriva_goal = Goals(name="Skriva", user_id=user.id)
             db.session.add(skriva_goal)
             db.session.commit()
+
             skriv_goal_id = skriva_goal.id
             mina_ord = Activity(name="Mina Ord", user_id=user.id, goal_id=skriv_goal_id, unit=None)
             db.session.add(mina_ord)
@@ -43,14 +44,17 @@ def login():
             db.session.add(bullet)
             db.session.commit()
 
+
             ordet, ord_lista = readWords('orden.txt')
             for ord in ord_lista:
-                nyttOrd = MyWords(ord=ord, user_id=user.id)
+                nyttOrd = MyWords(word=ord, user_id=user.id)
                 db.session.add(nyttOrd)
                 db.session.commit()
+
             imported = Settings(stInterval=5, wImp=True, user_id=user.id)
             db.session.add(imported)
             db.session.commit()
+
         if user and check_password_hash(user.password, password):
             if not user.verified:
                 flash('Kontot är inte verifierat. Kontrollera din e-post för en verifieringslänk.', 'error')
@@ -146,13 +150,11 @@ def logout():
 
 @auth_bp.route('/confirm_email/<token>')
 def confirm_email(token):
-
     try:
         email = s.loads(token, salt='email-confirm', max_age=36000)
         user = User.query.filter_by(email=email).first()
-
         if user:
-            user.verifierad = True
+            user.verified = True
             db.session.commit()
 
             # Skapa målet "Skriva" och aktiviteterna för den nya användaren
