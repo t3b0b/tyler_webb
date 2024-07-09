@@ -123,27 +123,29 @@
     </form>
 </div>
 <script>
-    function deleteGoal(goalId) {
-        if (confirm('Är du säker på att du vill radera detta mål?')) {
-            fetch('/pmg/delete-goal/' + goalId, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ goalId: goalId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Målet har raderats!');
-                    location.reload();
-                } else {
-                    alert('Ett fel inträffade. Försök igen.');
-                }
-            });
-        }
+function deleteGoal(goalId) {
+    if (confirm('Är du säker på att du vill radera detta mål?')) {
+        fetch('/pmg/delete-goal/' + goalId, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Målet har raderats!');
+                location.reload();
+            } else {
+                alert('Ett fel inträffade. Försök igen.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ett fel inträffade. Försök igen.');
+        });
     }
-
+}
     function toggleActivities(button) {
         const activityList = button.closest('.items-container').querySelector('.activity-list');
         activityList.style.display = activityList.style.display === 'none' ? 'flex' : 'none';

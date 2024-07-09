@@ -457,19 +457,21 @@ def goals():
 
     return render_template('pmg/goals.html',sida=sida,header=sida, goals=myGoals,sub_menu=sub_menu)
 
-@pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
+@pmg_bp.route('/delete-goal/<int:goal_id>', methods=['DELETE', 'POST'])
 def delete_goal(goal_id):
-    # Data från JSON-kroppen, om du behöver den
-    data = request.get_json()
- # Debug: se vad som faktiskt tas emot
-
-    goal = Goals.query.get(goal_id)
+    goal = Goals.query.filter_by(goal_id=goal_id, user_id=current_user.id).first()
+    activities = Activity.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
+    for a in activities:
+        db.session.delete(a)
+        db.session.commit()
     if goal:
+        # Sätt goal_id till NULL för alla associerade milstolpar
+        Milestones.query.filter_by(goal_id=goal_id).update({'goal_id': None})
         db.session.delete(goal)
         db.session.commit()
-        return jsonify(success=True)
+        return jsonify({'success': True})
     else:
-        return jsonify(success=False)
+        return jsonify({'success': False, 'error': 'Goal not found'}), 404
 # endregion
 
 #region Milestones
