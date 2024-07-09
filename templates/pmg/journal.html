@@ -3,17 +3,21 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
+      button {
+          width: 100px;
+      }
 
-
-
+    .hidden {
+        display: none;
+    }
     </style>
 {% endblock head %}
 
 {% block body %}
     {% if act_id %}
-        <div class="blogg-container" style="border: 1px solid lightslategray;">
+ <div class="blogg-container">
             <form method="POST">
-                {% if sida == "Mina Ord" or sida == "Dagbok" %}
+                {% if sida == "Mina Ord" or sida == "Dagbok" or sida == "Mina Mål" %}
                     <div class="ordet">
                         <button name="option" style="width: 60px" onclick="fetchNewWord()">New</button>
                         <label id="ordet-label" name="post-ord">{{ ordet }}</label>

@@ -1,152 +1,173 @@
-:root {
-    --primary-color: #1c2d5b;
-    --secondary-color: #c39e5f;
-    --highlight-color: #45a049;
-    --border-color: #978d8d;
-    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+html, body {
+    width:100%;
+    height:100%;
+    font-family: 'Roboto', sans-serif;
+    background-color: #ecf0f1;
+    color: #2c3e50;
+    margin: 0;
+    padding: 0;
 }
-/* Buttons */
-.button-style {
-    width: 30%;
-    padding: 15px 20px;
-    margin: 20px auto;
-    display: block;
-    font-size: 1.2em;
+body {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+header {
+    background-color: #1c2d5b;
+    width:100%;
+    max-height: 100px;
+    min-height: fit-content;
+    color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+header h1 {
+    font-size:24px;
+    font-family: 'Montserrat', sans-serif;
+    padding: 10px 25px 10px 25px ;
+    margin: 0 auto;
+}
+
+.progress-container {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 25px;
+    margin: 20px 0;
+    height: 30px;
+}
+.progress-bar {
+    height: 100%;
+    background-color: #4caf50;
+    width: 0%;
+    border-radius: 25px;
+    text-align: center;
+    line-height: 30px; /* Justera beroende på höjden av progress-container */
+    color: white;
+    transition: width 0.3s ease-in-out;
+}
+
+.side-menu {
+    position: absolute;
+    display: flex;
+    align-content: flex-start;
+    top:0;
+    left: -180px; /* Dölj menyn utanför skärmen */
+    width: 200px;
+    height: 100%;
+    background-color: #1c2d5b;
+    color: #ffffff;
+    padding: 20px;
+    box-sizing: border-box;
+    transition: left 0.3s ease; /* Transition för att smidigt visa/hide menyn */
+}
+
+.side-menu.expanded {
+    left: 0; /* Flytta menyn till synlig position när expanderad */
+}
+
+.side-menu ul {
+    list-style: none;
+    padding: 0;
+}
+
+.side-menu ul li {
+    margin: 10px 0;
+}
+
+.side-menu ul li a {
+    text-decoration: none;
+    color: #ffffff;
+}
+
+.menu-toggle {
+    display: none;
+    font-size: 24px;
     cursor: pointer;
-    background-color: var(--primary-color);
-    color: var(--secondary-color);
+    padding: 10px;
+    background-color: #2ecc71;
+    color: #fff;
     border: none;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.menu-toggle:hover {
+    background-color: #27ae60;
+}
+
+.top-bar-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 20px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.top-bar-menu ul li {
+    list-style: none;
+}
+
+.top-bar-menu ul li a {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 18px;
+    padding: 10px 15px;
     border-radius: 5px;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
-.button-style:hover, .send-button:hover {
-    background-color: var(--highlight-color);
+
+.top-bar-menu ul li a:hover {
+    background-color: #2980b9;
+    color: #ffffff;
 }
-.button-center {
-    width: 100%;
+
+.sub-menu {
+    width:100%;
+    background-color: #bb9256;
+    color: #ffffff;
+    padding: 5px;
     display: flex;
-    justify-content: center;
-    margin: 20px 0;
-}
-.add-btn {
-    padding: 10px 20px;
-    background-color: #4CAF50; /* Grön bakgrund */
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-.del-btn {
-    border-radius: 15%;
-    background-color: #da1a2c; /* Röd bakgrund */
-    color: white;
-    cursor: pointer;
-    margin-left: auto; /* Skjuter knappen till höger */
-    font-weight: bold;
-    box-shadow: none; /* Ta bort skugga */
-}
-.progress-bar, #reg-btn {
-    height: 100%;
-    background-color: var(--highlight-color);
-    border-radius: 25px;
-    color: white;
-    text-align: center;
-    transition: width 0.3s ease-in-out;
-}
-.toggle-button {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-}
-.streak-actions {
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-}
-.ord-section {
-    display: flex;
-    flex-direction: column;
-    margin-left: 20px; /* Minska vänstermarginalen */
-    justify-content: center;
-}
-.timer-section {
-    display: flex;
-    flex-direction: column;
     justify-content: flex-start;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
-input[type="text"] {
-    padding: 8px;
-    margin-right: 5px; /* Lägg till marginal mellan fältet och knappen */
+.sub-menu li {
+    margin-left: 20px;
+    font-size: 12px;
 }
-.column {
-    background-color: #f4f4f4;
-    border: 1px solid #ccc;
-    width: 100%;
-    max-width: 400px;
-    padding: 0 10px;
+.sub-menu a {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 16px;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
-.column ul {
-    list-style-type: none; /* Tar bort punkter från listan */
-    padding: 5px;
+
+.sub-menu a:hover {
+    background-color: #27ae60;
 }
-.column ul li {
-    display: flex; /* Använd flexbox för att placera innehåll */
-    justify-content: space-between; /* Placera innehåll med mellanrum */
-    align-items: center; /* Centrera innehåll vertikalt */
-    padding: 5px;
-    border-bottom: 1px solid #ddd; /* Lägg till en linje mellan varje ord */
-}
-.repetitions {
-    align-self: center;
-}
-.streak-icon {
-    position: relative;
-}
-.checkbox {
-    cursor: pointer;
-    transition: transform 0.5s ease-in-out;
-}
-.checkbox.animate-check {
-    animation: rotateScale 0.5s forwards;
-}
-.background {
-    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
-}
-.background.animate-bg {
-    animation: transformBg 0.5s forwards, fadeOut 1s 0.5s forwards;
-}
-svg #Gear_2 {
-    animation: gear_2 2s linear;
-    transform-origin: center;
-    transform-box: fill-box;
-    animation-iteration-count: infinite;
-}
-svg #Progstroke {
-    stroke: url(#paint0_linear_152_9);
-    stroke-width: 25;
-    stroke-dasharray: 170;
-    stroke-dashoffset: 170;
-}
-#reg-btn {
-    min-height: 25px;
-    margin: 5px 0;
-    padding: 5px 0;
-    width: 100%;
-    font-weight: bold;
-    cursor: pointer;
-}
-.card, .service-info-box {
-    background-color: #ffffff;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+.main-container {
+    width:100%;
     padding: 20px;
-    margin-bottom: 20px;
-    max-width: 300px;
-    width: 80%;
+    display: flex;
+    flex-wrap: wrap;
+    max-width:1200px;
     margin: 0 auto;
-    align-items: center;
 }
+
+.main-content {
+    width:100%;
+    padding: 20px;
+    transition: all 0.5s ease;
+}
+
 .form-box {
     display: flex;
     justify-content: space-between;
@@ -161,14 +182,7 @@ svg #Progstroke {
     border-radius: 3px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-.day-container {
-    display: grid;
-    grid-template-columns: 2fr 1fr 2fr;
-    gap: 20px;
-    justify-content: space-evenly;
-    padding: 20px;
-    box-sizing: border-box;
-}
+
 .form-box input {
     margin-bottom: 5px;
     margin-top: 5px;
@@ -178,6 +192,7 @@ svg #Progstroke {
     width: 75%;
     box-sizing: border-box;
 }
+
 .form-box label {
     margin-bottom: 5px;
     margin-top: 5px;
@@ -185,6 +200,28 @@ svg #Progstroke {
     margin-left: 10%;
     font-weight: normal;
 }
+
+#reg-btn {
+    min-height: 25px;
+    margin: 5px 0 5px 0;
+    padding: 5px 0 5px 0;
+    background-color: cornflowerblue;
+    max-width: 300px;
+    width: 100%;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.day-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr 2fr;
+    gap: 20px;
+    justify-content: space-evenly;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
 .select-style {
     display: block;
     font-size: 1.2em;
@@ -192,65 +229,152 @@ svg #Progstroke {
     margin: 0 auto 10px;
     width: 100%;
 }
+
 .list-container {
     display: flex;
     justify-content: space-evenly;
     flex-direction: column;
-    width: 60%;
+    width: 2fr;
     padding: 5px;
 }
+
 .goal-streak-container {
     margin-top: 20px;
     flex-grow: 3;
     flex-shrink: 1;
     flex-basis: 70%;
 }
+
 .items-container {
     display: flex;
     flex-direction: row;
-    width: 1200px;
     justify-self: center;
-    align-items: flex-start;
+    align-items: center;
+    width: 100%;
     margin: 10px auto 10px auto;
     border: 1px solid #ccc;
     border-radius: 10px;
     padding: 10px;
     box-sizing: content-box;
 }
+
 .list-item {
     display: flex;
     flex-direction: row;
     width: 100%;
     justify-content: space-between;
 }
+
 .list-item h3, .items-container h3 {
     margin: 0;
     text-align: center;
     flex: 1; /* Gör alla element lika breda */
 }
+
+.button-center {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.button-style {
+    width: 30%;
+    padding: 15px 20px;
+    margin: 20px auto;
+    display: block;
+    font-size: 1.2em;
+    cursor: pointer;
+    background-color: #111c91;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+
+.button-style:hover {
+    background-color: #419a44;
+}
+
 .small-icon, img {
     height: 24px;
     width: 24px;
     cursor: pointer;
 }
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+}
+
+nav ul li {
+    padding: 10px;
+}
+
+nav ul.right {
+    justify-content: flex-end;
+}
+
+nav a {
+    text-decoration: none;
+    color: black;
+}
+
+nav a.active {
+    font-weight: bold;
+}
+
 .record, .start-date {
     text-align: center;
 }
+
 footer {
     margin-top: auto;
 }
+
+.sub-menu nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.sub-menu nav ul li {
+    margin-right: 10px;
+}
+
+.sub-menu nav ul li a {
+    text-decoration: none;
+    color: #f9f9f9;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 5px 10px;
+}
+
+.sub-menu nav ul li a:hover {
+    color: black;
+}
+
 .blogg-container {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 300px;
 }
+
 .blogg-container label textarea button {
     margin: 10px;
 }
+
 .post-content {
     white-space: pre-wrap;
 }
+
 textarea {
     flex-wrap: wrap;
     width: 60vw;
@@ -261,6 +385,7 @@ textarea {
     border-radius: 4px;
     resize: vertical;
 }
+
 .ordet {
     display: flex;
     flex-direction: row;
@@ -269,11 +394,34 @@ textarea {
     padding-top: 5px;
     width: 100%;
 }
+
+.flashes {
+    list-style-type: none;
+    padding: 0;
+}
+
+.flashes li {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.flashes li.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.flashes li.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
 .ordet label {
     font-family: 'Arial', sans-serif;
     font-size: x-large;
     font-weight: bold;
 }
+
 .ordet input {
     margin-inline: auto;
     height: 30px;
@@ -282,6 +430,7 @@ textarea {
     font-size: larger;
     font-weight: bold;
 }
+
 .score-style {
     width: 100%;
     font-size: 22px;
@@ -290,15 +439,7 @@ textarea {
     text-align: center;
     display: block;
 }
-.modal {
-    transition: opacity 0.3s ease;
-    opacity: 0;
-    visibility: hidden;
-}
-.modal.active {
-    opacity: 1;
-    visibility: visible;
-}
+
 .card, .streak {
     background-color: #ffffff;
     border-radius: 10px;
@@ -308,27 +449,17 @@ textarea {
     animation: fadeIn 0.5s ease forwards;
 }
 
-.add-form-container {
-    display: flex;
-    justify-content: center; /* Centrerar innehållet horisontellt */
-    margin-bottom: 15px;
+.modal {
+    transition: opacity 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
 }
-.add-form-container form {
-    width: 50%;
-    margin-inline: auto;
-    margin-bottom: 10px;
+
+.modal.active {
+    opacity: 1;
+    visibility: visible;
 }
-.streak-item:last-child {
-    border-bottom: none;
-}
-.streak-name {
-    font-weight: bold;
-}
-.form-group, .form-field, .form-message textarea, .send-button {
-    margin-bottom: 5px;
-    width: 900px; /* Gör formulärets element breda */
-    max-width: 100%; /* Max bredd för stora skärmar */
-}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -340,103 +471,286 @@ textarea {
     }
 }
 
-      button {
-          width: 100px;
-      }
-    .hidden {
-        display: none;
-    }
-.expand {
-    animation: expand 0.5s forwards;
-}
-@keyframes expand {
-    0% {
-        transform: scale(1);
-    }
-    100% {
-        transform: scale(1.1);
-    }
-}
-@keyframes gear_2 {
+@keyframes slideIn {
     from {
-        transform: rotate(0deg);
+        transform: translateX(-100%);
     }
     to {
-        transform: rotate(360deg);
-        }
+        transform: translateX(0);
+    }
 }
-@keyframes rotateScale {
+
+.side-menu-nav {
+    animation: slideIn 0.5s ease forwards;
+}
+
+.calendar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centrera kalendern horisontellt */
+    margin: 0 auto; /* Centrerar kalendern */
+    width: 100%; /* Låter kalendern ta upp hela bredden */
+    max-width: 1200px; /* Ställer in en maxbredd för stora skärmar */
+    padding: 10px; /* Lägger till padding runt om */
+    box-sizing: border-box; /* Inkluderar padding i bredden */
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0;
+    width: 100%; /* Gör kalendern så bred som möjligt inom container */
+    box-sizing: border-box; /* Inkluderar padding och border i bredden */
+}
+
+.calendar-header {
+    grid-column: span 7;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.day-header {
+    background-color: #be9949;
+    border: 1px solid #524021;
+    color: #ffffff;
+    padding: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.day {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-right: 30px;
+    padding-left: 30px;
+    border: 1px solid #b7b6b6;
+    text-align: center;
+    vertical-align: top;
+    background-color: #fff;
+    cursor: pointer;
+    transition: all 0.5s ease;
+}
+.day .streak-count {
+    justify-self: flex-start;
+    top: 5px;
+    font-size: 14px;
+}
+.day .day-date {
+    font-size: 20px;
+    font-weight: bold;
+}
+.day .total-points {
+    bottom: 5px;
+    font-size: 14px;
+}
+.day.expand {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: 100vh;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background: white;
+    font-size: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.other-month {
+    background-color: #f0f0f0;
+    color: #ccc;
+    cursor: default;
+}
+
+.today {
+    border: 2px solid #e1c971;
+    background-color: rgba(144, 187, 196, 0.4);
+}
+
+
+@keyframes dayDateText {
     0% {
-        transform: scale(1) rotate(0deg);
+        color: black;
+        font-size: 1em;
+    }
+    50% {
+        color: red;
+        font-size: 1.5em;
     }
     100% {
-        transform: scale(1.5) rotate(360deg);
+        color: black;
+        font-size: 1em;
     }
 }
-@keyframes transformBg {
-    0% {
-        transform: scale(1);
-        width: auto;
-        height: auto;
+
+    .info-button {
+        position: absolute;
+        top: 25%;
+        right: 10px;
+        width: 24px;
+        height: 24px;
+        background-color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: blue;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
-    100% {
-        transform: scale(1.5);
-        width: 100%;
-        height: 5px;
+
+    .tooltip {
+        display: none;
+        position: absolute;
+        top: 65%;
+        right: 10px;
+        width: 200px;
+        padding: 10px;
+        background-color: white;
+        border: 1px solid #ccc;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
     }
+
+    .info-button:hover + .tooltip {
+        display: inline-block;
+
+    }
+
+.tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Position the tooltip above the button */
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
 }
-@keyframes fadeOut {
-    0% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0;
-    }
-}
+
 @media (max-width: 768px) {
+
+    .menu-toggle {
+        display: block;
+        width: 20px;
+        height: 15px;
+    }
+
+    .menu-container nav {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        background: #1c2d5b;
+        z-index: 1000;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+    .menu-container nav.active {
+        display: block;
+        max-height: 500px;
+    }
+
+    .top-bar-menu ul {
+        flex-direction: column;
+        width: 100%;
+        padding: 0;
+    }
     .form-box {
         width: 2fr;
     }
     .form-box input{
         width: 80%;
     }
+    .top-bar-menu ul li {
+        padding: 15px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .top-bar-menu ul li a {
+        font-size: 18px;
+    }
+
+    .main-container {
+        width:100%
+    }
+
+    .day-container {
+        grid-template-columns: 1fr;
+        gap: 5px;
+    }
+
     .form-box {
         width: 1000px;
         max-width: 80%;
         padding: 10px;
     }
+
     .form-box input {
         width: 620px;
         max-width: 100%;
     }
+
+
+
     .toggle-button {
         font-size: 14px;
     }
+
     .select-style {
         width: 100%;
         font-size: 1em;
     }
+
     .small-icon {
         width: 20px;
         height: 20px;
     }
+
     .button-center {
         width: 100%;
         justify-content: center;
     }
+
     .button-style {
         width: 100%;
         font-size: 1em;
         padding: 10px;
     }
+
     .list-container {
         width: 80%;
         display: flex;
     }
+
     .items-container {
         width: 90%;
         margin-bottom: 10px;
         padding: 10px;
         box-sizing: border-box;
+    }
+
+    nav ul {
+        flex-direction: column;
+    }
+
+    nav ul li {
+        padding: 5px 0;
     }
 }

@@ -1,7 +1,7 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet,
-                    Activity, Score, MyWords, Settings, Dagbok, Dagar,
+                    Activity, Score, MyWords, Settings, Dagbok, Dagar, Message,
                     Idag, Week, Month)
 from datetime import datetime, timedelta, date
 import pandas as pd
@@ -289,51 +289,7 @@ def getInfo(filename, page):
         return "Ingen information tillgänglig för den angivna sidan."
 # endregion
 
-@pmg_bp.route('/add_friend/<int:friend_id>')
-@login_required
-def add_friend(friend_id):
-    friend = User.query.get_or_404(friend_id)
-    if friend == current_user:
-        flash('You cannot add yourself as a friend.', 'danger')
-        return redirect(url_for('pmg.myday'))
 
-    existing_friendship = Friendship.query.filter_by(user_id=current_user.id, friend_id=friend.id).first()
-    if existing_friendship:
-        flash('Friend request already sent.', 'warning')
-        return redirect(url_for('pmg.myday'))
-
-    new_friendship = Friendship(user_id=current_user.id, friend_id=friend.id, status='pending')
-    db.session.add(new_friendship)
-    db.session.commit()
-    flash('Friend request sent.', 'success')
-    return redirect(url_for('pmg.myday'))
-
-@pmg_bp.route('/friends')
-@login_required
-def friends():
-    pending_requests = Friendship.query.filter_by(friend_id=current_user.id, status='pending').all()
-    accepted_friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
-                       Friendship.query.filter_by(friend_id=current_user.id, status='accepted').all()
-    return render_template('/pmg/friends.html', pending_requests=pending_requests, accepted_friends=accepted_friends)
-
-@pmg_bp.route('/respond_friend_request/<int:request_id>/<response>')
-@login_required
-def respond_friend_request(request_id, response):
-    friendship = Friendship.query.get_or_404(request_id)
-    if friendship.friend_id != current_user.id:
-        flash('Not authorized.', 'danger')
-        return redirect(url_for('pmg.myday'))
-
-    if response == 'accept':
-        friendship.status = 'accepted'
-        db.session.commit()
-        flash('Friend request accepted.', 'success')
-    elif response == 'decline':
-        db.session.delete(friendship)
-        db.session.commit()
-        flash('Friend request declined.', 'danger')
-
-    return redirect(url_for('pmg.friends'))
 
 @pmg_bp.route('/timer')
 def timer():
@@ -432,7 +388,7 @@ def delete_activity(activity_id):
 def goals():
     sida, sub_menu = common_route("Mina Mål", ['/pmg/streak', '/pmg/goals', '/pmg/milestones'], ['Streaks','Goals','Milestones'])
     myGoals = query(Goals,'user_id',current_user.id)
-
+    friends = current_user.friends
     if request.method == 'POST':
         if 'addGoal' in request.form['action']:
             add2db(Goals, request, ['goalName'], ['name'], current_user)
@@ -443,7 +399,7 @@ def goals():
                    ['goal_id','name','measurement'], current_user)
             return redirect(url_for('pmg.goals',sida=sida,header=sida, goals=myGoals))
 
-    return render_template('pmg/goals.html',sida=sida,header=sida, goals=myGoals,sub_menu=sub_menu)
+    return render_template('pmg/goals.html',friends=friends,sida=sida,header=sida, goals=myGoals,sub_menu=sub_menu)
 
 @pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
 def delete_goal(goal_id):
@@ -700,8 +656,14 @@ def journal():
         return redirect(url_for('pmg.journal', section_name='Mina Ord'))
 
     if section_name == 'Mina Ord' or section_name == 'skriva':
-        act_id = 1
+        act_id = section_content(Activity, section_name)
         sida, sub_menu = common_route("Mina Ord", [url_for('pmg.journal', section_name='skriva'),
+                                                   url_for('pmg.journal', section_name='blogg')], ['Skriv', 'Blogg'])
+        return journal_section(act_id, sida, sub_menu,None)
+
+    if section_name == 'Mål':
+        act_id = section_content(Activity, section_name)
+        sida, sub_menu = common_route("Mål", [url_for('pmg.journal', section_name='skriva'),
                                                    url_for('pmg.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         return journal_section(act_id, sida, sub_menu,None)
 
@@ -738,6 +700,10 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     ordet, ord_lista = readWords('orden.txt')
     if sida == 'Dagbok':
         ordet = current_date
+    elif sida == 'Mina Mål':
+        goals = Goals.query.filter_by(user_id=current_user.id).with_entities(Goals.name).all()
+        goal_list = [goal[0] for goal in goals]
+        ordet = choice(goal_list)
     elif sida == "Bullet":
         ordet = ['Tacksam för', 'Inför imorgon', "Personer som betyder",
                  'Distraherar mig', 'Motiverar mig',
@@ -801,7 +767,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
 
 @pmg_bp.route('/get-new-word')
 def get_new_word(section_id):
-    orden = MyWords.query.filter_by(user_id=current_user.id).with_entities(MyWords.ord).all()
+    orden = MyWords.query.filter_by(user_id=current_user.id).with_entities(MyWords.word).all()
     if orden:
         ord_lista = [ord[0] for ord in orden]
         ordet = choice(ord_lista)
@@ -841,8 +807,8 @@ def settings(section_name=None):
                     db.session.add(nyttOrd)
                     db.session.commit()
                 stInt = Settings.query.filter_by(user_id=current_user.id).first()
-                Settings(wImp=True, stInterval=stInt.stInterval, user_id=current_user.id )
-
+                stInt.wImp = True
+                db.session.commit()
     elif section_name == 'konto':
         sida = 'Konto-inställningar'
         page_info = getInfo('pageInfo.csv', 'Account-Settings')
@@ -869,11 +835,12 @@ def settings(section_name=None):
 
         elif action == 'delete_word':
             word_id = request.form.get('delete_word')
-            word_to_delete = MyWords.query.get(word_id)
+            word_to_delete = MyWords.query.filter_by(id=word_id).first()
             if word_to_delete and word_to_delete.user_id == current_user.id:
                 db.session.delete(word_to_delete)
                 db.session.commit()
-            return redirect(url_for('pmg.settings', section_name=section_name))
+            return render_template('pmg/settings.html', sida=sida, header=sida, my_words=mina_Ord,
+                                   sub_menu=sub_menu, page_info=page_info, user=current_user)
 
     return render_template('pmg/settings.html', sida=sida, header=sida, my_words=mina_Ord,
                            sub_menu=sub_menu, page_info=page_info, user=current_user)

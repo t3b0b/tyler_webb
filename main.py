@@ -2,7 +2,7 @@
 from flask import (Flask, render_template, flash,
                    request, redirect, url_for)
 from flask_login import LoginManager
-
+from blueprints.friends import friends_bp
 from blueprints.base import base_bp,read_info
 from models import db, User, BloggPost, Streak, Goals, MyWords
 from blueprints.auth import auth_bp
@@ -30,6 +30,9 @@ login_manager.init_app(app)
 login_manager.login_view = 'auth.login'
 
 #mysql.connector.connect(host="localhost",user="root",password="Tellus420",database="Tellus420")
+app.register_blueprint(pmg_bp, url_prefix='/pmg')
+app.register_blueprint(base_bp, url_prefix='/base')
+app.register_blueprint(friends_bp, url_prefix='/friends')
 
 db.init_app(app)
 mail = Mail(app)
@@ -62,8 +65,7 @@ app.register_blueprint(auth_bp, url_prefix='/auth')
 
 #endregion
 
-app.register_blueprint(pmg_bp, url_prefix='/pmg')
-app.register_blueprint(base_bp, url_prefix='/base')
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=5001,debug=True)

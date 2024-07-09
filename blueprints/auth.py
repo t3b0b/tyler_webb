@@ -11,12 +11,34 @@ auth_bp = Blueprint('auth', __name__, template_folder='auth/templates')
 s = URLSafeTimedSerializer("K6SM4x14")
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    from pmg import readWords
     sida = 'P.M.G'
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
         user = User.query.filter_by(username=username).first()
+        skriv_goal = Goals.query.filter_by(user_id=user.id, name='Skriva').first()
+        if not skriv_goal:
+            skriva_goal = Goals(name="Skriva", user_id=user.id)
+            db.session.add(skriva_goal)
+            db.session.commit()
+            skriv_goal_id = skriva_goal.id
+            mina_ord = Activity(name="Mina Ord", user_id=user.id, goal_id=skriv_goal_id, unit=None)
+            db.session.add(mina_ord)
+            dagbok = Activity(name="Dagbok", user_id=user.id, goal_id=skriv_goal_id, unit=None)
+            db.session.add(dagbok)
+            bullet = Activity(name="Bullet", user_id=user.id, goal_id=skriv_goal_id, unit=None)
+            db.session.add(bullet)
+            db.session.commit()
 
+            ordet, ord_lista = readWords('orden.txt')
+            for ord in ord_lista:
+                nyttOrd = MyWords(ord=ord, user_id=user.id)
+                db.session.add(nyttOrd)
+                db.session.commit()
+            imported = Settings(stInterval=5, wImp=True, user_id=user.id)
+            db.session.add(imported)
+            db.session.commit()
         if user and check_password_hash(user.password, password):
             if not user.verified:
                 flash('Kontot är inte verifierat. Kontrollera din e-post för en verifieringslänk.', 'error')
@@ -70,13 +92,11 @@ def confirm_reset():
         session.pop('streaks_to_reset', None)
         flash('Streaks har uppdaterats.', 'success')
         return redirect(url_for('pmg.myday'))
-
     return render_template('auth/reset.html', sida=sida, header=sida, streaks=streaks_to_reset)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     from main import mail
-
     if request.method == 'POST':
         first = request.form.get('first-name')
         last = request.form.get('last-name')
@@ -114,9 +134,8 @@ def logout():
 
 @auth_bp.route('/confirm_email/<token>')
 def confirm_email(token):
-    from pmg import readWords
-    try:
 
+    try:
         email = s.loads(token, salt='email-confirm', max_age=36000)
         user = User.query.filter_by(email=email).first()
 
@@ -125,25 +144,7 @@ def confirm_email(token):
             db.session.commit()
 
             # Skapa målet "Skriva" och aktiviteterna för den nya användaren
-            skriva_goal = Goals(name="Skriva", user_id=user.id)
-            db.session.add(skriva_goal)
-            db.session.commit()
-            skriv_goal_id = skriva_goal.id
-            mina_ord = Activity(name="Mina Ord", user_id=user.id, goal_id=skriv_goal_id, unit=None)
-            db.session.add(mina_ord)
-            dagbok = Activity(name="Dagbok", user_id=user.id, goal_id=skriv_goal_id, unit=None)
-            db.session.add(dagbok)
-            bullet = Activity(name="Bullet", user_id=user.id, goal_id=skriv_goal_id, unit=None)
-            db.session.add(bullet)
-            stand_int = Settings(user_id=user.id, stInterval=5)
-            db.session.add(stand_int)
-            db.session.commit()
 
-            ordet, ord_lista = readWords('orden.txt')
-            for ord in ord_lista:
-                nyttOrd = MyWords(ord=ord, user_id=user.id)
-                db.session.add(nyttOrd)
-                db.session.commit()
             return 'Din e-post har verifierats! Du kan nu logga in.'
         else:
             return '<h1>Ogiltig begäran!</h1>', 400

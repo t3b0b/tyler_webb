@@ -15,15 +15,27 @@ class User(db.Model, UserMixin):
     lastName = db.Column(db.String(50), nullable=False)
     verified = db.Column(db.Boolean, default=False)
 
+    friends = db.relationship('User',
+                               secondary='friendship',
+                               primaryjoin='User.id==Friendship.user_id',
+                               secondaryjoin='User.id==Friendship.friend_id',
+                               backref='friend_of')
     def __repr__(self):
         return f'{self.username}, {self.email}, {self.password}'
 
 class Friendship(db.Model):
+    __tablename__ = 'friendship'
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    friend_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    status = db.Column(db.String(50), nullable=False)  # pending, accepted
+
+class FriendGoal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    friend_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    status = db.Column(db.String(50), nullable=False)  # t.ex., 'pending', 'accepted', 'declined'
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
+    is_owner = db.Column(db.Boolean, default=False)
+    user = db.relationship('User', backref=db.backref('user_goals', cascade='all, delete-orphan'))
+    goal = db.relationship('Goals', backref=db.backref('user_goals', cascade='all, delete-orphan'))
 
 class Dagbok(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -92,7 +104,13 @@ class Milestones(db.Model):
     achieved = db.Column(db.Boolean, default=False)
     date_achieved = db.Column(db.DateTime, nullable=True)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
-    activities = db.relationship('Activity', backref='milestones', lazy=True)
+    subtasks = db.relationship('Subtask', backref='milestone', lazy=True, cascade='all, delete-orphan')
+
+class Subtask(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=False)
+    completed = db.Column(db.Boolean, default=False)
 
 class Goals(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -131,10 +149,22 @@ class Score(db.Model):
 
 class MyWords(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    ord = db.Column(db.String(120), nullable=False)
+    word = db.Column(db.String(120), nullable=False)
+    used_words = db.Column(db.String(120), nullable=True)
+    goals = db.Column(db.String(120))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
-        return f'{self.ord}, {self.user_id}'
+        return f'{self.word}, {self.used},{self.used},{self.user_id}'
+
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
+    recipient = db.relationship('User', foreign_keys=[recipient_id], backref='received_messages')
 
 class Settings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -142,7 +172,7 @@ class Settings(db.Model):
     stInterval = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
-        return f'{self.stInterval}, {self.user_id}'
+        return f'{self.stInterval}, {self.wImp} ,{self.user_id}'
 
 class Dagar(db.Model):
     id = db.Column(db.Integer, primary_key=True)
