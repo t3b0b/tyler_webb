@@ -9,7 +9,6 @@ html, body {
 }
 body {
     display:flex;
-    flex-wrap: wrap;
     flex-direction:column;
     align-items:center;
 }
@@ -21,7 +20,6 @@ header {
     min-height: fit-content;
     color: #ffffff;
     display: flex;
-    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
     padding-left: 30px;
@@ -55,7 +53,6 @@ header h1 {
 .side-menu {
     position: absolute;
     display: flex;
-    flex-width: wrap;
     align-content: flex-start;
     top:0;
     left: -180px; /* Dölj menyn utanför skärmen */
@@ -158,6 +155,7 @@ header h1 {
 
 .main-container {
     width:100%;
+    padding: 20px;
     display: flex;
     flex-wrap: wrap;
     max-width:1200px;
@@ -172,12 +170,12 @@ header h1 {
 
 .form-box {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: flex-start;
+    justify-content: space-between;
+    align-items: center;
     border: 1px solid #000000;
+    padding: 5px;
     flex-direction: column;
-    width: 700px;
+    width: 900px;
     max-width: 100%;
     margin: 5px auto 5px auto;
     background-color: #ffffff;
@@ -188,7 +186,7 @@ header h1 {
 .form-box input {
     margin-bottom: 5px;
     margin-top: 5px;
-    margin-inline: auto;
+    margin-right: 10%;
     padding: 5px;
     max-width: 90%;
     width: 75%;
@@ -196,12 +194,11 @@ header h1 {
 }
 
 .form-box label {
-    position: relative;
     margin-bottom: 5px;
     margin-top: 5px;
-    justify-items: flex-start;
-    margin-left: 12%;
-    font-weight: bold;
+    justify-content: flex-start;
+    margin-left: 10%;
+    font-weight: normal;
 }
 
 #reg-btn {
@@ -219,6 +216,7 @@ header h1 {
 .day-container {
     display: grid;
     grid-template-columns: 2fr 1fr 2fr;
+    margin-inline: 5%;
     gap: 20px;
     justify-content: space-evenly;
     padding: 20px;
@@ -237,7 +235,7 @@ header h1 {
     display: flex;
     justify-content: space-evenly;
     flex-direction: column;
-    width: 70%;
+    width: 2fr;
     padding: 5px;
 }
 
@@ -275,8 +273,7 @@ header h1 {
 }
 
 .button-center {
-    width: 100%;
-    display: flex;
+    width: 50%;
     justify-content: center;
     margin: 20px 0;
 }
@@ -395,7 +392,7 @@ textarea {
     justify-content: space-between;
     align-items: center;
     padding-top: 5px;
-    width: 100vw;
+    width: 100%;
 }
 
 .flashes {
@@ -428,14 +425,14 @@ textarea {
 .ordet input {
     margin-inline: auto;
     height: 30px;
-    width: 80vw;
+    width: 80%;
     font-family: 'Arial', sans-serif;
     font-size: larger;
     font-weight: bold;
 }
 
 .score-style {
-    width: 100vw;
+    width: 100%;
     font-size: 22px;
     font-weight: bold;
     line-height: 50px;
@@ -492,7 +489,7 @@ textarea {
     flex-direction: column;
     align-items: center; /* Centrera kalendern horisontellt */
     margin: 0 auto; /* Centrerar kalendern */
-    width: 100vw; /* Låter kalendern ta upp hela bredden */
+    width: 100%; /* Låter kalendern ta upp hela bredden */
     max-width: 1200px; /* Ställer in en maxbredd för stora skärmar */
     padding: 10px; /* Lägger till padding runt om */
     box-sizing: border-box; /* Inkluderar padding i bredden */
@@ -502,7 +499,7 @@ textarea {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 0;
-    width: 100vw; /* Gör kalendern så bred som möjligt inom container */
+    width: 100%; /* Gör kalendern så bred som möjligt inom container */
     box-sizing: border-box; /* Inkluderar padding och border i bredden */
 }
 
@@ -550,11 +547,11 @@ textarea {
 }
 .day.expand {
     position: fixed;
-    top: 50vw;
-    left: 50vw;
+    top: 50%;
+    left: 50%;
     width: 100vw;
     height: 100vh;
-    transform: translate(-50v, -50%);
+    transform: translate(-50%, -50%);
     z-index: 1000;
     background: white;
     font-size: 50px;
@@ -592,7 +589,7 @@ textarea {
 
     .info-button {
         position: absolute;
-        top: 25%;
+        top: 13%;
         right: 10px;
         width: 24px;
         height: 24px;
@@ -696,6 +693,8 @@ textarea {
 
     .day-container {
         grid-template-columns: 1fr;
+        margin-left: 10%;
+        margin-right: 10%;
         gap: 5px;
     }
 
@@ -709,9 +708,13 @@ textarea {
         width: 620px;
         max-width: 100%;
     }
+
+
+
     .toggle-button {
         font-size: 14px;
     }
+
     .select-style {
         width: 100%;
         font-size: 1em;

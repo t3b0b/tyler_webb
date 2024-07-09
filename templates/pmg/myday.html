@@ -110,12 +110,12 @@
         <input type="hidden" id="start" name="start" style="display: none;">
         <input type="hidden" id="end" name="end" style="display: none;">
         <input type="text" id="score" name="score" style="display: none;">
-        <div class="button-center" id="complete-form" style="display: none">
+        <div class="button-style" id="complete-form" style="display: none">
             <button type="submit" id="save-btn" class="button-style">Save</button>
         </div>
     </div>
 </form>
-<div id="activityForm" style="display: none;">
+<div id="activityForm" class="list-container" style="display: none; border: none; background-color: #eaeeef; width:30%;">
     <select id="goalSelect" class="select-style">
         <option value="----"></option>
         {% for goal in my_goals %}
@@ -131,11 +131,11 @@
         <option value="10">10 min</option>
         <option value="15">15 min</option>
     </select>
-    <button id="start-timer" onclick="startTimerFromSelection()" class="button-style">Starta</button>
-</div>
-<div class="button-center">
-    <button id="startaAktivitet" class="button-style" type="submit">Starta Aktivitet</button>
-</div>
+        <button id="start-timer" onclick="startTimerFromSelection()" class="button-style">Starta</button>
+    </div>
+    <div class="button-center">
+    <button id="startaAktivitet" class="button-style" type="submit">New Activity</button>
+    </div>
 
 <div class="button-center">
     <button id="stopButton" class="button-style" style="display: none; background-color: red">Stop</button>
