@@ -9,9 +9,21 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 auth_bp = Blueprint('auth', __name__, template_folder='auth/templates')
 
 s = URLSafeTimedSerializer("K6SM4x14")
+def readWords(filename):
+    encodings = ['utf-8', 'latin-1', 'iso-8859-1', 'utf-8-sig']
+    for encoding in encodings:
+        try:
+            with open(filename, 'r', encoding=encoding) as file:
+                data = file.read()
+                ordet = data.split('\n')[0]
+                ord_lista = data.split('\n')[1:]
+                return ordet, ord_lista
+        except UnicodeDecodeError:
+            continue
+    raise UnicodeDecodeError(f"Could not decode the file {filename} with any of the tried encodings.")
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    from pmg import readWords
     sida = 'P.M.G'
     if request.method == 'POST':
         username = request.form.get('username')

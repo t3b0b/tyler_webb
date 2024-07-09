@@ -22,6 +22,26 @@ class User(db.Model, UserMixin):
                                backref='friend_of')
     def __repr__(self):
         return f'{self.username}, {self.email}, {self.password}'
+class TodoList(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class UserTodoList(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    todo_list_id = db.Column(db.Integer, db.ForeignKey('todo_list.id'), nullable=False)
+    is_owner = db.Column(db.Boolean, default=False)
+    is_shared = db.Column(db.Boolean, default=False)  # Nytt fält för att skilja mellan personliga och gemensamma listor
+    user = db.relationship('User', backref=db.backref('user_todo_lists', cascade='all, delete-orphan'))
+    todo_list = db.relationship('TodoList', backref=db.backref('user_todo_lists', cascade='all, delete-orphan'))
+
+class Task(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.String(200), nullable=False)
+    completed = db.Column(db.Boolean, default=False)
+    todo_list_id = db.Column(db.Integer, db.ForeignKey('todo_list.id'), nullable=False)
+    todo_list = db.relationship('TodoList', backref=db.backref('tasks', cascade='all, delete-orphan'))
 
 class Friendship(db.Model):
     __tablename__ = 'friendship'
@@ -66,6 +86,14 @@ class Bullet(db.Model):
     date = db.Column(db.Date, unique=False, nullable=False, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
+class WhyGoals(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    author=db.Column(db.String(50), nullable=False)
+    goal = db.Column(db.String(50))
+    title = db.Column(db.String(50), nullable=False)
+    text = db.Column(db.Text, unique=False, nullable=False)
+    date = db.Column(db.DateTime, unique=False, nullable=False, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 class BloggPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -150,11 +178,10 @@ class Score(db.Model):
 class MyWords(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     word = db.Column(db.String(120), nullable=False)
-    used_words = db.Column(db.String(120), nullable=True)
-    goals = db.Column(db.String(120))
+    used = db.Column(db.Boolean, nullable=False,default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
-        return f'{self.word}, {self.used},{self.used},{self.user_id}'
+        return f'{self.word}, {self.used},{self.user_id}'
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -4,7 +4,6 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 {% endblock head %}
 {% block body %}
-<div class="main-container">
 {% if sida == "Blogg-inställningar" %}
     <div class="ord-section">
         <div class="nytt-ord-form">
@@ -29,7 +28,7 @@
         </div>
     </div>
 {% elif sida == "Timer-inställningar" %}
-    <div class="column">
+    <div class="list-container">
         <form method="POST">
             <h3>Timer:</h3>
             <label for="standard-intervall">Standard intervall:</label>
@@ -44,9 +43,23 @@
     </div>
 
 {% elif sida == "Konto-inställningar" %}
-    <div class="column">
+    <div class="list-container">
         <h3>{{ user.username }}</h3>
-
+        <form method="POST">
+            <div class="form-box">
+                <label for="current_password">Nuvarande Lösenord:</label>
+                <input type="password" id="current_password" name="current_password" required>
+            </div>
+            <div class="form-box">
+                <label for="new_password">Nytt Lösenord:</label>
+                <input type="password" id="new_password" name="new_password" required>
+            </div>
+            <div class="form-box">
+                <label for="confirm_new_password">Bekräfta Nytt Lösenord:</label>
+                <input type="password" id="confirm_new_password" name="confirm_new_password" required>
+            </div>
+            <button type="submit" class="button-style" name="action" value="password">Ändra Lösenord</button>
+        </form>
     </div>
 {% endif %}
 </div>

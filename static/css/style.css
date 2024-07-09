@@ -9,6 +9,7 @@ html, body {
 }
 body {
     display:flex;
+    flex-wrap: wrap;
     flex-direction:column;
     align-items:center;
 }
@@ -20,6 +21,7 @@ header {
     min-height: fit-content;
     color: #ffffff;
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
     padding-left: 30px;
@@ -53,6 +55,7 @@ header h1 {
 .side-menu {
     position: absolute;
     display: flex;
+    flex-width: wrap;
     align-content: flex-start;
     top:0;
     left: -180px; /* Dölj menyn utanför skärmen */
@@ -155,7 +158,6 @@ header h1 {
 
 .main-container {
     width:100%;
-    padding: 20px;
     display: flex;
     flex-wrap: wrap;
     max-width:1200px;
@@ -170,12 +172,12 @@ header h1 {
 
 .form-box {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
     border: 1px solid #000000;
-    padding: 5px;
     flex-direction: column;
-    width: 900px;
+    width: 700px;
     max-width: 100%;
     margin: 5px auto 5px auto;
     background-color: #ffffff;
@@ -186,7 +188,7 @@ header h1 {
 .form-box input {
     margin-bottom: 5px;
     margin-top: 5px;
-    margin-right: 10%;
+    margin-inline: auto;
     padding: 5px;
     max-width: 90%;
     width: 75%;
@@ -194,11 +196,12 @@ header h1 {
 }
 
 .form-box label {
+    position: relative;
     margin-bottom: 5px;
     margin-top: 5px;
-    justify-content: flex-start;
-    margin-left: 10%;
-    font-weight: normal;
+    justify-items: flex-start;
+    margin-left: 12%;
+    font-weight: bold;
 }
 
 #reg-btn {
@@ -234,7 +237,7 @@ header h1 {
     display: flex;
     justify-content: space-evenly;
     flex-direction: column;
-    width: 2fr;
+    width: 70%;
     padding: 5px;
 }
 
@@ -392,7 +395,7 @@ textarea {
     justify-content: space-between;
     align-items: center;
     padding-top: 5px;
-    width: 100%;
+    width: 100vw;
 }
 
 .flashes {
@@ -425,14 +428,14 @@ textarea {
 .ordet input {
     margin-inline: auto;
     height: 30px;
-    width: 80%;
+    width: 80vw;
     font-family: 'Arial', sans-serif;
     font-size: larger;
     font-weight: bold;
 }
 
 .score-style {
-    width: 100%;
+    width: 100vw;
     font-size: 22px;
     font-weight: bold;
     line-height: 50px;
@@ -489,7 +492,7 @@ textarea {
     flex-direction: column;
     align-items: center; /* Centrera kalendern horisontellt */
     margin: 0 auto; /* Centrerar kalendern */
-    width: 100%; /* Låter kalendern ta upp hela bredden */
+    width: 100vw; /* Låter kalendern ta upp hela bredden */
     max-width: 1200px; /* Ställer in en maxbredd för stora skärmar */
     padding: 10px; /* Lägger till padding runt om */
     box-sizing: border-box; /* Inkluderar padding i bredden */
@@ -499,7 +502,7 @@ textarea {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 0;
-    width: 100%; /* Gör kalendern så bred som möjligt inom container */
+    width: 100vw; /* Gör kalendern så bred som möjligt inom container */
     box-sizing: border-box; /* Inkluderar padding och border i bredden */
 }
 
@@ -547,11 +550,11 @@ textarea {
 }
 .day.expand {
     position: fixed;
-    top: 50%;
-    left: 50%;
+    top: 50vw;
+    left: 50vw;
     width: 100vw;
     height: 100vh;
-    transform: translate(-50%, -50%);
+    transform: translate(-50v, -50%);
     z-index: 1000;
     background: white;
     font-size: 50px;
@@ -706,13 +709,9 @@ textarea {
         width: 620px;
         max-width: 100%;
     }
-
-
-
     .toggle-button {
         font-size: 14px;
     }
-
     .select-style {
         width: 100%;
         font-size: 1em;

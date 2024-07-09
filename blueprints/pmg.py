@@ -2,11 +2,12 @@ from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet,
                     Activity, Score, MyWords, Settings, Dagbok, Dagar, Message,
-                    Idag, Week, Month)
+                    Idag, Week, Month, WhyGoals)
 from datetime import datetime, timedelta, date
 import pandas as pd
 from pytz import timezone
-from flask_login import current_user, login_required
+from flask_login import current_user, login_required, login_user, logout_user
+from werkzeug.security import generate_password_hash, check_password_hash
 
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
@@ -28,6 +29,18 @@ def get_activities_for_user(user_id, start_date, end_date):
         Score.Start >= start_date,
         Score.End <= end_date
     ).all()
+def getWord():
+    ord_lista = MyWords.query.filter_by(user_id=current_user.id).all()
+    ordet = None
+    for ord in ord_lista:
+        if not ord.used:
+            # Uppdatera ordet till att vara använt
+            ord.used = True
+            db.session.commit()
+
+            ordet = ord.word
+            break
+    return ordet,ord_lista
 def organize_activities_by_time(activities):
     activities_dict = {}
     for score, activity_name, goal_name in activities:
@@ -661,9 +674,9 @@ def journal():
                                                    url_for('pmg.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         return journal_section(act_id, sida, sub_menu,None)
 
-    if section_name == 'Mål':
+    if section_name == 'Mina Mål':
         act_id = section_content(Activity, section_name)
-        sida, sub_menu = common_route("Mål", [url_for('pmg.journal', section_name='skriva'),
+        sida, sub_menu = common_route("Mina Mål", [url_for('pmg.journal', section_name='skriva'),
                                                    url_for('pmg.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         return journal_section(act_id, sida, sub_menu,None)
 
@@ -695,15 +708,29 @@ def journal():
 def journal_section(act_id, sida, sub_menu, my_posts):
     page_info = getInfo('pageInfo.csv', sida)
     current_date = date.today()
+    why_G = ""
     page_url = 'pmg.journal'
     activities = None
-    ordet, ord_lista = readWords('orden.txt')
+    ordet,ord_lista = getWord()
+
+    if ordet is None:
+        for ord in ord_lista:
+            ord.used = False
+        db.session.commit()
+        ordet,ord_lista = getWord()
+
     if sida == 'Dagbok':
         ordet = current_date
     elif sida == 'Mina Mål':
         goals = Goals.query.filter_by(user_id=current_user.id).with_entities(Goals.name).all()
+        used_goals = WhyGoals.query.filter_by(user_id=current_user.id).with_entities(WhyGoals.goal).all()
         goal_list = [goal[0] for goal in goals]
-        ordet = choice(goal_list)
+        used_goal_list = [used_goal[0] for used_goal in used_goals]
+        for goal in goal_list:
+            if not goal in used_goal_list:
+                ordet = f'Varför är detta mål viktigt för dig? ({goal})'
+                why_G = goal
+            break
     elif sida == "Bullet":
         ordet = ['Tacksam för', 'Inför imorgon', "Personer som betyder",
                  'Distraherar mig', 'Motiverar mig',
@@ -744,6 +771,8 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                     newBullet = Bullet(theme=theme, author=f'{user.firstName} {user.lastName}', content=bullet_list, date=current_date, user_id=current_user.id)
                     db.session.add(newBullet)
                     db.session.commit()
+                elif sida == 'Mina Mål':
+                    add2db(WhyGoals,request,['post-ord','blogg-content','goal'],['title','text','goal'],user)
             elif option == "write-on-time":
                 add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], user)
                 if sida == 'Dagbok':
@@ -763,16 +792,18 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     return render_template('pmg/journal.html', time=time, goal=myGoals, activities=activities, side_options=titles,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
                            current_date=current_date, page_url=page_url, act_id=act_id, myPosts=my_posts,
-                           page_info=page_info)
+                           page_info=page_info, why_G=why_G)
 
 @pmg_bp.route('/get-new-word')
 def get_new_word(section_id):
-    orden = MyWords.query.filter_by(user_id=current_user.id).with_entities(MyWords.word).all()
-    if orden:
-        ord_lista = [ord[0] for ord in orden]
-        ordet = choice(ord_lista)
-    else:
-        ordet, ord_lista = readWords('orden.txt')
+    ordet = None
+    ordet,ord_lista = getWord()
+    if ordet is None:
+        for ord in ord_lista:
+            ord.used = False
+        db.session.commit()
+        ordet, ord_lista = getWord()
+
     return jsonify(ordet)
 # endregion
 
@@ -820,8 +851,29 @@ def settings(section_name=None):
 
     if request.method == 'POST':
         action = request.form['action']
+        if action == 'password':
+            user = User.query.filter_by(id=current_user.id).first()
 
-        if action == "word":
+            current_password = request.form.get('current_password')
+            new_password = request.form.get('new_password')
+            confirm_new_password = request.form.get('confirm_new_password')
+
+            if not check_password_hash(user.password, current_password):
+                flash('Felaktigt nuvarande lösenord.', 'danger')
+                return render_template('pmg/settings.html', sida="Konto-inställningar",header="Konto-inställningar",my_words=mina_Ord,
+                           sub_menu=sub_menu, page_info=page_info, user=current_user)
+
+            if new_password != confirm_new_password:
+                flash('De nya lösenorden matchar inte.', 'danger')
+                return render_template('pmg/settings.html', sida="Konto-inställningar",header="Konto-inställningar",my_words=mina_Ord,
+                           sub_menu=sub_menu, page_info=page_info, user=current_user)
+
+            current_user.password = generate_password_hash(new_password)
+            db.session.commit()
+            flash('Ditt lösenord har ändrats.', 'success')
+            return redirect(url_for('pmg.settings'))
+
+        elif action == "word":
             add2db(MyWords, request, ['nytt-ord'], ['ord'], current_user)
             flash('Nytt ord har lagts till.', 'success')
             return redirect(url_for('pmg.settings', section_name=section_name))
