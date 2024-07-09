@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock head %}
+
+{% block body %}
+    {% for friend, messages in all_messages.items() %}
+        <h2>Meddelanden med {{ friend.username }}</h2>
+        <ul>
+            {% for message in messages %}
+                <li>
+                    <strong>{{ message.sender.username }}:</strong> {{ message.content }} <em>({{ message.timestamp }})</em>
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('friends.send_message', recipient_id=friend.id) }}">Skicka ett Meddelande</a>
+    {% endfor %}
+{% endblock body %}
+

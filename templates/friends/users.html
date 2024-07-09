@@ -1,19 +1,18 @@
 {% extends 'base.html' %}
 
 {% block head %}
-
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 {% endblock head %}
 
 {% block body %}
-    <h1>Alla användare</h1>
-    <ul>
+<div class="form-box" style="display:flex; width: 60%;" >
         {% for user in users %}
-        <li>
-            {{ user.username }}
+    <div style="margin-inline: auto; gap: 30px; flex-direction: row; align-items: center">
+            <h3>{{ user.username }}</h3>
             <form method="POST" action="{{ url_for('friends.add_friend', friend_id=user.id) }}">
-                <button type="submit">Lägg till som vän</button>
+                <button style="border-radius: 50%; width: 20px; height: 20px; font-size: 12px; font-weight: bold; color: #f0f0f0;background-color: #2ecc71" type="submit">+</button>
             </form>
-        </li>
+    </div>
         {% endfor %}
-    </ul>
+    </div>
 {% endblock body %}
