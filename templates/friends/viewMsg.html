@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Meddelanden med {{ user.username }}</title>
+{% endblock head %}
+
+{% block body %}
+<h1>Meddelanden med {{ user.username }}</h1>
+<div>
+    {% for message in messages %}
+        <p><strong>{{ message.sender.username }}:</strong> {{ message.content }} <em>{{ message.timestamp }}</em></p>
+    {% endfor %}
+</div>
+{% endblock body %}

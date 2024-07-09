@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{% endblock head %}
+
+{% block body %}
+    <h1>Vänner</h1>
+    <h2>Pending Friend Requests</h2>
+    <ul>
+        {% for request in pending_requests %}
+        <li>
+            {{ request.user.username }}
+            <form method="POST" action="{{ url_for('friends.respond_friend_request', request_id=request.id, response='accept') }}">
+                <button type="submit">Acceptera</button>
+            </form>
+            <form method="POST" action="{{ url_for('friends.respond_friend_request', request_id=request.id, response='decline') }}">
+                <button type="submit">Neka</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Accepted Friends</h2>
+    <ul>
+        {% for friendship in accepted_friends %}
+        <li>
+            {% if friendship.user_id == current_user.id %}
+                {{ friendship.friend.username }}
+            {% else %}
+                {{ friendship.user.username }}
+            {% endif %}
+            <a href="{{ url_for('friends.send_message', recipient_id=(friendship.friend_id if friendship.user_id == current_user.id else friendship.user_id)) }}">Skicka Meddelande</a>
+        </li>
+        {% endfor %}
+    </ul>
+{% endblock body %}
