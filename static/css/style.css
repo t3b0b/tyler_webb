@@ -170,12 +170,12 @@ header h1 {
 
 .form-box {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     border: 1px solid #000000;
     padding: 5px;
     flex-direction: column;
-    width: 900px;
+    width: 700px;
     max-width: 100%;
     margin: 5px auto 5px auto;
     background-color: #ffffff;
@@ -186,7 +186,6 @@ header h1 {
 .form-box input {
     margin-bottom: 5px;
     margin-top: 5px;
-    margin-right: 10%;
     padding: 5px;
     max-width: 90%;
     width: 75%;
