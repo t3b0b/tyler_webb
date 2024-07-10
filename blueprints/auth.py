@@ -29,28 +29,7 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
         user = User.query.filter_by(username=username).first()
-        skriv_goal = Goals.query.filter_by(user_id=user.id, name='Skriva').first()
-        if not skriv_goal:
-            skriva_goal = Goals(name="Skriva", user_id=user.id)
-            db.session.add(skriva_goal)
-            db.session.commit()
-            skriv_goal_id = skriva_goal.id
-            mina_ord = Activity(name="Mina Ord", user_id=user.id, goal_id=skriv_goal_id, unit=None)
-            db.session.add(mina_ord)
-            dagbok = Activity(name="Dagbok", user_id=user.id, goal_id=skriv_goal_id, unit=None)
-            db.session.add(dagbok)
-            bullet = Activity(name="Bullet", user_id=user.id, goal_id=skriv_goal_id, unit=None)
-            db.session.add(bullet)
-            db.session.commit()
 
-            ordet, ord_lista = readWords('orden.txt')
-            for ord in ord_lista:
-                nyttOrd = MyWords(ord=ord, user_id=user.id)
-                db.session.add(nyttOrd)
-                db.session.commit()
-            imported = Settings(stInterval=5, wImp=True, user_id=user.id)
-            db.session.add(imported)
-            db.session.commit()
         if user and check_password_hash(user.password, password):
             if not user.verified:
                 flash('Kontot är inte verifierat. Kontrollera din e-post för en verifieringslänk.', 'error')
@@ -58,7 +37,6 @@ def login():
             login_user(user)
             today = datetime.now()
             streaks_to_reset = []
-
             streaks = Streak.query.all()
             for streak in streaks:
                 last_reg = streak.lastReg
@@ -154,7 +132,26 @@ def confirm_email(token):
         if user:
             user.verifierad = True
             db.session.commit()
+            skriva_goal = Goals(name="Skriva", user_id=user.id)
+            db.session.add(skriva_goal)
+            db.session.commit()
+            skriv_goal_id = skriva_goal.id
+            mina_ord = Activity(name="Mina Ord", user_id=user.id, goal_id=skriv_goal_id, unit=None)
+            db.session.add(mina_ord)
+            dagbok = Activity(name="Dagbok", user_id=user.id, goal_id=skriv_goal_id, unit=None)
+            db.session.add(dagbok)
+            bullet = Activity(name="Bullet", user_id=user.id, goal_id=skriv_goal_id, unit=None)
+            db.session.add(bullet)
+            db.session.commit()
 
+            ordet, ord_lista = readWords('orden.txt')
+            for ord in ord_lista:
+                nyttOrd = MyWords(ord=ord, user_id=user.id)
+                db.session.add(nyttOrd)
+                db.session.commit()
+            imported = Settings(stInterval=5, wImp=True, user_id=user.id)
+            db.session.add(imported)
+            db.session.commit()
             # Skapa målet "Skriva" och aktiviteterna för den nya användaren
 
             return 'Din e-post har verifierats! Du kan nu logga in.'
