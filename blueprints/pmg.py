@@ -1,6 +1,6 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
-from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet,
+from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet, ToDoList,
                     Activity, Score, MyWords, Settings, Dagbok, Dagar, Message,
                     Idag, Week, Month, WhyGoals)
 from datetime import datetime, timedelta, date
@@ -302,8 +302,6 @@ def getInfo(filename, page):
         return "Ingen information tillgänglig för den angivna sidan."
 # endregion
 
-
-
 @pmg_bp.route('/timer')
 def timer():
     sida='Timer'
@@ -381,6 +379,20 @@ def delete_streak(streak_id):
 # endregion
 
 # region Goals
+@pmg_bp.route('/goal/<int:goal_id>/todo', methods=['GET'])
+@login_required
+def get_todo_list(goal_id):
+    # Kontrollera att målet existerar och tillhör den inloggade användaren
+    goal = Goals.query.get_or_404(goal_id)
+    if goal.user_id != current_user.id:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    # Hämta alla uppgifter (tasks) för det specifika målet
+    tasks = ToDoList.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
+
+    # Returnera HTML med att-göra-listan
+    return render_template('pmg/todo_list.html', tasks=tasks)
+
 @pmg_bp.route('/get_activities/<goal_id>')
 def get_activities(goal_id):
     # Ensures that only activities for the current user and specific goal are fetched
@@ -412,6 +424,14 @@ def goals():
                    ['goal_id','name','measurement'], current_user)
             return redirect(url_for('pmg.goals',sida=sida,header=sida, goals=myGoals))
 
+        elif 'addTodo' in request.form['action']:
+            goal_id = request.form.get('goalId')
+            task_content = request.form.get('task')
+            if goal_id and task_content:
+                new_task = ToDoList(task=task_content, goal_id=goal_id, user_id=current_user.id)
+                db.session.add(new_task)
+                db.session.commit()
+            return redirect(url_for('pmg.goals', sida=sida, header=sida, goals=myGoals))
     return render_template('pmg/goals.html',friends=friends,sida=sida,header=sida, goals=myGoals,sub_menu=sub_menu)
 
 @pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
@@ -432,26 +452,34 @@ def delete_goal(goal_id):
 #region Milestones
 @pmg_bp.route('milestones/<int:goal_id>')
 def milestones(goal_id):
-    goal = Goals.query.get(goal_id)
-    if goal is None:
-        abort(404)
-    return render_template('pmg/milestones.html', goal=goal)
+    return render_template('pmg/milestones.html')
 
-#end region
+# endregion
 
 #region MyDay
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
+@login_required
 def myday():
     pageInfo = getInfo('pageInfo.csv', 'Start')
-    sida, sub_menu = common_route("Min Grind", ['/pmg/timebox', '/pmg/streak', '/pmg/goals'], ['My Day', 'Streaks', 'Goals'])
+    sida, sub_menu = common_route("Min Grind", ['/pmg/timebox', '/pmg/streak', '/pmg/goals'],
+                                  ['My Day', 'Streaks', 'Goals'])
     date_now = date.today()
     update_dagar(current_user.id, Dagar)
-    myGoals = query(Goals, 'user_id', current_user.id)
-    myStreaks = Streak.query.filter(Streak.user_id == current_user.id).all()
+
+    # Använd konsekvent my_goals istället för både my_goals och myGoals
+    my_goals = Goals.query.filter_by(user_id=current_user.id).all()
+    myStreaks = Streak.query.filter_by(user_id=current_user.id).all()
     myScore, total = myDayScore(date_now, current_user.id)
 
     aggregated_scores = {}
+    current_goal = None
 
+    if request.method == 'POST':
+        goal_id = request.form.get('goal_id')
+        if goal_id:
+            current_goal = Goals.query.get(goal_id)
+
+    # Bygg den aggregerade poänglistan och koppla till to-dos
     for score in myScore:
         activity_name = score.goal_name if score.goal_name else "?"
         if activity_name in aggregated_scores:
@@ -461,34 +489,35 @@ def myday():
                 'Goal': score.goal_name,
                 'Activity': score.activity_name,
                 'Streak': score.streak_name,
-                'total_time': float(score.Time)  # Se till att total_time alltid sätts
+                'total_time': float(score.Time),
+                'todos': []  # Lägg till todos (om det behövs)
             }
 
     today = datetime.now()
     valid_streaks = []
-    if myStreaks:
-        for streak in myStreaks:
-            interval_days = timedelta(days=streak.interval, hours=23, minutes=59, seconds=59)
-            if streak.lastReg:
-                try:
-                    last_reg_date = streak.lastReg
-                    streak_interval = last_reg_date + interval_days
 
-                    if streak.count == 0:
+    for streak in myStreaks:
+        interval_days = timedelta(days=streak.interval, hours=23, minutes=59, seconds=59)
+        if streak.lastReg:
+            try:
+                last_reg_date = streak.lastReg
+                streak_interval = last_reg_date + interval_days
+                if streak.count == 0:
+                    valid_streaks.append(streak)
+                elif streak.count >= 1:
+                    if today.date() == streak_interval.date():
                         valid_streaks.append(streak)
-                    elif streak.count >= 1:
-                        if today.date() == streak_interval.date():
-                            valid_streaks.append(streak)
-                        elif streak_interval.date() < today.date():
-                            continue
                     elif streak_interval.date() < today.date():
-                        streak.active = False
-                        streak.count = 0
-                        db.session.commit()
-                except (ValueError, TypeError) as e:
-                    print(f'Hantera ogiltigt datum: {e}, streak ID: {streak.id}, lastReg: {streak.lastReg}')
-            else:
-                valid_streaks.append(streak)
+                        continue
+                elif streak_interval.date() < today.date():
+                    streak.active = False
+                    streak.count = 0
+                    db.session.commit()
+            except (ValueError, TypeError) as e:
+                print(f'Hantera ogiltigt datum: {e}, streak ID: {streak.id}, lastReg: {streak.lastReg}')
+        else:
+            valid_streaks.append(streak)
+
     if myScore:
         sorted_myScore = sorted(myScore, key=lambda score: score[0])
 
@@ -507,8 +536,9 @@ def myday():
             print("Score field is empty")
 
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
-                           my_goals=myGoals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
-                           sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo)
+                           my_goals=my_goals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
+                           sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo,
+                           current_goal=current_goal)
 
 @pmg_bp.route('/myday/<date>')
 def myday_date(date):

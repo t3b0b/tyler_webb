@@ -111,6 +111,7 @@ function startTimerFromSelection() {
     document.getElementById('continueButton').style.display = 'block';
     startTimer(duration, display);
 }
+    // Hämta den valda aktiviteten
 
 function toggleActivityForm() {
     var form = document.getElementById('activityForm');
@@ -198,6 +199,8 @@ $(document).ready(function () {
         });
     });
 });
+
+
 document.getElementById('continueButton').addEventListener('click', continueTimer);
 document.getElementById('stopButton').addEventListener('click', stopTimer);
 document.getElementById('startaAktivitet').addEventListener('click', toggleActivityForm);

@@ -64,7 +64,7 @@
             width: 100%;
             align-items: center;
         }
-            .milestone-button {
+    .milestone-button {
         background: none;
         border: none;
         cursor: pointer;
@@ -75,19 +75,49 @@
     .milestone-button:hover {
         color: darkblue;
     }
+
+    .todo-list {
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        margin-top: 10px;
+        gap: 10px;
+    }
+
+.todo-list ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centrera
+}
+
+.todo-list li {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centrera checkbox och text horisontellt */
+    gap: 5px; /* Sätt avståndet mellan checkbox och text */
+    width: 100%;
+    max-width: 300px; /* Gör så att listan inte blir för bred */
+    text-align: center; /* Centrera texten */
+
     </style>
 {% endblock head %}
 
 {% block body %}
 <div class="goal-streak-container">
     {% if goals %}
+    <button class="toggle-button edit-button" onclick="toggleEditMode(this)">🖉</button>
         {% for goal in goals %}
         <div class="items-container">
             <div class="list-item">
                 <button class="toggle-button" onclick="toggleActivities(this)">&#5125;</button>
                 <h3>{{ goal.name }}</h3>
-                <button class="toggle-button" onclick="deleteGoal({{ goal.id }})">&#10060;</button>
-                <a href="{{ url_for('pmg.milestones', goal_id=goal.id) }}" class="milestone-button">&#128197;</a> <!-- Använder en kalender-ikon som knapp -->
+                <button class="toggle-button delete-button" onclick="deleteGoal({{ goal.id }})" style="display: none;">&#10060;</button>
+                <a href="{{ url_for('pmg.milestones', goal_id=goal.id) }}" class="milestone-button">&#128197;</a> <!-- Milestone button -->
+                <button class="toggle-button" onclick="toggleTodoList(this, {{ goal.id }})">List</button> <!-- To-do List button -->
             </div>
             <div class="activity-list">
                 {% for activity in goal.activities %}
@@ -105,6 +135,24 @@
                     </select>
                     <button type="submit" name="action" value="addActivity">Save Activity</button>
                     <button type="button" onclick="hideAddActivityForm(this)">Cancel</button>
+                </form>
+            </div>
+            <!-- To-Do List Section -->
+            <div class="todo-list" id="todo-list-{{ goal.id }}">
+                <h4>To-Do {{ goal.name }}</h4>
+                <ul>
+                <!-- Lista över -->
+                    {% for task in goal.todo_list %}
+                        <li>
+                            <input type="checkbox" {% if task.completed %}checked{% endif %}> {{ task.task }}
+                        </li>
+                    {% endfor %}
+                </ul>
+                <!-- Form för att lägga till ny uppgift -->
+                <form method="POST">
+                    <input type="hidden" name="goalId" value="{{ goal.id }}">
+                    <input type="text" name="task" placeholder="Lägg till en ny uppgift" required>
+                    <button type="submit" name="action" value="addTodo">Lägg till</button>
                 </form>
             </div>
         </div>
@@ -125,6 +173,14 @@
     </form>
 </div>
 <script>
+    function toggleEditMode(button) {
+    const container = button.closest('.items-container');
+    const deleteButtons = container.querySelectorAll('.delete-button');
+    deleteButtons.forEach(btn => {
+        btn.style.display = btn.style.display === 'none' ? 'inline-block' : 'none';
+    });
+    button.textContent = button.textContent === '🖉' ? '✔' : '🖉';
+}
     function deleteGoal(goalId) {
         if (confirm('Är du säker på att du vill radera detta mål?')) {
             fetch('/pmg/delete-goal/' + goalId, {
@@ -172,6 +228,10 @@
     function cancelNewGoalForm() {
         document.getElementById('new-goal-form').style.display = 'none';
         document.getElementById('new-goal-button').style.display = 'block';
+    }
+    function toggleTodoList(button, goalId) {
+    const todoList = document.getElementById('todo-list-' + goalId);
+    todoList.style.display = todoList.style.display === 'none' ? 'flex' : 'none';
     }
 </script>
 {% endblock body %}

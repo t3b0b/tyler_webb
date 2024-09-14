@@ -13,6 +13,9 @@ body {
     flex-direction:column;
     align-items:center;
 }
+#points-section {
+    display: none;
+}
 
 header {
     background-color: #1c2d5b;

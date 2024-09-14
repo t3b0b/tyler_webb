@@ -22,26 +22,40 @@ class User(db.Model, UserMixin):
                                backref='friend_of')
     def __repr__(self):
         return f'{self.username}, {self.email}, {self.password}'
-class TodoList(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-class UserTodoList(db.Model):
+# Koppling till att-göra-lista och tasks
+class ToDoList(db.Model):
+    __tablename__ = 'todo_list'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    todo_list_id = db.Column(db.Integer, db.ForeignKey('todo_list.id'), nullable=False)
-    is_owner = db.Column(db.Boolean, default=False)
-    is_shared = db.Column(db.Boolean, default=False)  # Nytt fält för att skilja mellan personliga och gemensamma listor
-    user = db.relationship('User', backref=db.backref('user_todo_lists', cascade='all, delete-orphan'))
-    todo_list = db.relationship('TodoList', backref=db.backref('user_todo_lists', cascade='all, delete-orphan'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'))
+    task = db.Column(db.String(255), nullable=False)
+    completed = db.Column(db.Boolean, default=False)
+    goal = db.relationship('Goals', backref='todo_list')
+    def __repr__(self):
+        return f'ToDoList(goal_id={self.goal_id}, user_id={self.user_id})'
 
 class Task(db.Model):
+    __tablename__ = 'task'
     id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.String(200), nullable=False)
-    completed = db.Column(db.Boolean, default=False)
-    todo_list_id = db.Column(db.Integer, db.ForeignKey('todo_list.id'), nullable=False)
-    todo_list = db.relationship('TodoList', backref=db.backref('tasks', cascade='all, delete-orphan'))
+    todo_list_id = db.Column(db.Integer, db.ForeignKey('todo_list.id'), nullable=False)  # Koppling till att-göra-lista
+    task = db.Column(db.String(255), nullable=False)  # Själva uppgiften
+    completed = db.Column(db.Boolean, default=False)  # Om uppgiften är klar eller ej
+
+    def __repr__(self):
+        return f'Task(task={self.task}, completed={self.completed})'
+
+class Goals(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    deadline = db.Column(db.String, nullable=True)
+    timeLimit = db.Column(db.Integer, nullable=True)
+    activities = db.relationship('Activity', backref='goal', lazy=True)
+    milestones = db.relationship('Milestones', backref='goal', lazy=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __repr__(self):
+        return f"{self.name}, {self.user_id}"
 
 class Friendship(db.Model):
     __tablename__ = 'friendship'
@@ -139,17 +153,6 @@ class Subtask(db.Model):
     name = db.Column(db.String(100), nullable=False)
     milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=False)
     completed = db.Column(db.Boolean, default=False)
-
-class Goals(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    deadline = db.Column(db.String, nullable=True)
-    timeLimit = db.Column(db.Integer, nullable=True)
-    activities = db.relationship('Activity', backref='goal', lazy=True)
-    milestones = db.relationship('Milestones', backref='goal', lazy=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    def __repr__(self):
-        return f"{self.name}, {self.user_id}"
 
 class Activity(db.Model):
     id = db.Column(db.Integer, primary_key=True)

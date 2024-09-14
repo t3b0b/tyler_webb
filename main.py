@@ -51,8 +51,6 @@ login_manager.login_view = 'auth.login'
 app.register_blueprint(pmg_bp, url_prefix='/pmg')
 app.register_blueprint(base_bp, url_prefix='/base')
 app.register_blueprint(friends_bp, url_prefix='/friends')
-
-
 mail = Mail(app)
 
 # Initiera SQLAlchemy med app
