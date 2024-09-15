@@ -31,7 +31,7 @@ class ToDoList(db.Model):
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'))
     task = db.Column(db.String(255), nullable=False)
     completed = db.Column(db.Boolean, default=False)
-    goal = db.relationship('Goals', backref='todo_list')
+
     def __repr__(self):
         return f'ToDoList(goal_id={self.goal_id}, user_id={self.user_id})'
 
@@ -50,6 +50,7 @@ class Goals(db.Model):
     name = db.Column(db.String(50), nullable=False)
     deadline = db.Column(db.String, nullable=True)
     timeLimit = db.Column(db.Integer, nullable=True)
+    todo_list = db.relationship('ToDoList', backref='goal', lazy=True)
     activities = db.relationship('Activity', backref='goal', lazy=True)
     milestones = db.relationship('Milestones', backref='goal', lazy=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))

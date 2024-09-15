@@ -380,16 +380,12 @@ def delete_streak(streak_id):
 
 # region Goals
 @pmg_bp.route('/get_todo_list/<int:goal_id>', methods=['GET'])
-@login_required
 def get_todo_list(goal_id):
-    goal = Goals.query.get_or_404(goal_id)
-    if goal.user_id != current_user.id:
-        return jsonify({'error': 'Unauthorized'}), 403
-
-    tasks = ToDoList.query.filter_by(goal_id=goal_id).all()
-    task_list = [{'id': task.id, 'task': task.task, 'completed': task.completed} for task in tasks]
-
-    return jsonify(task_list)
+    goal = Goals.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
+    if goal:
+        todo_list = [{'task': task.task, 'completed': task.completed} for task in goal.todo_list]
+        return jsonify(todo_list)
+    return jsonify([]), 404
 
 
 @pmg_bp.route('/get_activities/<goal_id>')
@@ -473,11 +469,6 @@ def myday():
     aggregated_scores = {}
     current_goal = None
 
-    if request.method == 'POST':
-        goal_id = request.form.get('gID')
-        if goal_id:
-            current_goal = Goals.query.get(goal_id)
-
     # Bygg den aggregerade poänglistan och koppla till to-dos
     for score in myScore:
         activity_name = score.goal_name if score.goal_name else "?"
@@ -521,6 +512,10 @@ def myday():
         sorted_myScore = sorted(myScore, key=lambda score: score[0])
 
     if request.method == 'POST':
+        goal_id = request.form.get('goalSelect')
+        if goal_id:
+            current_goal = Goals.query.options(db.joinedload(Goals.todo_list)).get(goal_id)
+
         score_str = request.form.get('score', '').strip()
         if score_str:
             try:

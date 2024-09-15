@@ -13,24 +13,22 @@
 
 <div class="day-container">
 {% if current_goal %}
-    <div class="todo-list" id="todo-list-{{ current_goal.id }}">
-                <h4>To-Do {{ current_goal.name }}</h4>
-                <ul>
-                <!-- Lista över -->
-                    {% for task in current_goal.todo_list %}
-                        <li>
-                            <input type="checkbox" {% if task.completed %}checked{% endif %}> {{ task.task }}
-                        </li>
-                    {% endfor %}
-                </ul>
-                <!-- Form för att lägga till ny uppgift -->
-                <form method="POST">
-                    <input type="hidden" name="goalId" value="{{ current_goal.id }}">
-                    <input type="text" name="task" placeholder="Lägg till en ny uppgift" required>
-                    <button type="submit" name="action" value="addTodo">Lägg till</button>
-                </form>
-            </div>
-        </div>
+    <h2>{{ current_goal.name }}</h2>
+    <div>
+        <h2>{{ current_goal.name }}</h2>
+        <form id="todo-form" action="{{ url_for('pmg.manage_todo', goal_id=current_goal.id) }}" method="POST">
+            <input type="text" name="task" placeholder="Lägg till en ny uppgift" required>
+            <button type="submit">Lägg till</button>
+        </form>
+        <ul id="todo-list">
+            {% for task in tasks %}
+                <li>
+                    <input type="checkbox" {% if task.completed %}checked{% endif %}> {{ task.task }}
+                </li>
+            {% endfor %}
+        {% endif %}
+        </ul>
+    </div>
 
     <div class="list-container" style="grid-column: span">
         <h2>Goals</h2>
@@ -140,20 +138,6 @@
     <div class="activity">
         <h3>{{ activity_name }}</h3>
         <p>Total tid: {{ data.total_time }}</p>
-
-        {% if data.todos %}
-            <h4>To-Do List:</h4>
-            <ul>
-                {% for todo in data.todos %}
-                    <li>
-                        <input type="checkbox" {% if todo.completed %}checked{% endif %}>
-                        {{ todo.task }}
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>Inga uppgifter för denna aktivitet.</p>
-        {% endif %}
     </div>
 {% endfor %}
 <div id="activityForm" class="list-container" style="display: none; border: none; background-color: #eaeeef; width:30%;">
@@ -183,7 +167,6 @@
     <button id="continueButton" class="button-style" style="display: none; background-color: green">Continue</button>
 </div>
 
-<div id="my_plot">{{html_string}}</div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>

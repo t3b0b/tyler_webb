@@ -5,11 +5,11 @@ let goal = 0;
 let openTime;
 let closeTime;
 
-const startTimer = (duration, display) => {
-    let timer = duration, minutes, seconds;
+function startTimer(duration, display) {
+    var timer = duration, minutes, seconds;
     timeEnded = false;
-    openTime = new Date();
-    const interval = setInterval(() => {
+    openTime = new Date(); // Starta tiden när timern börjar
+    var interval = setInterval(function () {
         updateTimerDisplay(timer, display);
         if (--timer < 0) {
             clearInterval(interval);
@@ -22,7 +22,7 @@ const startTimer = (duration, display) => {
             document.getElementById('continueButton').textContent = 'Continue';
         }
     }, 1000);
-};
+}
 
 function updateTimerDisplay(timer, display) {
     var minutes = parseInt(timer / 60, 10);
@@ -52,6 +52,7 @@ function continueTimer() {
     }
 }
 
+
 function stopTimer() {
     if (timeEnded) {
         document.getElementById('complete-form').style.display = 'block'
@@ -60,6 +61,10 @@ function stopTimer() {
         closeTime = new Date(); // Stoppa tiden när timern stoppas
         saveActivity();
     }
+}
+
+function formatDateForMySQL(date) {
+    return date.toISOString().slice(0, 19).replace('T', ' ');
 }
 
 function saveActivity() {
@@ -98,16 +103,13 @@ function deleteActivity(activityId) {
     }
 }
 
-
 function startTimerFromSelection() {
     var duration = document.getElementById('timeSelect').value * 60; // Konverterar minuter till sekunder
     var display = document.getElementById('continueButton');
     display.style.backgroundColor = 'green'
-    document.getElementById('gID').value
     document.getElementById('activityForm').style.display='none';
     document.getElementById('stopButton').style.display = 'block';
     document.getElementById('continueButton').style.display = 'block';
-    loadTodoList(document.getElementById('gID').value)
     startTimer(duration, display);
 }
     // Hämta den valda aktiviteten
@@ -121,32 +123,7 @@ function toggleActivityForm() {
         console.error('Activity form element not found');
     }
 }
-function loadTodoList(goalId) {
-    $.ajax({
-        url: '/pmg/get_todo_list/' + goalId,
-        type: 'GET',
-        success: function(response) {
-            var todoList = $('#todo-list');
-            todoList.empty(); // Rensa befintlig att-göra-lista
 
-            if (response.length > 0) {
-                $.each(response, function(index, task) {
-                    var checked = task.completed ? 'checked' : '';
-                    todoList.append(`
-                        <li>
-                            <input type="checkbox" ${checked}> ${task.task}
-                        </li>
-                    `);
-                });
-            } else {
-                todoList.append('<li>Inga uppgifter tillgängliga</li>');
-            }
-        },
-        error: function(error) {
-            console.error('Error loading to-do list:', error);
-        }
-    });
-}
 function expandNewStreakForm() {
     document.getElementById('new-streak-button').style.display = 'none';
     document.getElementById('new-streak-form').style.display = 'block';
