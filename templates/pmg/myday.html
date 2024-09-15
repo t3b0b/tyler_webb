@@ -13,22 +13,24 @@
 
 <div class="day-container">
 {% if current_goal %}
-    <h2>{{ current_goal.name }}</h2>
-    <div>
-        <h2>{{ current_goal.name }}</h2>
-        <form id="todo-form" action="{{ url_for('pmg.manage_todo', goal_id=current_goal.id) }}" method="POST">
-            <input type="text" name="task" placeholder="Lägg till en ny uppgift" required>
-            <button type="submit">Lägg till</button>
-        </form>
-        <ul id="todo-list">
-            {% for task in tasks %}
-                <li>
-                    <input type="checkbox" {% if task.completed %}checked{% endif %}> {{ task.task }}
-                </li>
-            {% endfor %}
-        {% endif %}
-        </ul>
-    </div>
+    <div class="todo-list" id="todo-list-{{ current_goal.id }}">
+                <h4>To-Do {{ current_goal.name }}</h4>
+                <ul>
+                <!-- Lista över -->
+                    {% for task in current_goal.todo_list %}
+                        <li>
+                            <input type="checkbox" {% if task.completed %}checked{% endif %}> {{ task.task }}
+                        </li>
+                    {% endfor %}
+                </ul>
+                <!-- Form för att lägga till ny uppgift -->
+                <form method="POST">
+                    <input type="hidden" name="goalId" value="{{ current_goal.id }}">
+                    <input type="text" name="task" placeholder="Lägg till en ny uppgift" required>
+                    <button type="submit" name="action" value="addTodo">Lägg till</button>
+                </form>
+            </div>
+        </div>
 
     <div class="list-container" style="grid-column: span">
         <h2>Goals</h2>

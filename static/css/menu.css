@@ -16,7 +16,34 @@ body {
 #points-section {
     display: none;
 }
+        .todo-list {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin-top: 10px;
+            gap: 10px;
+        }
 
+        .todo-list ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Centrera
+        }
+
+        .todo-list li {
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Centrera checkbox och text horisontellt */
+            gap: 5px; /* Sätt avståndet mellan checkbox och text */
+            width: 100%;
+            max-width: 300px; /* Gör så att listan inte blir för bred */
+            text-align: center; /* Centrera texten */
+        }
 header {
     background-color: #1c2d5b;
     width:100%;

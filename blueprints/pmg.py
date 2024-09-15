@@ -379,19 +379,18 @@ def delete_streak(streak_id):
 # endregion
 
 # region Goals
-@pmg_bp.route('/goal/<int:goal_id>/todo', methods=['GET'])
+@pmg_bp.route('/get_todo_list/<int:goal_id>', methods=['GET'])
 @login_required
 def get_todo_list(goal_id):
-    # Kontrollera att målet existerar och tillhör den inloggade användaren
     goal = Goals.query.get_or_404(goal_id)
     if goal.user_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
 
-    # Hämta alla uppgifter (tasks) för det specifika målet
-    tasks = ToDoList.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
+    tasks = ToDoList.query.filter_by(goal_id=goal_id).all()
+    task_list = [{'id': task.id, 'task': task.task, 'completed': task.completed} for task in tasks]
 
-    # Returnera HTML med att-göra-listan
-    return render_template('pmg/todo_list.html', tasks=tasks)
+    return jsonify(task_list)
+
 
 @pmg_bp.route('/get_activities/<goal_id>')
 def get_activities(goal_id):
@@ -475,7 +474,7 @@ def myday():
     current_goal = None
 
     if request.method == 'POST':
-        goal_id = request.form.get('goal_id')
+        goal_id = request.form.get('gID')
         if goal_id:
             current_goal = Goals.query.get(goal_id)
 
@@ -567,7 +566,7 @@ def myday_date(date):
 # endregion
 
 #region Kalender
-@pmg_bp.route('/month')
+@pmg_bp.route('/month', methods=['GET', 'POST'])
 @pmg_bp.route('/month/<int:year>/<int:month>')
 def month(year=None, month=None):
     page_info=getInfo('pageInfo.csv', 'myMonth')
@@ -595,7 +594,7 @@ def month(year=None, month=None):
     return render_template('pmg/month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida,
                            sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data,page_info=page_info)
 
-@pmg_bp.route('/week')
+@pmg_bp.route('/week', methods=['GET', 'POST'])
 def week():
     page_info = getInfo('pageInfo.csv', 'myWeek')
     date_now = datetime.now()
