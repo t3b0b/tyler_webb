@@ -35,15 +35,19 @@ class ToDoList(db.Model):
     def __repr__(self):
         return f'ToDoList(goal_id={self.goal_id}, user_id={self.user_id})'
 
-class Task(db.Model):
-    __tablename__ = 'task'
-    id = db.Column(db.Integer, primary_key=True)
-    todo_list_id = db.Column(db.Integer, db.ForeignKey('todo_list.id'), nullable=False)  # Koppling till att-göra-lista
-    task = db.Column(db.String(255), nullable=False)  # Själva uppgiften
-    completed = db.Column(db.Boolean, default=False)  # Om uppgiften är klar eller ej
 
-    def __repr__(self):
-        return f'Task(task={self.task}, completed={self.completed})'
+class Task(db.Model):
+    __tablename__ = 'tasks'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    status = db.Column(db.String(20), default='waiting')  # waiting, in_progress, completed
+    start_time = db.Column(db.DateTime, nullable=True)
+    end_time = db.Column(db.DateTime, nullable=True)
+
+    # Relation till Aktivitet, Delmål, eller Mål
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class Goals(db.Model):
     id = db.Column(db.Integer, primary_key=True)

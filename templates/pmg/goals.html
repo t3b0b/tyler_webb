@@ -64,26 +64,25 @@
             width: 100%;
             align-items: center;
         }
-    .milestone-button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 20px;
-        color: blue;
-    }
 
+        .milestone-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            color: blue;
+        }
 
-
-    .milestone-button:hover {
-        color: darkblue;
-    }
+        .milestone-button:hover {
+            color: darkblue;
+        }
     </style>
 {% endblock head %}
 
 {% block body %}
 <div class="goal-streak-container">
-    {% if goals %}
     <button class="toggle-button edit-button" onclick="toggleEditMode(this)">🖉</button>
+    {% if goals %}
         {% for goal in goals %}
         <div class="items-container">
             <div class="list-item">
@@ -91,7 +90,7 @@
                 <h3>{{ goal.name }}</h3>
                 <button class="toggle-button delete-button" onclick="deleteGoal({{ goal.id }})" style="display: none;">&#10060;</button>
                 <a href="{{ url_for('pmg.milestones', goal_id=goal.id) }}" class="milestone-button">&#128197;</a> <!-- Milestone button -->
-                <button class="toggle-button" onclick="toggleTodoList(this, {{ goal.id }})">List</button> <!-- To-do List button -->
+                <button class="toggle-button" onclick="toggleTodoList(this, {{ goal.id }})">List</button>
             </div>
             <div class="activity-list">
                 {% for activity in goal.activities %}
@@ -112,17 +111,15 @@
                 </form>
             </div>
             <!-- To-Do List Section -->
-            <div class="todo-list" id="todo-list-{{ goal.id }}">
+            <div class="todo-list" id="todo-list-{{ goal.id }}" style="display: none;">
                 <h4>To-Do {{ goal.name }}</h4>
                 <ul>
-                <!-- Lista över -->
-                    {% for task in goal.todo_list %}
+                    {% for task in goal.tasks %}
                         <li>
                             <input type="checkbox" {% if task.completed %}checked{% endif %}> {{ task.task }}
                         </li>
                     {% endfor %}
                 </ul>
-                <!-- Form för att lägga till ny uppgift -->
                 <form method="POST">
                     <input type="hidden" name="goalId" value="{{ goal.id }}">
                     <input type="text" name="task" placeholder="Lägg till en ny uppgift" required>
@@ -147,14 +144,22 @@
     </form>
 </div>
 <script>
-    function toggleEditMode(button) {
-    const container = button.closest('.items-container');
-    const deleteButtons = container.querySelectorAll('.delete-button');
+function toggleTodoList(button, goalId) {
+const todoList = document.getElementById('todo-list-' + goalId);
+if (todoList.style.display === 'none' || todoList.style.display === '') {
+    todoList.style.display = 'block'; // Ändra till 'block'
+} else {
+    todoList.style.display = 'none';
+}
+}
+function toggleEditMode(button) {
+    const deleteButtons = document.querySelectorAll('.delete-button');
     deleteButtons.forEach(btn => {
-        btn.style.display = btn.style.display === 'none' ? 'inline-block' : 'none';
+        btn.style.display = btn.style.display === 'none' || btn.style.display === '' ? 'inline-block' : 'none';
     });
     button.textContent = button.textContent === '🖉' ? '✔' : '🖉';
 }
+
     function deleteGoal(goalId) {
         if (confirm('Är du säker på att du vill radera detta mål?')) {
             fetch('/pmg/delete-goal/' + goalId, {
@@ -203,9 +208,6 @@
         document.getElementById('new-goal-form').style.display = 'none';
         document.getElementById('new-goal-button').style.display = 'block';
     }
-function toggleTodoList(button, goalId) {
-const todoList = document.getElementById('todo-list-' + goalId);
-todoList.style.display = todoList.style.display === 'none' ? 'flex' : 'none';
-}
+
 </script>
 {% endblock body %}

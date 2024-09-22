@@ -5,6 +5,17 @@ let goal = 0;
 let openTime;
 let closeTime;
 
+function startAndRedirect() {
+    const selectedGoalId = document.getElementById('goalSelect').value;
+    const selectedActivityId = document.getElementById('activitySelect').value;
+    const selectedTime = document.getElementById('timeSelect').value;
+
+    if (selectedGoalId !== '----' && selectedActivityId !== '') {
+        window.location.href = `/pmg/activity/${selectedGoalId}?activity_id=${selectedActivityId}&time=${selectedTime}`;
+    } else {
+        alert('Please select both a goal and an activity to start.');
+    }
+}
 function startTimer(duration, display) {
     var timer = duration, minutes, seconds;
     timeEnded = false;
@@ -55,6 +66,12 @@ function continueTimer() {
 
 function stopTimer() {
     if (timeEnded) {
+    document.getElementById('day-section').style.display = 'grid';
+    document.getElementById('date-section').style.display = 'block';
+    document.getElementById('todo-section').style.display = 'none';
+    document.getElementById('goal-section').style.display = 'block';
+    document.getElementById('score-section').style.display = 'block';
+    document.getElementById('streak-section').style.display = 'block';
         document.getElementById('complete-form').style.display = 'block'
         document.getElementById('stopButton').style.display = 'none';
         document.getElementById('continueButton').style.display = 'none';
@@ -106,13 +123,60 @@ function deleteActivity(activityId) {
 function startTimerFromSelection() {
     var duration = document.getElementById('timeSelect').value * 60; // Konverterar minuter till sekunder
     var display = document.getElementById('continueButton');
-    display.style.backgroundColor = 'green'
-    document.getElementById('activityForm').style.display='none';
+    display.style.backgroundColor = 'green';
+    document.getElementById('day-section').style.display = 'flex';
+    document.getElementById('day-section').style.flexDirection = 'column';
+    document.getElementById('date-section').style.display = 'none';
+    document.getElementById('todo-section').style.display = 'block';
+    document.getElementById('goal-section').style.display = 'none';
+    document.getElementById('score-section').style.display = 'none';
+    document.getElementById('streak-section').style.display = 'none';
+    document.getElementById('activityForm').style.display = 'none';
     document.getElementById('stopButton').style.display = 'block';
     document.getElementById('continueButton').style.display = 'block';
-    startTimer(duration, display);
+
+    // Hämta valt mål
+    const selectedGoalId = document.getElementById('goalSelect').value;
+
+    // Kolla att ett mål är valt
+    if (selectedGoalId !== '----') {
+        // Ladda tasks för det valda målet
+        loadTasksForGoal(selectedGoalId);
+        startTimer(duration, display); // Starta timern
+    } else {
+        alert('Please select a goal before starting the activity.');
+    }
 }
-    // Hämta den valda aktiviteten
+
+// Funktion för att hämta tasks för ett valt mål
+function loadTasksForGoal(goalId) {
+    // Gör en AJAX-förfrågan till servern för att hämta tasks för valt mål
+    fetch(`/get_tasks/${goalId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            // Töm tasks-listan innan nya tasks laddas in
+            const taskList = document.getElementById('todo-list');
+            taskList.innerHTML = '';  // Tömmer listan
+
+            // Lägg till varje task i listan
+            data.tasks.forEach(task => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <input type="checkbox" ${task.completed ? 'checked' : ''}> ${task.name}
+                `;
+                taskList.appendChild(listItem);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching tasks:', error);
+        });
+}
+
 
 function toggleActivityForm() {
     var form = document.getElementById('activityForm');
@@ -154,6 +218,8 @@ function deleteStreak(streakId) {
         });
     }
 }
+
+
 function fetchNewWord() {
 fetch('/get-new-word')
     .then(response => response.json())

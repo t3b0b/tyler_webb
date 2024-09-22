@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+    /* Styling för att centrera att-göra-listan och knappar */
+    .activity-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start; /* Flyttar listan närmare toppen */
+        height: 70vh; /* Minskad höjd för att göra-listan kommer högre upp */
+        margin-top: 40px; /* Extra marginal ovanför för att justera från toppen */
+    }
+
+    /* Centrera knapparna nära botten och placera dem sida vid sida */
+    .button-center {
+        display: flex;  /* Använd flexbox för att placera knapparna sida vid sida */
+        max-width: 400px;
+        justify-content: center;
+        gap: 10px;  /* Mellanrum mellan knapparna */
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    /* Stil för knapparna */
+    .button-style {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: center; /* Centrerar texten horisontellt */
+        line-height: 20px;  /* Justerar textens vertikala position */
+        max-width: 120px;
+    }
+
+    /* Stil för att göra knapparna mer synliga */
+    #startButton {
+        background-color: green;
+        color: white;
+    }
+
+    #stopButton {
+        background-color: red;
+        color: white;
+    }
+
+    /* Timer display */
+    .timer {
+        font-size: 36px;
+        margin: 20px 0;
+    }
+</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock head %}
+
+{% block body %}
+<div class="activity-container">
+    <h2>{{ goal.name }}</h2>
+
+    <!-- Timer display -->
+    <div class="timer" id="timerDisplay">00:00</div>
+
+    <div class="todo-list" style="display: flex">
+        <h3>To-Do</h3>
+        <ul>
+            {% for task in tasks %}
+                <li>
+                    <input type="checkbox" {% if task.completed %}checked{% endif %}> {{ task.name }}
+                </li>
+            {% endfor %}
+        </ul>
+    <form method="POST" action="{{ url_for('pmg.manage_todo', goal_id=goal.id) }}">
+        <input type="hidden" name="goalId" value="{{ goal.id }}">
+        <input type="text" name="task" placeholder="Lägg till en ny uppgift" required>
+        <button type="submit" name="action" value="addTodo">Lägg till</button>
+    </form>
+
+        <div class="button-center">
+            <button id="stopButton" class="button-style" style="background-color: red">Stop</button>
+            <button id="continueButton" class="button-style" style="background-color: green; display: none;">Continue</button>
+        </div>
+    </div>
+
+<script src="{{ url_for('static', filename='common_functions.js') }}"></script>
+<script>
+
+    // Starta timern med tiden användaren valt (från URL eller POST)
+    const urlParams = new URLSearchParams(window.location.search);
+    const timeInMinutes = parseInt(urlParams.get('time')); // Hämta tiden från URL
+    const display = document.querySelector('#timerDisplay'); // Hämta timer-display-elementet
+
+    startTimer(timeInMinutes * 60, display); // Starta timern med den valda tiden
+
+    document.getElementById('stopButton').addEventListener('click', function() {
+        stopTimer(); // Stoppa timern
+        const duration = document.getElementById('timerDisplay').textContent;
+
+        // Omdirigera tillbaka till myday-sidan och skicka med tiden som query-param
+        window.location.href = "{{ url_for('pmg.myday') }}?duration=" + duration;
+    });
+
+    document.getElementById('continueButton').addEventListener('click', function() {
+        startTimer(timeInMinutes * 60, display); // Fortsätt timern
+        document.getElementById('continueButton').style.display = 'none';
+        document.getElementById('stopButton').style.display = 'inline-block';
+    });
+</script>
+{% endblock body %}

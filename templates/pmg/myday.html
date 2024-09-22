@@ -7,30 +7,23 @@
 {% endblock head %}
 
 {% block body %}
-<div class="sub-header">
+<div id="date-section" class="sub-header">
     <h2 class="sub-header-text"> {{ current_date }} </h2>
 </div>
 
-<div class="day-container">
-{% if current_goal %}
-    <h2>{{ current_goal.name }}</h2>
-    <div>
-        <h2>{{ current_goal.name }}</h2>
-        <form id="todo-form" action="{{ url_for('pmg.manage_todo', goal_id=current_goal.id) }}" method="POST">
-            <input type="text" name="task" placeholder="Lägg till en ny uppgift" required>
-            <button type="submit">Lägg till</button>
-        </form>
+<div id="day-section" class="day-container">
+    <div id="todo-section" class="todo-list" style="display: none">
+        <h3>To-Do {{ current_goal.name }}</h3>
         <ul id="todo-list">
-            {% for task in tasks %}
-                <li>
-                    <input type="checkbox" {% if task.completed %}checked{% endif %}> {{ task.task }}
-                </li>
-            {% endfor %}
-        {% endif %}
+            <!-- Tasks laddas här -->
         </ul>
+        <form method="POST" action="{{ url_for('pmg.manage_todo', goal_id=current_goal.id) }}">
+            <input type="hidden" name="goalId" value="{{ current_goal.id }}">
+            <input type="text" name="task" placeholder="Lägg till en ny uppgift" required>
+            <button type="submit" name="action" value="addTodo">Lägg till</button>
+        </form>
     </div>
-
-    <div class="list-container" style="grid-column: span">
+    <div id="goal-section" class="list-container" style="grid-column: span">
         <h2>Goals</h2>
         {% if sum_scores %}
         <ul>
@@ -52,7 +45,7 @@
         {% endif %}
     </div>
 
-    <div class="score-style" style="align-self: center">
+    <div id="score-section" class="score-style" style="align-self: center">
         <h2>Score</h2>
             <span id="score-disp">{{ total_score }} / 350 xp</span>
                 <svg width="203" height="34" viewBox="0 0 203 34" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -92,7 +85,7 @@
                 </defs>
                 </svg>
     </div>
-    <div class="list-container">
+    <div id="streak-section" class="list-container">
         <h2>Streaks</h2>
         {% if my_streaks %}
         {% for streak in my_streaks %}
@@ -170,6 +163,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
+
     var maxScore = 0
     var myScore = 0
     var percentage = 0
@@ -193,12 +187,23 @@
         document.getElementById('Gear').style.animation = 'gear 2s linear forwards';
     }
 
+function startAndRedirect() {
+    const selectedGoalId = document.getElementById('goalSelect').value;
+    const selectedActivityId = document.getElementById('activitySelect').value;
+    const selectedTime = document.getElementById('timeSelect').value;
+
+    if (selectedGoalId !== '----' && selectedActivityId !== '') {
+        window.location.href = `/pmg/activity/${selectedGoalId}?activity_id=${selectedActivityId}&time=${selectedTime}`;
+    } else {
+        alert('Please select both a goal and an activity to start.');
+    }
+}
+
     // Kör funktionen när sidan laddas
     document.addEventListener("DOMContentLoaded", function() {
         myScore = {{ total_score }} // Ersätt med den faktiska variabeln
         maxScore = 350; // Sätt max poäng
         updateProgress(myScore, maxScore);
     });
-</script>
 </script>
 {% endblock body %}
