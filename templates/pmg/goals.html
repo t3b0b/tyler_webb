@@ -110,20 +110,21 @@
                     <button type="button" onclick="hideAddActivityForm(this)">Cancel</button>
                 </form>
             </div>
-            <!-- To-Do List Section -->
-            <div class="todo-list" id="todo-list-{{ goal.id }}" style="display: none;">
+                       <div class="todo-list" id="todo-list-{{ goal.id }}">
                 <h4>To-Do {{ goal.name }}</h4>
                 <ul>
-                    {% for task in goal.tasks %}
+                <!-- Lista över -->
+                    {% for task in goal.todo_list %}
                         <li>
                             <input type="checkbox" {% if task.completed %}checked{% endif %}> {{ task.task }}
                         </li>
                     {% endfor %}
                 </ul>
+                <!-- Form för att lägga till ny uppgift -->
                 <form method="POST">
                     <input type="hidden" name="goalId" value="{{ goal.id }}">
-                    <input type="text" name="task" placeholder="Lägg till en ny uppgift" required>
-                    <button type="submit" name="action" value="addTodo">Lägg till</button>
+                    <input type="text" name="task" placeholder="Enter new task" required>
+                    <button type="submit" name="action" value="addTodo">Add Task</button>
                 </form>
             </div>
         </div>
@@ -143,22 +144,8 @@
         <button class="button-style" type="submit" name="action" value="addGoal" style="background-color: cornflowerblue;">Save</button>
     </form>
 </div>
+<script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
-function toggleTodoList(button, goalId) {
-const todoList = document.getElementById('todo-list-' + goalId);
-if (todoList.style.display === 'none' || todoList.style.display === '') {
-    todoList.style.display = 'block'; // Ändra till 'block'
-} else {
-    todoList.style.display = 'none';
-}
-}
-function toggleEditMode(button) {
-    const deleteButtons = document.querySelectorAll('.delete-button');
-    deleteButtons.forEach(btn => {
-        btn.style.display = btn.style.display === 'none' || btn.style.display === '' ? 'inline-block' : 'none';
-    });
-    button.textContent = button.textContent === '🖉' ? '✔' : '🖉';
-}
 
     function deleteGoal(goalId) {
         if (confirm('Är du säker på att du vill radera detta mål?')) {

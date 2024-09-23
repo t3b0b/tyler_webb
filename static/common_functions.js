@@ -5,17 +5,6 @@ let goal = 0;
 let openTime;
 let closeTime;
 
-function startAndRedirect() {
-    const selectedGoalId = document.getElementById('goalSelect').value;
-    const selectedActivityId = document.getElementById('activitySelect').value;
-    const selectedTime = document.getElementById('timeSelect').value;
-
-    if (selectedGoalId !== '----' && selectedActivityId !== '') {
-        window.location.href = `/pmg/activity/${selectedGoalId}?activity_id=${selectedActivityId}&time=${selectedTime}`;
-    } else {
-        alert('Please select both a goal and an activity to start.');
-    }
-}
 function startTimer(duration, display) {
     var timer = duration, minutes, seconds;
     timeEnded = false;
@@ -33,6 +22,23 @@ function startTimer(duration, display) {
             document.getElementById('continueButton').textContent = 'Continue';
         }
     }, 1000);
+}
+
+function toggleTodoList(button, goalId) {
+const todoList = document.getElementById('todo-list-' + goalId);
+if (todoList.style.display === 'none' || todoList.style.display === '') {
+    todoList.style.display = 'block'; // Ändra till 'block'
+} else {
+    todoList.style.display = 'none';
+}
+
+}
+function toggleEditMode(button) {
+    const deleteButtons = document.querySelectorAll('.delete-button');
+    deleteButtons.forEach(btn => {
+        btn.style.display = btn.style.display === 'none' || btn.style.display === '' ? 'inline-block' : 'none';
+    });
+    button.textContent = button.textContent === '🖉' ? '✔' : '🖉';
 }
 
 function updateTimerDisplay(timer, display) {
@@ -66,16 +72,55 @@ function continueTimer() {
 
 function stopTimer() {
     if (timeEnded) {
-    document.getElementById('day-section').style.display = 'grid';
-    document.getElementById('date-section').style.display = 'block';
-    document.getElementById('todo-section').style.display = 'none';
-    document.getElementById('goal-section').style.display = 'block';
-    document.getElementById('score-section').style.display = 'block';
-    document.getElementById('streak-section').style.display = 'block';
-        document.getElementById('complete-form').style.display = 'block'
+        const selectedGoalId = document.getElementById('goalSelect').value;
+
+        const todoList = document.getElementById('todo-list-' + selectedGoalId);
+        if (todoList) {
+            todoList.style.display = 'none'; // Visa att-göra-listan om den finns
+        }
+        const daySection = document.getElementById('day-section');
+        if (daySection) {
+            daySection.style.display = 'grid';
+            daySection.style.gridTemplateColumns = '2fr 1fr 2fr'; // Justera kolumn-layout
+            daySection.style.marginInline = '5%';
+            daySection.style.gap = '20px';
+            daySection.style.justifycontent ='space-evenly';
+            daySection.style.padding = '20px';
+            daySection.style.boxsizing = 'border-box';
+        }
+
+        const completeForm = document.getElementById('complete-form');
+        if (completeForm) {
+            completeForm.style.display = 'block';
+            }
+        document.getElementById('date-section').style.display = 'block';
+        // Visa goal-section, score-section och streak-section igen
+
+        const scoreSection = document.getElementById('score-section');
+                scoreSection.style.width = '100%';
+                scoreSection.style.fontSize = '22px';
+                scoreSection.style.fontWeight = 'bold';
+                scoreSection.style.lineHeight = '50px';
+                scoreSection.style.textAlign = 'center';
+                scoreSection.style.display = 'block';
+
+       const sections = ['goal-section', 'streak-section'];
+        sections.forEach(sectionId => {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.style.display = 'flex';
+                section.style.justifyContent = 'space-evenly';
+                section.style.flexDirection = 'column';
+                section.style.width = '2fr';
+                section.style.padding = '5px';
+            }
+        });
+        // Dölj knapparna för "Stop" och "Continue"
         document.getElementById('stopButton').style.display = 'none';
         document.getElementById('continueButton').style.display = 'none';
+        // Spara sluttiden för aktiviteten
         closeTime = new Date(); // Stoppa tiden när timern stoppas
+        // Anropa funktionen som sparar aktiviteten
         saveActivity();
     }
 }
@@ -119,15 +164,14 @@ function deleteActivity(activityId) {
         });
     }
 }
-
 function startTimerFromSelection() {
     var duration = document.getElementById('timeSelect').value * 60; // Konverterar minuter till sekunder
     var display = document.getElementById('continueButton');
+
     display.style.backgroundColor = 'green';
     document.getElementById('day-section').style.display = 'flex';
     document.getElementById('day-section').style.flexDirection = 'column';
     document.getElementById('date-section').style.display = 'none';
-    document.getElementById('todo-section').style.display = 'block';
     document.getElementById('goal-section').style.display = 'none';
     document.getElementById('score-section').style.display = 'none';
     document.getElementById('streak-section').style.display = 'none';
@@ -137,6 +181,12 @@ function startTimerFromSelection() {
 
     // Hämta valt mål
     const selectedGoalId = document.getElementById('goalSelect').value;
+    const todoList = document.getElementById('todo-list-' + selectedGoalId);
+
+    // Visa att-göra-listan för det valda målet
+    if (todoList) {
+        todoList.style.display = 'block';  // Ändra till 'block' för att visa listan
+    }
 
     // Kolla att ett mål är valt
     if (selectedGoalId !== '----') {
@@ -147,6 +197,7 @@ function startTimerFromSelection() {
         alert('Please select a goal before starting the activity.');
     }
 }
+
 
 // Funktion för att hämta tasks för ett valt mål
 function loadTasksForGoal(goalId) {

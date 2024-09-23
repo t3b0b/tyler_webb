@@ -76,26 +76,6 @@ class FriendGoal(db.Model):
     user = db.relationship('User', backref=db.backref('user_goals', cascade='all, delete-orphan'))
     goal = db.relationship('Goals', backref=db.backref('user_goals', cascade='all, delete-orphan'))
 
-class Dagbok(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    author = db.Column(db.String(50), nullable=False)
-    title = db.Column(db.String(100), nullable=False)
-    content = db.Column(db.Text, unique=False, nullable=False)
-    def __repr__(self):
-        return f"{self.user_id},{self.author},{self.title},{self.content}"
-
-class BusinessBlogg(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    author = db.Column(db.String(50), nullable=False)
-    topic = db.Column(db.String(50), nullable=False)
-    sub_topic = db.Column(db.String(50), nullable=False)
-    title = db.Column(db.String(100), nullable=False)
-    content = db.Column(db.Text, unique=False, nullable=False)
-    date = db.Column(db.Date, unique=False, nullable=False, default=datetime.utcnow)
-
-    def __repr__(self):
-        return f"{self.author}, {self.topic}, {self.sub_topic}, {self.title}, {self.content},{self.date}"
 
 class Bullet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -151,13 +131,7 @@ class Milestones(db.Model):
     achieved = db.Column(db.Boolean, default=False)
     date_achieved = db.Column(db.DateTime, nullable=True)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
-    subtasks = db.relationship('Subtask', backref='milestone', lazy=True, cascade='all, delete-orphan')
 
-class Subtask(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=False)
-    completed = db.Column(db.Boolean, default=False)
 
 class Activity(db.Model):
     id = db.Column(db.Integer, primary_key=True)

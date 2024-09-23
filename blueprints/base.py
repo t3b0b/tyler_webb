@@ -2,8 +2,8 @@ from random import choice
 import plotly.graph_objects as go
 from flask_mail import Mail, Message
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
-from models import (User, db, Streak, BloggPost, Goals, Mail, BusinessBlogg,
-                    Activity, Score, MyWords, Settings, Dagbok, Dagar)
+from models import (User, db, Streak, BloggPost, Goals, Mail,
+                    Activity, Score, MyWords, Settings, Dagar)
 from datetime import datetime, timedelta,date
 from flask_login import current_user
 import pandas as pd
