@@ -387,16 +387,11 @@ def get_todo_list(goal_id):
     goal = Goals.query.get_or_404(goal_id)
     if goal.user_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
-
-    # Hämta alla uppgifter (tasks) för det specifika målet
     tasks = ToDoList.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
-
-    # Returnera HTML med att-göra-listan
     return render_template('pmg/todo_list.html', tasks=tasks)
 
 @pmg_bp.route('/get_activities/<goal_id>')
 def get_activities(goal_id):
-    # Ensures that only activities for the current user and specific goal are fetched
     activities = Activity.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
     activity_list = [{'id': activity.id, 'name': activity.name} for activity in activities]
     return jsonify(activity_list)
@@ -409,6 +404,21 @@ def delete_activity(activity_id):
         db.session.commit()
         return jsonify(success=True), 200
     return jsonify(success=False), 404
+
+@pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
+def delete_goal(goal_id):
+    goal = Goals.query.get(goal_id)
+    if goal:
+        try:
+            db.session.delete(goal)
+            db.session.commit()
+            return jsonify(success=True)
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error deleting goal: {e}")  # Lägg till detta för mer detaljerad felsökning
+            return jsonify(success=False, error=str(e))
+    else:
+        return jsonify(success=False, error="Goal not found")
 
 @pmg_bp.route('/goals',methods=['GET', 'POST'])
 def goals():
@@ -437,8 +447,8 @@ def goals():
 
 
 
-@pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
-def delete_goal(goal_id):
+@pmg_bp.route('/deleteGoal/<int:goal_id>', methods=['POST'])
+def deleteGoal(goal_id):
     # Data från JSON-kroppen, om du behöver den
     data = request.get_json()
  # Debug: se vad som faktiskt tas emot
@@ -566,6 +576,19 @@ def myday():
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
                            my_goals=my_goals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
                            sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo, current_goal=current_goal)
+
+
+@pmg_bp.route('/add_subtask/<int:parent_id>', methods=['POST'])
+@login_required
+def add_subtask(parent_id):
+    parent_task = ToDoList.query.get_or_404(parent_id)
+    task_content = request.form.get('subtask')
+    if task_content:
+        new_subtask = ToDoList(task=task_content, user_id=current_user.id, goal_id=parent_task.goal_id, parent_id=parent_task.id)
+        db.session.add(new_subtask)
+        db.session.commit()
+        flash(f'Underuppgift "{task_content}" har skapats.', 'success')
+    return redirect(url_for('pmg.myday'))
 
 
 @pmg_bp.route('/myday/<date>')

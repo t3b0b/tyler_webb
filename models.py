@@ -23,6 +23,19 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f'{self.username}, {self.email}, {self.password}'
 
+class Goals(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    deadline = db.Column(db.String, nullable=True)
+    timeLimit = db.Column(db.Integer, nullable=True)
+    todo_list = db.relationship('ToDoList', backref='goal', lazy=True)
+    activities = db.relationship('Activity', backref='goal', lazy=True)
+    milestones = db.relationship('Milestones', backref='goal', lazy=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __repr__(self):
+        return f"{self.name}, {self.user_id}"
+
 # Koppling till att-göra-lista och tasks
 class ToDoList(db.Model):
     __tablename__ = 'todo_list'
@@ -31,9 +44,14 @@ class ToDoList(db.Model):
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'))
     task = db.Column(db.String(255), nullable=False)
     completed = db.Column(db.Boolean, default=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('todo_list.id'), nullable=True)  # Referens till föräldrauppgift
+
+    # Skapa relationen för att hantera underuppgifter
+    subtasks = db.relationship('ToDoList', backref=db.backref('parent', remote_side=[id]), lazy=True)
 
     def __repr__(self):
-        return f'ToDoList(goal_id={self.goal_id}, user_id={self.user_id})'
+        return f'ToDoList(task={self.task}, goal_id={self.goal_id}, user_id={self.user_id}, parent_id={self.parent_id})'
+
 
 
 class Task(db.Model):
@@ -49,18 +67,24 @@ class Task(db.Model):
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-class Goals(db.Model):
+class Subtask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    deadline = db.Column(db.String, nullable=True)
-    timeLimit = db.Column(db.Integer, nullable=True)
-    todo_list = db.relationship('ToDoList', backref='goal', lazy=True)
-    activities = db.relationship('Activity', backref='goal', lazy=True)
-    milestones = db.relationship('Milestones', backref='goal', lazy=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    name = db.Column(db.String(100), nullable=False)
+    milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=False)
+    completed = db.Column(db.Boolean, default=False)
 
-    def __repr__(self):
-        return f"{self.name}, {self.user_id}"
+    def __repr__(self):f"{self.name}, {self.milestone_id}, {self.completed}"
+
+class Milestones(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    estimated_time = db.Column(db.Integer, nullable=False)  # Estimated time in minutes
+    deadline = db.Column(db.DateTime, nullable=True)
+    achieved = db.Column(db.Boolean, default=False)
+    date_achieved = db.Column(db.DateTime, nullable=True)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
+
 
 class Friendship(db.Model):
     __tablename__ = 'friendship'
@@ -122,15 +146,9 @@ class Streak(db.Model):
     def __repr__(self):
         return f"{self.name}, {self.interval}, {self.count}, {self.goal}, {self.best}, {self.condition}, {self.lastReg}, {self.dayOne}, {self.user_id}"
 
-class Milestones(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    estimated_time = db.Column(db.Integer, nullable=False)  # Estimated time in minutes
-    deadline = db.Column(db.DateTime, nullable=True)
-    achieved = db.Column(db.Boolean, default=False)
-    date_achieved = db.Column(db.DateTime, nullable=True)
-    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
+
+
+
 
 
 class Activity(db.Model):

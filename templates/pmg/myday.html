@@ -3,6 +3,7 @@
 {% block head %}
 <style xmlns="http://www.w3.org/1999/html"></style>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
 {% endblock head %}
 
 {% block body %}
@@ -10,7 +11,7 @@
     <h2 class="sub-header-text"> {{ current_date }} </h2>
 </div>
 
-<div id="day-section" class="day-container">
+<div id="day-section" class="container">
     {% for goal in my_goals %}
         <div class="todo-list" id="todo-list-{{ goal.id }}">
             <h4>To-Do {{ goal.name }}</h4>
@@ -20,6 +21,15 @@
                     <li>
                         <input type="checkbox" {% if task.completed %}checked{% endif %}> {{ task.task }}
                     </li>
+                    {% if task.subtasks %}
+                    <ul>
+                        {% for subtask in task.subtasks %}
+                        <li>
+                            <input type="checkbox" {% if subtask.completed %}checked{% endif %}> {{ subtask.task }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
                 {% endfor %}
             </ul>
             <!-- Form för att lägga till ny uppgift -->
@@ -30,12 +40,12 @@
             </form>
         </div>
     {% endfor %}
-    <div id="goal-section" class="list-container">
-        <h2>Goals</h2>
+    <div id="goal-section" class="column">
+        <h2 class="column-title">Goals</h2>
         {% if sum_scores %}
-        <ul>
+        <div class="scrollable-list">
             {% for activity, score in sum_scores.items() %}
-            <li class="items-container">
+            <li class="list-item">
                 {% if score.Goal %}
                     <strong>Mål: </strong> {{ score.Goal }}
                 {% endif %}
@@ -48,7 +58,7 @@
                 <strong>Poäng: </strong> {{ score.total_time }}
             </li>
             {% endfor %}
-        </ul>
+        </div>
         {% endif %}
     </div>
 
@@ -58,11 +68,12 @@
         <!-- SVG för progress bar -->
     </div>
 
-    <div id="streak-section" class="list-container">
-        <h2>Streaks</h2>
+    <div id="streak-section" class="column">
+        <h2 class="column-title">Streaks</h2>
         {% if my_streaks %}
         {% for streak in my_streaks %}
-        <div class="items-container" style="justify-content: space-between">
+        <div class="scrollable-list">
+        <div class="list-item" style="justify-content: space-between">
             <label>{{ streak.name }}</label>
             <label>{{ streak.condition }}</label>
             <form style="display: flex; flex-direction: row; gap: 35px;" action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post">
@@ -78,6 +89,7 @@
                     </button>
                 </div>
             </form>
+        </div>
         </div>
         {% endfor %}
         {% endif %}

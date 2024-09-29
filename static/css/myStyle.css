@@ -1,0 +1,60 @@
+/* Grundlayout för container */
+.container {
+    display: grid;
+    width: 90%;
+    grid-template-columns: 2fr 1fr 2fr;  /* Tre kolumner */
+    gap: 20px;
+    justify-items: center;
+    padding: 10px;
+}
+
+/* Stil för kolumnerna */
+.column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80%;
+}
+
+/* Rubrikstil */
+.column-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Scrollningsbar lista */
+.scrollable-list {
+    height: 200px;  /* Höjd på listan */
+    width: 100%;    /* Full bredd */
+    border: 1px solid #000;
+    overflow-y: auto;  /* Vertikal scrollning */
+    padding: 10px;
+    background-color: #fff;
+}
+
+/* Individuella listobjekt */
+.list-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+/* Stil för knappen längst ner */
+.button-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.new-activity-button {
+    background-color: #007BFF;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.new-activity-button:hover {
+    background-color: #0056b3;
+}
