@@ -53,7 +53,6 @@ class ToDoList(db.Model):
         return f'ToDoList(task={self.task}, goal_id={self.goal_id}, user_id={self.user_id}, parent_id={self.parent_id})'
 
 
-
 class Task(db.Model):
     __tablename__ = 'tasks'
     id = db.Column(db.Integer, primary_key=True)
@@ -146,11 +145,6 @@ class Streak(db.Model):
     def __repr__(self):
         return f"{self.name}, {self.interval}, {self.count}, {self.goal}, {self.best}, {self.condition}, {self.lastReg}, {self.dayOne}, {self.user_id}"
 
-
-
-
-
-
 class Activity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -178,7 +172,11 @@ class Score(db.Model):
 class MyWords(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     word = db.Column(db.String(120), nullable=False)
-    used = db.Column(db.Boolean, nullable=False,default=False)
+    what = db.Column(db.Boolean, nullable=False,default=False)
+    why = db.Column(db.Boolean, nullable=False, default=False)
+    when = db.Column(db.Boolean, nullable=False, default=False)
+    how = db.Column(db.Boolean, nullable=False, default=False)
+    used = db.Column(db.Boolean, nullable=False, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
         return f'{self.word}, {self.used},{self.user_id}'

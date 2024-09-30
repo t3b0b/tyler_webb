@@ -34,12 +34,21 @@ def getWord():
     ordet = None
     for ord in ord_lista:
         if not ord.used:
-            # Uppdatera ordet till att vara använt
-            ord.used = True
-            db.session.commit()
+            if not ord.what:
+                ordet = f"Vad innebär {ord.word}?"
 
-            ordet = ord.word
-            break
+            if not ord.why:  # Om 'why' är falsk, skapa en fråga
+                ordet = f"Varför ska du vara {ord.word} ?"
+
+            if not ord.when:  # Om 'when' är falsk, skapa en fråga
+                ordet = f"När känner du dig {ord.word}?"
+
+            if not ord.how:  # Om 'how' är falsk, skapa en fråga
+                ordet = f"Hur blir du mer {ord.word}?"
+
+        ord.used = True
+        db.session.commit()
+
     return ordet,ord_lista
 def organize_activities_by_time(activities):
     activities_dict = {}
@@ -449,11 +458,7 @@ def goals():
 
 @pmg_bp.route('/deleteGoal/<int:goal_id>', methods=['POST'])
 def deleteGoal(goal_id):
-    # Data från JSON-kroppen, om du behöver den
-    data = request.get_json()
- # Debug: se vad som faktiskt tas emot
-
-    goal = Goals.query.get(goal_id)
+    goal = Goals.query.filter_by(goal_id=goal_id).first()
     if goal:
         db.session.delete(goal)
         db.session.commit()

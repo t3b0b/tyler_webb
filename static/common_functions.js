@@ -280,7 +280,7 @@ function getCSRFToken() {
 function deleteGoal(Button, goalId) {
     if (confirm('Är du säker på att du vill radera detta mål?')) {
         const goal = document.getElementById('deleteGoal-' + goalId).value;
-        fetch('/pmg/delete-goal/' + goal, {
+        fetch('/pmg/deleteGoal/' + goalId, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -306,7 +306,7 @@ function deleteGoal(Button, goalId) {
 
 
 function fetchNewWord() {
-fetch('/get-new-word')
+fetch('/pmg/get-new-word')
     .then(response => response.json())
     .then(text => {
         var wordLabel = document.getElementById('ordet-label');
