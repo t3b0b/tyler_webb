@@ -2,6 +2,7 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
     <style>
         .form-box button {
             height: 30px;
@@ -79,58 +80,22 @@
 {% endblock head %}
 
 {% block body %}
-<div class="goal-streak-container">
-    <button class="toggle-button edit-button" onclick="toggleEditMode(this)">🖉</button>
+<div class="list-container">
+    <div class="list-header">
+        <h3>Goals</h3>
+        <button class="new-button" id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
+    </div>
     {% if goals %}
+        <div class="list-content">
         {% for goal in goals %}
-        <div class="items-container">
-            <div class="list-item">
-                <button class="toggle-button" onclick="toggleActivities(this)">&#5125;</button>
-                <h3>{{ goal.name }}</h3>
-                <button class="toggle-button delete-button" onclick="deleteGoal({{ goal.id }})" style="display: none;">&#10060;</button>
-                <a href="{{ url_for('pmg.milestones', goal_id=goal.id) }}" class="milestone-button">&#128197;</a> <!-- Milestone button -->
-                <button class="toggle-button" onclick="toggleTodoList(this, {{ goal.id }})">List</button>
-            </div>
-            <div class="activity-list">
-                {% for activity in goal.activities %}
-                <div class="activity">{{ activity.name }}
-                    <button class="toggle-button" onclick="deleteActivity({{ activity.id }})">&#10060;</button>
-                </div>
-                {% endfor %}
-                <button style="width: 300px; justify-self: center" onclick="showAddActivityForm(this)">Add Activity</button>
-                <form method="POST" class="add-activity-form" style="display: none;">
-                    <input type="hidden" name="goalId" value="{{ goal.id }}">
-                    <input type="text" name="activity-name" placeholder="Activity Name" required>
-                    <select id="new-goal-activity" name="activity-measurement">
-                        <option value="tid">Tid</option>
-                        <option value="antal">Antal</option>
-                    </select>
-                    <button type="submit" name="action" value="addActivity">Save Activity</button>
-                    <button type="button" onclick="hideAddActivityForm(this)">Cancel</button>
-                </form>
-            </div>
-                       <div class="todo-list" id="todo-list-{{ goal.id }}">
-                <h4>To-Do {{ goal.name }}</h4>
-                <ul>
-                <!-- Lista över -->
-                    {% for task in goal.todo_list %}
-                        <li>
-                            <input type="checkbox" {% if task.completed %}checked{% endif %}> {{ task.task }}
-                        </li>
-                    {% endfor %}
-                </ul>
-                <!-- Form för att lägga till ny uppgift -->
-                <form method="POST">
-                    <input type="hidden" name="goalId" value="{{ goal.id }}">
-                    <input type="text" name="task" placeholder="Enter new task" required>
-                    <button type="submit" name="action" value="addTodo">Add Task</button>
-                </form>
-            </div>
-        </div>
+        <button class="list-btn" onclick="window.location.href = '/pmg/goal/{{ goal.id }}/activities';">
+            {{ goal.name }}
+        </button>
         {% endfor %}
-    {% endif %}
+        </div>
+        {% endif %}
+    </div>
 </div>
-<button class="button-style" id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
 <div class="form-box" id="new-goal-form" style="display: none;">
     <form method="POST">
         <input type="text" placeholder="Goal Name" name="goalName">

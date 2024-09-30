@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
+{% endblock head %}
+
+{% block body %}
+<div class="details-container">
+    <h2>Streak Details</h2>
+    <table>
+        <tr>
+            <th>Name:</th>
+            <td>{{ streak.name }}</td>
+        </tr>
+        <tr>
+            <th>Interval:</th>
+            <td>{{ streak.interval }}</td>
+        </tr>
+        <tr>
+            <th>Count:</th>
+            <td>{{ streak.count }}</td>
+        </tr>
+        <tr>
+            <th>Condition:</th>
+            <td>{{ streak.condition }}</td>
+        </tr>
+        <tr>
+            <th>Type:</th>
+            <td>{{ streak.type }}</td>
+        </tr>
+        <tr>
+            <th>Best Streak:</th>
+            <td>{{ streak.best }}</td>
+        </tr>
+        <tr>
+            <th>Last Registration Date:</th>
+            <td>{{ streak.lastReg }}</td>
+        </tr>
+        <tr>
+            <th>Start Date:</th>
+            <td>{{ streak.dayOne }}</td>
+        </tr>
+        {% if streak.goal %}
+        <tr>
+            <th>Goal:</th>
+            <td>{{ streak.goal.name }}</td>
+        </tr>
+        {% endif %}
+    </table>
+
+    <a href="{{ url_for('pmg.streak') }}" class="button-style">Back to Streaks</a>
+</div>
+{% endblock body %}

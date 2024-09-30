@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
+
+{% endblock head %}
+
+{% block body %}
+
+<div class="list-container">
+    <div class="list-header">
+        <h3>Activities for {{ goal.name }}</h3>
+        <button class="new-button" id="show-form" onclick="showAddActivityForm(this)()">New Activity</button>
+        <button class="new-button" id="hide-form" onclick="hideAddActivityForm(this)()" style="display:none">Cancel</button>
+    </div>
+
+    <div class="list-content">
+        {% for activity in activities %}
+            <button class="list-btn" onclick="window.location.href = '/pmg/activity/{{ activity.id }}/tasks';">{{ activity.name }}</button>
+             <button class="delete-button" onclick="deleteActivity({{ activity.id }})">Delete</button>
+        {% endfor %}
+    </div>
+</div>
+<div class="add-form-container" id="add-form" style="display: none;">
+    <form method="POST">
+        <input type="hidden" name="goalId" value="{{ goal.id }}">
+        <input type="text" name="activity-name" placeholder="Activity Name" required>
+        <select id="new-goal-activity" name="activity-measurement">
+            <option value="tid">Tid</option>
+            <option value="antal">Antal</option>
+        </select>
+        <button type="submit" name="action" value="addActivity">Save Activity</button>
+    </form>
+</div>
+<script>
+function deleteActivity(activityId) {
+    if (confirm('Are you sure you want to delete this activity?')) {
+        fetch('/pmg/delete-activity/' + activityId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ activityId: activityId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Activity deleted successfully!');
+                location.reload();
+            } else {
+                alert('Failed to delete activity.');
+            }
+        });
+    }
+}
+
+function showAddActivityForm(button) {
+    document.getElementById('show-form').style.display = 'none';
+    document.getElementById('add-form').style.display = 'flex';
+    document.getElementById('hide-form').style.display = 'block'
+}
+
+function hideAddActivityForm(button) {
+    document.getElementById('show-form').style.display = 'block';
+    document.getElementById('hide-form').style.display = 'none'
+    document.getElementById('add-form').style.display = 'none';
+}
+</script>
+{% endblock body %}

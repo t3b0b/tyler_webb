@@ -71,10 +71,7 @@
 <script>
 function onDateClick(element, date) {
     if (!element.classList.contains('other-month')) {
-        element.classList.add('expand');
-        setTimeout(function() {
-            window.location.href = '/pmg/myday/' + date;
-        }, 500); // Väntar på att animationen ska slutföras innan omdirigering
+        window.location.href = '/pmg/day/' + date;
     }
 }
 

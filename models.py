@@ -28,7 +28,6 @@ class Goals(db.Model):
     name = db.Column(db.String(50), nullable=False)
     deadline = db.Column(db.String, nullable=True)
     timeLimit = db.Column(db.Integer, nullable=True)
-    todo_list = db.relationship('ToDoList', backref='goal', lazy=True)
     activities = db.relationship('Activity', backref='goal', lazy=True)
     milestones = db.relationship('Milestones', backref='goal', lazy=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -36,43 +35,38 @@ class Goals(db.Model):
     def __repr__(self):
         return f"{self.name}, {self.user_id}"
 
+
+class Activity(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    unit = db.Column(db.String(20), nullable=True)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)  # ForeignKey till goals
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ForeignKey till user
+    milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=True)
+
+    # Lägg till relation till ToDoList via ForeignKey
+    todo_list = db.relationship('ToDoList', backref='activity', lazy=True)
+    tasks = db.relationship('Task', back_populates='activity')
+
 # Koppling till att-göra-lista och tasks
 class ToDoList(db.Model):
-    __tablename__ = 'todo_list'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'))
     task = db.Column(db.String(255), nullable=False)
     completed = db.Column(db.Boolean, default=False)
-    parent_id = db.Column(db.Integer, db.ForeignKey('todo_list.id'), nullable=True)  # Referens till föräldrauppgift
-
-    # Skapa relationen för att hantera underuppgifter
-    subtasks = db.relationship('ToDoList', backref=db.backref('parent', remote_side=[id]), lazy=True)
-
-    def __repr__(self):
-        return f'ToDoList(task={self.task}, goal_id={self.goal_id}, user_id={self.user_id}, parent_id={self.parent_id})'
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'))
 
 
 class Task(db.Model):
-    __tablename__ = 'tasks'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
-    status = db.Column(db.String(20), default='waiting')  # waiting, in_progress, completed
-    start_time = db.Column(db.DateTime, nullable=True)
-    end_time = db.Column(db.DateTime, nullable=True)
-
-    # Relation till Aktivitet, Delmål, eller Mål
-    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)
-    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=True)
+    completed = db.Column(db.Boolean, default=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-class Subtask(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=False)
-    completed = db.Column(db.Boolean, default=False)
-
-    def __repr__(self):f"{self.name}, {self.milestone_id}, {self.completed}"
+    # Relations
+    activity = db.relationship('Activity', back_populates='tasks')
 
 class Milestones(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -145,16 +139,6 @@ class Streak(db.Model):
     def __repr__(self):
         return f"{self.name}, {self.interval}, {self.count}, {self.goal}, {self.best}, {self.condition}, {self.lastReg}, {self.dayOne}, {self.user_id}"
 
-class Activity(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    unit = db.Column(db.String(20), nullable=True)
-    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
-    milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    def __repr__(self):
-        return f'{self.name}, {self.unit}, {self.goal_id}, {self.user_id}'
-
 class Score(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     Goal = db.Column(db.Integer, db.ForeignKey(Goals.id))
@@ -198,6 +182,19 @@ class Settings(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
         return f'{self.stInterval}, {self.wImp} ,{self.user_id}'
+
+class Event(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    event_type = db.Column(db.String(20))  # event, milestone, deadline
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    date = db.Column(db.Date, nullable=False)
+
+    def __repr__(self):
+        return f'{self.name} on {self.date}'
+
 
 class Dagar(db.Model):
     id = db.Column(db.Integer, primary_key=True)

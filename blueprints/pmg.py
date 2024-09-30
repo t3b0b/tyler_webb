@@ -2,7 +2,7 @@ from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet, Task,
                     Activity, Score, MyWords, Settings, Dagar, Message,ToDoList,
-                    Idag, Week, Month, WhyGoals)
+                    Idag, Week, Month, WhyGoals,Event)
 from datetime import datetime, timedelta, date
 import pandas as pd
 from pytz import timezone
@@ -34,21 +34,12 @@ def getWord():
     ordet = None
     for ord in ord_lista:
         if not ord.used:
-            if not ord.what:
-                ordet = f"Vad innebär {ord.word}?"
+            # Uppdatera ordet till att vara använt
+            ord.used = True
+            db.session.commit()
 
-            if not ord.why:  # Om 'why' är falsk, skapa en fråga
-                ordet = f"Varför ska du vara {ord.word} ?"
-
-            if not ord.when:  # Om 'when' är falsk, skapa en fråga
-                ordet = f"När känner du dig {ord.word}?"
-
-            if not ord.how:  # Om 'how' är falsk, skapa en fråga
-                ordet = f"Hur blir du mer {ord.word}?"
-
-        ord.used = True
-        db.session.commit()
-
+            ordet = ord.word
+            break
     return ordet,ord_lista
 def organize_activities_by_time(activities):
     activities_dict = {}
@@ -320,6 +311,13 @@ def timer():
                            header=sida, duration=duration)
 
 #region Streak
+@pmg_bp.route('/streak/<int:streak_id>/details', methods=['GET'])
+def streak_details(streak_id):
+    streak = Streak.query.get_or_404(streak_id)
+    streakdetail = Streak.query.filter_by(user_id=current_user.id, id = streak_id).first()
+    return render_template('pmg/details.html', streak=streak, detail=streakdetail)
+
+
 @pmg_bp.route('/streak',methods=['GET', 'POST'])
 def streak():
     current_date = date.today()
@@ -389,6 +387,38 @@ def delete_streak(streak_id):
 # endregion
 
 # region Goals
+@pmg_bp.route('/goal/<int:goal_id>/activities', methods=['GET'])
+def goal_activities(goal_id):
+    goal = Goals.query.get_or_404(goal_id)
+    activities = Activity.query.filter_by(goal_id=goal_id).all()
+    return render_template('pmg/activities.html', goal=goal, activities=activities)
+
+# region Todos
+@pmg_bp.route('/activity/<int:activity_id>/tasks', methods=['GET'])
+def activity_tasks(activity_id):
+    activity = Activity.query.get_or_404(activity_id)
+    todos = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).all()
+    # Hämta endast överordnade uppgifter
+    return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos)
+
+@pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST'])
+def add_task(activity_id):
+    activity = Activity.query.get_or_404(activity_id)
+    task_name = request.form.get('task_name')
+
+    if not task_name:
+        flash('Task name is required!', 'danger')  # Meddelande vid fel
+        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+
+    # Skapa ny task
+    new_task = ToDoList(task=task_name, completed=False, user_id=current_user.id, activity_id=activity_id)
+    db.session.add(new_task)
+    db.session.commit()
+
+    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+
+
+# endregion
 @pmg_bp.route('/goal/<int:goal_id>/todo', methods=['GET'])
 @login_required
 def get_todo_list(goal_id):
@@ -458,7 +488,11 @@ def goals():
 
 @pmg_bp.route('/deleteGoal/<int:goal_id>', methods=['POST'])
 def deleteGoal(goal_id):
-    goal = Goals.query.filter_by(goal_id=goal_id).first()
+    # Data från JSON-kroppen, om du behöver den
+    data = request.get_json()
+ # Debug: se vad som faktiskt tas emot
+
+    goal = Goals.query.get(goal_id)
     if goal:
         db.session.delete(goal)
         db.session.commit()
@@ -474,18 +508,6 @@ def milestones(goal_id):
 
 # endregion
 
-#region MyDay
-@pmg_bp.route('/get_tasks/<int:goal_id>', methods=['GET'])
-@login_required
-def get_tasks(goal_id):
-    goal = Goals.query.filter_by(user_id=current_user.id, id=goal_id).first()
-    if not goal:
-        return jsonify({'error': 'Goal not found or unauthorized'}), 404
-
-    tasks = Task.query.filter_by(goal_id=goal.id).all()
-    tasks_data = [{'id': task.id, 'name': task.name, 'completed': task.completed} for task in tasks]
-
-    return jsonify({'tasks': tasks_data})
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 @login_required
 def myday():
@@ -583,19 +605,6 @@ def myday():
                            sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo, current_goal=current_goal)
 
 
-@pmg_bp.route('/add_subtask/<int:parent_id>', methods=['POST'])
-@login_required
-def add_subtask(parent_id):
-    parent_task = ToDoList.query.get_or_404(parent_id)
-    task_content = request.form.get('subtask')
-    if task_content:
-        new_subtask = ToDoList(task=task_content, user_id=current_user.id, goal_id=parent_task.goal_id, parent_id=parent_task.id)
-        db.session.add(new_subtask)
-        db.session.commit()
-        flash(f'Underuppgift "{task_content}" har skapats.', 'success')
-    return redirect(url_for('pmg.myday'))
-
-
 @pmg_bp.route('/myday/<date>')
 def myday_date(date):
     selected_date = datetime.strptime(date, '%Y-%m-%d').date()
@@ -641,6 +650,33 @@ def start_activity(goal_id):
     return render_template('pmg/activity.html', goal=goal, tasks=tasks)
 
 #region Kalender
+
+@pmg_bp.route('/day/<string:date>', methods=['GET', 'POST'])
+@login_required
+def day_view(date):
+    # Här hämtar du relevant information om det specifika datumet
+    selected_date = datetime.strptime(date, '%Y-%m-%d').date()
+
+    # Hämta befintliga händelser för datumet (events, deadlines, milestones)
+    events = Event.query.filter_by(user_id=current_user.id, date=selected_date).all()
+
+    if request.method == 'POST':
+        event_type = request.form.get('eventType')
+        event_name = request.form.get('event-name')
+        event_start = request.form.get('event-start')
+        event_end = request.form.get('event-end')
+
+        # Skapa nytt event, milestone eller deadline beroende på valt alternativ
+        new_event = Event(name=event_name, event_type=event_type, start_time=event_start, end_time=event_end,
+                          user_id=current_user.id)
+        db.session.add(new_event)
+        db.session.commit()
+
+        return redirect(url_for('pmg.day_view', date=date))
+
+    return render_template('pmg/day_view.html', date=selected_date, events=events)
+
+
 @pmg_bp.route('/month', methods=['GET', 'POST'])
 @pmg_bp.route('/month/<int:year>/<int:month>')
 def month(year=None, month=None):
@@ -866,7 +902,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
         if content_check:
             if option == 'timeless':
                 if sida == 'Dagbok':
-                    add2db(Dagbok, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+                    add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Mina Ord':
                     add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Bullet':
@@ -880,7 +916,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
             elif option == "write-on-time":
                 add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], user)
                 if sida == 'Dagbok':
-                    add2db(Dagbok, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+                    add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Mina Ord':
                     add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Bullet':

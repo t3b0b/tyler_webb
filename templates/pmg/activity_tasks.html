@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
+{% endblock head %}
+
+{% block body %}
+<div class="list-container">
+    <div class="list-header">
+        <h3>{{ activity.name }} - Tasks</h3>
+        <button class="new-button" onclick="showNewTaskForm()">New Task</button>
+    </div>
+    <div class="list-content">
+        {% if tasks %}
+            {% for task in tasks %}
+                <div class="list-btn">
+                    <div>{{ task.task }}</div>
+                    <!-- Checkbox for marking the task as completed -->
+                    <input type="checkbox"
+                           {% if task.completed %}checked{% endif %}>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No tasks found for this activity.</p>
+        {% endif %}
+    </div>
+</div>
+<!-- Form to add a new task -->
+<div class="add-form-container">
+    <form action="{{ url_for('pmg.add_task', activity_id=activity.id) }}" method="POST">
+        <input type="text" name="task_name" placeholder="New Task Name" required>
+        <button type="submit">Add Task</button>
+    </form>
+</div>
+
+<script>
+    function showNewTaskForm() {
+        // Show form to create new task
+    }
+
+    // Function to handle the task completion toggle
+
+</script>
+
+{% endblock body %}
