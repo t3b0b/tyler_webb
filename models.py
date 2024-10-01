@@ -94,8 +94,34 @@ class FriendGoal(db.Model):
     goal = db.relationship('Goals', backref=db.backref('user_goals', cascade='all, delete-orphan'))
 
 
+import enum
+
+# Skapa en enumeration för vytyperna
+class ViewType(enum.Enum):
+    myWeek = "myWeek"
+    myMonth = "myMonth"
+    myDay = "myDay"
+
+class CalendarBullet(db.Model):
+    __tablename__ = 'calendar_bullets'
+
+    id = db.Column(db.Integer, primary_key=True)
+    week_num = db.Column(db.Integer, nullable=True)
+    month = db.Column(db.Integer, nullable=True)
+    date = db.Column(db.Date, nullable=True)
+    to_do = db.Column(db.String(1000), nullable=True)
+    to_think = db.Column(db.String(1000), nullable=True)
+    remember = db.Column(db.String(1000), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    view_type = db.Column(db.Enum('myDay', 'myWeek', 'myMonth'), nullable=False)
+
+    def __repr__(self):
+        return f"<CalendarBullet {self.date} ({self.view_type})>"
+
+
 class Bullet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+
     author = db.Column(db.String(50), nullable=False)
     theme = db.Column(db.String(50), nullable=False)
     content = db.Column(db.Text, unique=False, nullable=False)

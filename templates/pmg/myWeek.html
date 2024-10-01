@@ -8,33 +8,35 @@
 {% block body %}
 <div class="container">
     <div class="notes">
-    <div class="list">
+        <div class="list">
             <div class="list-header" onclick="toggleList(this)">Att-göra</div>
             <div class="list-content">
-                {% for num in range(1, 6) %}
-                    <input type="text" name="todo_{{ num }}" placeholder="Att-göra {{ num }}" style="width: 100%; margin-bottom: 5px;">
-                {% endfor %}
-                <button>Add New</button>
+                <form method="POST">
+                    {% for num in range(1, 6) %}
+                        <input type="text" name="todo_{{ num }}" placeholder="Att-göra {{ num }}" value="{{ to_do_list[num-1] if to_do_list|length >= num else '' }}">
+                    {% endfor %}
+                    <button type="submit" name="save_todo">Spara Att-göra</button>
+                </form>
             </div>
-        </div>
 
-        <div class="list">
             <div class="list-header" onclick="toggleList(this)">Att tänka på</div>
             <div class="list-content">
-                {% for num in range(1, 6) %}
-                    <input type="text" name="think_{{ num }}" placeholder="Att tänka på {{ num }}" style="width: 100%; margin-bottom: 5px;">
-                {% endfor %}
-                <button>Add New</button>
+                <form method="POST">
+                    {% for num in range(1, 6) %}
+                        <input type="text" name="think_{{ num }}" placeholder="Att tänka på {{ num }}" value="{{ to_think_list[num-1] if to_think_list|length >= num else '' }}">
+                    {% endfor %}
+                    <button type="submit" name="save_think">Spara Att tänka på</button>
+                </form>
             </div>
-        </div>
 
-        <div class="list">
             <div class="list-header" onclick="toggleList(this)">Kom-ihåg</div>
             <div class="list-content">
-                {% for num in range(1, 6) %}
-                    <input type="text" name="remember_{{ num }}" placeholder="Kom-ihåg {{ num }}" style="width: 100%; margin-bottom: 5px;">
-                {% endfor %}
-                <button>Add New</button>
+                <form method="POST">
+                    {% for num in range(1, 6) %}
+                        <input type="text" name="remember_{{ num }}" placeholder="Kom-ihåg {{ num }}" value="{{ remember_list[num-1] if remember_list|length >= num else '' }}">
+                    {% endfor %}
+                    <button type="submit" name="save_remember">Spara Kom-ihåg</button>
+                </form>
             </div>
         </div>
     </div>
