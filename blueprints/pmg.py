@@ -459,20 +459,24 @@ def delete_goal(goal_id):
     else:
         return jsonify(success=False, error="Goal not found")
 
-@pmg_bp.route('/goals',methods=['GET', 'POST'])
+
+@pmg_bp.route('/goals', methods=['GET', 'POST'])
+@login_required
 def goals():
-    sida, sub_menu = common_route("Mina Mål", ['/pmg/streak', '/pmg/goals', '/pmg/milestones'], ['Streaks','Goals','Milestones'])
-    myGoals = query(Goals,'user_id',current_user.id)
-    friends = current_user.friends
+    sida, sub_menu = common_route("Mina Mål", ['/pmg/streak', '/pmg/goals', '/pmg/milestones'],
+                                  ['Streaks', 'Goals', 'Milestones'])
+
     if request.method == 'POST':
         if 'addGoal' in request.form['action']:
             add2db(Goals, request, ['goalName'], ['name'], current_user)
-            return redirect(url_for('pmg.goals', sida=sida, header=sida, goals=myGoals))
+            # Omdirigera efter att ha lagt till ett nytt mål för att förhindra dubbla POST-förfrågningar
+            return redirect(url_for('pmg.goals'))
 
         elif 'addActivity' in request.form['action']:
-            add2db(Activity, request, ['goalId','activity-name','activity-measurement'],
-                   ['goal_id','name','measurement'], current_user)
-            return redirect(url_for('pmg.goals',sida=sida,header=sida, goals=myGoals))
+            add2db(Activity, request, ['goalId', 'activity-name', 'activity-measurement'],
+                   ['goal_id', 'name', 'measurement'], current_user)
+            # Omdirigera efter att ha lagt till en ny aktivitet
+            return redirect(url_for('pmg.goals'))
 
         elif 'addTodo' in request.form['action']:
             goal_id = request.form.get('goalId')
@@ -481,25 +485,13 @@ def goals():
                 new_task = ToDoList(task=task_content, goal_id=goal_id, user_id=current_user.id)
                 db.session.add(new_task)
                 db.session.commit()
-            return redirect(url_for('pmg.goals', sida=sida, header=sida, goals=myGoals))
-    return render_template('pmg/goals.html',friends=friends,sida=sida,header=sida, goals=myGoals,sub_menu=sub_menu)
+            # Omdirigera efter att ha lagt till en ny todo-uppgift
+            return redirect(url_for('pmg.goals'))
 
+    # Hämta mål på nytt varje gång sidan laddas för att säkerställa att listan är uppdaterad
+    my_Goals = Goals.query.filter_by(user_id=current_user.id).all()
 
-
-@pmg_bp.route('/deleteGoal/<int:goal_id>', methods=['POST'])
-def deleteGoal(goal_id):
-    # Data från JSON-kroppen, om du behöver den
-    data = request.get_json()
- # Debug: se vad som faktiskt tas emot
-
-    goal = Goals.query.get(goal_id)
-    if goal:
-        db.session.delete(goal)
-        db.session.commit()
-        return jsonify(success=True)
-    else:
-        return jsonify(success=False)
-# endregion
+    return render_template('pmg/goals.html', sida=sida, header=sida, goals=my_Goals, sub_menu=sub_menu)
 
 #region Milestones
 @pmg_bp.route('milestones/<int:goal_id>')
