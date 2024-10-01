@@ -484,23 +484,6 @@ def goals():
             return redirect(url_for('pmg.goals', sida=sida, header=sida, goals=myGoals))
     return render_template('pmg/goals.html',friends=friends,sida=sida,header=sida, goals=myGoals,sub_menu=sub_menu)
 
-
-
-@pmg_bp.route('/deleteGoal/<int:goal_id>', methods=['POST'])
-def deleteGoal(goal_id):
-    # Data från JSON-kroppen, om du behöver den
-    data = request.get_json()
- # Debug: se vad som faktiskt tas emot
-
-    goal = Goals.query.get(goal_id)
-    if goal:
-        db.session.delete(goal)
-        db.session.commit()
-        return jsonify(success=True)
-    else:
-        return jsonify(success=False)
-# endregion
-
 #region Milestones
 @pmg_bp.route('milestones/<int:goal_id>')
 def milestones(goal_id):
@@ -509,7 +492,6 @@ def milestones(goal_id):
 # endregion
 
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
-@login_required
 def myday():
     pageInfo = getInfo('pageInfo.csv', 'Start')
     sida, sub_menu = common_route("Min Grind", ['/pmg/timebox', '/pmg/streak', '/pmg/goals'],
