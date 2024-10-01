@@ -2,7 +2,7 @@ from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet, Task,
                     Activity, Score, MyWords, Settings, Dagar, Message,ToDoList,
-                    Idag, Week, Month, WhyGoals,Event)
+                    Idag, Week, Month, WhyGoals,Event,CalendarBullet,ViewType)
 from datetime import datetime, timedelta, date
 import pandas as pd
 from pytz import timezone
@@ -651,6 +651,31 @@ def start_activity(goal_id):
 
 #region Kalender
 
+@pmg_bp.route('/save_calendar_bullet/<date>/<view_type>', methods=['POST'])
+@login_required
+def save_calendar_bullet(date, view_type):
+    # Hämta användarens CalendarBullet för det aktuella datumet
+    calendar_bullet = CalendarBullet.query.filter_by(user_id=current_user.id, date=date).first()
+
+    # Om det inte finns någon bullet för det datumet, skapa en ny
+    if not calendar_bullet:
+        calendar_bullet = CalendarBullet(user_id=current_user.id, date=date)
+
+    # Hämta data från formuläret
+    calendar_bullet.to_do = request.form.get('to_do')
+    calendar_bullet.to_think = request.form.get('to_think')
+    calendar_bullet.remember = request.form.get('remember')
+
+    # Ställ in view_type från URL-parametern
+    calendar_bullet.view_type = ViewType[view_type]
+
+    # Lägg till eller uppdatera i databasen
+    db.session.add(calendar_bullet)
+    db.session.commit()
+
+    flash('Dagens anteckningar har sparats!', 'success')
+    return redirect(url_for('pmg.' + view_type))  # Omdirigera till motsvarande vy
+
 @pmg_bp.route('/day/<string:date>', methods=['GET', 'POST'])
 @login_required
 def day_view(date):
@@ -707,6 +732,12 @@ def month(year=None, month=None):
 
 @pmg_bp.route('/week', methods=['GET', 'POST'])
 def week():
+    current_date = datetime.now()
+    year, week_num, weekday = current_date.isocalendar()
+    month = current_date.month
+    date = current_date.date()
+
+
     page_info = getInfo('pageInfo.csv', 'myWeek')
     date_now = datetime.now()
     user_id = current_user.id
@@ -740,8 +771,37 @@ def week():
     ).all()
     weekly_data = process_weekly_scores(myScore, start_week, end_week)
 
+    bullet = CalendarBullet.query.filter_by(user_id=current_user.id, week_num=week_num,view_type="myWeek").first()
+
+    # Om det inte finns något, skapa ett nytt objekt
+    if not bullet:
+        bullet = CalendarBullet(user_id=current_user.id, week_num=week_num, view_type="myWeek")
+        db.session.add(bullet)
+
+    # Om POST-förfrågan skickas, uppdatera listorna
+    if request.method == 'POST':
+        if 'save_todo' in request.form:
+            todo_list = [request.form.get(f'todo_{i}') for i in range(1, 6) if request.form.get(f'todo_{i}')]
+            bullet.to_do = ','.join(todo_list)
+
+        if 'save_think' in request.form:
+            think_list = [request.form.get(f'think_{i}') for i in range(1, 6) if request.form.get(f'think_{i}')]
+            bullet.to_think = ','.join(think_list)
+
+        if 'save_remember' in request.form:
+            remember_list = [request.form.get(f'remember_{i}') for i in range(1, 6) if request.form.get(f'remember_{i}')]
+            bullet.remember = ','.join(remember_list)
+
+        db.session.commit()  # Spara ändringarna i databasen
+        flash('Listor sparade!', 'success')
+
+    # Hämta listor för att visa på sidan
+    to_do_list = bullet.to_do.split(',') if bullet.to_do else []
+    to_think_list = bullet.to_think.split(',') if bullet.to_think else []
+    remember_list = bullet.remember.split(',') if bullet.remember else []
+
     return render_template('pmg/myWeek.html', sida='Veckoplanering', weekly_data=weekly_data, header='Veckoplanering',
-                           total_score=0, sub_menu=sub_menu, activities=activities_dict,page_info=page_info)
+                           total_score=0, sub_menu=sub_menu, activities=activities_dict,page_info=page_info, bullet=bullet, to_do_list=to_do_list, to_think_list=to_think_list, remember_list=remember_list, date=current_date)
 
 @pmg_bp.route('/timebox', methods=['GET', 'POST'])
 @login_required
