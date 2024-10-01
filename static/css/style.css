@@ -240,12 +240,7 @@ header h1 {
     padding: 5px;
 }
 
-.goal-streak-container {
-    margin-top: 20px;
-    flex-grow: 3;
-    flex-shrink: 1;
-    flex-basis: 70%;
-}
+
 
 .items-container {
     display: flex;
@@ -363,7 +358,7 @@ footer {
 }
 
 .blogg-container {
-    width: 900px;
+    width: 1200px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -381,10 +376,10 @@ footer {
 }
 
 textarea {
-    width: 70vb;
+    width: 90vb;
     flex-wrap: wrap;
     font-size: 12px;
-    min-height: 40lh;
+    min-height: 30lh;
     padding: 12px 20px;
     border: 1px solid #ccc;
     border-radius: 4px;

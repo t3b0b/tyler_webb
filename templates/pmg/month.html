@@ -7,19 +7,6 @@
 
 {% block body %}
 <div class="calendar-container">
-    <div class="list-container" style="flex-direction: column" id="new-event">
-        <form method="POST">
-            <select id="eventType" class="select-style">
-                <option value="1">Event</option>
-                <option value="2">Milestone</option>
-                <option value="3">Deadline</option>
-            </select>
-            <input type="text" name="event-name" placeholder="Name:" required>
-            <input type="date" name="event-start" placeholder="">
-            <input type="date" name="event-end" placeholder="">
-            <button id="continueButton" class="button-style" style="display: block; background-color: green">Continue</button>
-        </form>
-    </div>
     <div class="calendar-grid">
         <div class="calendar-header">
             <button onclick="changeMonth(-1)"> < </button>
