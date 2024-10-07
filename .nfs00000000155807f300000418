@@ -1,4 +1,4 @@
-Exception on /pmg/myday [POST]
+Exception on /pmg/goals [GET]
 Traceback (most recent call last):
   File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
     self.dialect.do_execute(
@@ -10,7 +10,7 @@ Traceback (most recent call last):
     db.query(q)
   File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/MySQLdb/connections.py", line 261, in query
     _mysql.connection.query(self, query)
-MySQLdb.OperationalError: (4031, 'The client was disconnected by the server because of inactivity. See wait_timeout and interactive_timeout for configuring this behavior.')
+MySQLdb.OperationalError: (2013, 'Lost connection to MySQL server during query')
 
 The above exception was the direct cause of the following exception:
 
@@ -23,8 +23,8 @@ Traceback (most recent call last):
     rv = self.dispatch_request()
   File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
-  File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/flask_login/utils.py", line 284, in decorated_view
-    elif not current_user.is_authenticated:
+  File "/home/tylerobri/tyler_webb/blueprints/pmg.py", line 465, in goals
+    myGoals = query(Goals,'user_id',current_user.id)
   File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/werkzeug/local.py", line 318, in __get__
     obj = instance._get_current_object()
   File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/werkzeug/local.py", line 526, in _get_current_object
@@ -76,7 +76,7 @@ Traceback (most recent call last):
     db.query(q)
   File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/MySQLdb/connections.py", line 261, in query
     _mysql.connection.query(self, query)
-sqlalchemy.exc.OperationalError: (MySQLdb.OperationalError) (4031, 'The client was disconnected by the server because of inactivity. See wait_timeout and interactive_timeout for configuring this behavior.')
+sqlalchemy.exc.OperationalError: (MySQLdb.OperationalError) (2013, 'Lost connection to MySQL server during query')
 [SQL: SELECT user.id AS user_id, user.username AS user_username, user.email AS user_email, user.password AS user_password, user.`firstName` AS `user_firstName`, user.`lastName` AS `user_lastName`, user.verified AS user_verified 
 FROM user 
 WHERE user.id = %s]

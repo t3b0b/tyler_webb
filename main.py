@@ -22,15 +22,8 @@ load_dotenv()  # Ladda miljövariabler från .env-filen
 
 app = Flask(__name__)
 
-if os.getenv('FLASK_ENV') == 'development':
-    tunnel = sshtunnel.SSHTunnelForwarder(
-        ('ssh.pythonanywhere.com'), ssh_username='tylerobri', ssh_password='Winter!sComing92',
-        remote_bind_address=('tylerobri.mysql.pythonanywhere-services.com', 3306)
-    )
-    tunnel.start()
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@127.0.0.1:{}/tylerobri$PMG'.format(tunnel.local_bind_port)
-else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@tylerobri.mysql.pythonanywhere-services.com/tylerobri$PMG'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@tylerobri.mysql.pythonanywhere-services.com/tylerobri$PMG'
 
 
 app.config['SECRET_KEY'] = "K6SM4x14"

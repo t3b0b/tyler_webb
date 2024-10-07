@@ -1,4 +1,4 @@
-Exception on /pmg/myday [POST]
+Exception on /pmg/myday [GET]
 Traceback (most recent call last):
   File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
     self.dialect.do_execute(
@@ -82,3 +82,33 @@ FROM user
 WHERE user.id = %s]
 [parameters: (1,)]
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
+Exception on /base/blogg [GET]
+Traceback (most recent call last):
+  File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/home/tylerobri/tyler_webb/blueprints/base.py", line 42, in blogg
+    content = get_blog_content_for_section(section_name)
+  File "/home/tylerobri/tyler_webb/blueprints/base.py", line 33, in get_blog_content_for_section
+    content = BusinessBlogg.query.all()
+NameError: name 'BusinessBlogg' is not defined
+Server Error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application., User: None, Route: https://www.tylerobrien.se/base/blogg, Method: GET, Data: b''
+Exception on /pmg/streak/14/details [GET]
+Traceback (most recent call last):
+  File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/tylerobri/.virtualenvs/myvirtualenv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/home/tylerobri/tyler_webb/blueprints/pmg.py", line 317, in streak_details
+    streakdetail = Streak.query.filter_by(user_id=current_user.id, id = streak_id).first()
+AttributeError: 'AnonymousUserMixin' object has no attribute 'id'
+Server Error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application., User: None, Route: https://www.tylerobrien.se/pmg/streak/14/details, Method: GET, Data: b''
