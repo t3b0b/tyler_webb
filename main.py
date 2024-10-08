@@ -12,9 +12,7 @@ from blueprints.pmg import pmg_bp
 from blueprints.cal import cal_bp
 from blueprints.txt import txt_bp
 from flask_mail import Mail, Message
-import sshtunnel
-import os
-import mysql.connector
+
 
 # endregion
 
@@ -22,7 +20,9 @@ import mysql.connector
 app = Flask(__name__)
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tylerobri.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@tylerobri.mysql.pythonanywhere-services.com/tylerobri$PMG'
+
+
 
 app.config['SECRET_KEY'] = "K6SM4x14"
 app.config['MAIL_SERVER'] = "smtp.gmail.com"

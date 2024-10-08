@@ -2,15 +2,11 @@
 
 {% block head %}
 <style xmlns="http://www.w3.org/1999/html"></style>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
 <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
 {% endblock head %}
 
 {% block body %}
-<div id="date-section" class="sub-header">
-    <h2 class="sub-header-text"> {{ current_date }} </h2>
-</div>
-
 <div id="day-section" class="grid-container">
     {% for goal in my_goals %}
         <div class="todo-list" id="todo-list-{{ goal.id }}">
@@ -40,6 +36,7 @@
             </form>
         </div>
     {% endfor %}
+
     <div id="goal-section" class="column">
         <h2 class="column-title">Goals</h2>
         {% if sum_scores %}
@@ -95,9 +92,8 @@
         {% endif %}
     </div>
 </div>
-
 <form method="POST">
-    <div id="completed-form" class="list-item">
+    <div id="completed-form" class="form-box">
         <input type="hidden" id="gID" name="gID" style="display: none;">
         <input type="hidden" id="aID" name="aID" style="display: none;">
         <input type="hidden" id="aDate" name="aDate" value="{{ current_date }}" style="display: none;">
@@ -116,7 +112,8 @@
         <p>Total tid: {{ data.total_time }}</p>
     </div>
 {% endfor %}
-<div id="activityForm" class="list-container" style="display: none; border: none; background-color: #eaeeef; width:30%;">
+
+<div id="activityForm" class="form-container" style="display: none; border: none; background-color: #eaeeef; width:30%;">
     <select id="goalSelect" name="goalSel" class="select-style">
         <option value="----"></option>
         {% for goal in my_goals %}

@@ -157,7 +157,6 @@ def get_todo_list(goal_id):
 def goals():
     sida, sub_menu = common_route("Mina Mål", ['/pmg/streak', '/pmg/goals', '/pmg/milestones'],
                                   ['Streaks', 'Goals', 'Milestones'])
-
     if request.method == 'POST':
         if 'addGoal' in request.form['action']:
             add2db(Goals, request, ['goalName'], ['name'], current_user)
@@ -181,7 +180,7 @@ def goals():
             return redirect(url_for('pmg.goals'))
 
     # Hämta mål på nytt varje gång sidan laddas för att säkerställa att listan är uppdaterad
-    my_Goals = Goals.query.filter_by(user_id=current_user.id).all()
+    my_Goals = query(Goals, 'user_id', current_user.id)
 
     return render_template('pmg/goals.html', sida=sida, header=sida, goals=my_Goals, sub_menu=sub_menu)
 

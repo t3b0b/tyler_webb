@@ -1,14 +1,11 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
 <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
 
-{% endblock %}
+{% endblock head %}
 
-{% block header %}
-
-{% endblock %}
 {% block body %}
     <div class="list-container">
         <div class="list-header">
@@ -18,8 +15,9 @@
         {% if streaks %}
             <div class="list-content">
             {% for streak in streaks %}
-                <button class="list-item" data-level="{{ streak.level }}" onclick="window.location.href = '/pmg/streak/{{ streak.id }}/details';"> {{ streak.name }}</button>
-                    <button class="toggle-button" onclick="deleteStreak({{ streak.id }})">&#10060;</button>
+                <div class="list-item" data-level="{{ streak.level }}" onclick="window.location.href = '/pmg/streak/{{ streak.id }}/details';"> {{ streak.name }}
+                <button class="toggle-button" onclick="deleteStreak({{ streak.id }})">&#10060;</button>
+                </div>
             {% endfor %}
             </div>
         {% endif %}

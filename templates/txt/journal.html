@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
     <style>
-      button {
-          width: 100px;
-      }
+    button {
+      width: 100px;
+    }
 
     .hidden {
         display: none;
@@ -14,90 +14,61 @@
 {% endblock head %}
 
 {% block body %}
-    {% if act_id %}
- <div class="blogg-container">
-            <form method="POST">
-                {% if sida == "Mina Ord" or sida == "Dagbok" or sida == "Mina Mål" %}
-                    <div class="ordet">
-                        <button name="option" style="width: 60px" onclick="fetchNewWord()">New</button>
-                        <label id="ordet-label" name="post-ord">{{ ordet }}</label>
-                        <input type="hidden" name="goal" value="{{ why_G }}">
-                        <input type="text" id="ordet-input" class="hidden" name="post-ord" value="{{ ordet }}">
-                        <div class="small-icon">
-                            <img src="{{ url_for('static', filename='images/plus-icon-större.png') }}" class="edit-icon" onclick="editTitle()" alt="Redigera" />
+    <div class="main-container">
+        {% if act_id %}
+        <div class="blogg-container">
+                <form method="POST">
+                    {% if sida == "Mina Ord" or sida == "Dagbok" or sida == "Mina Mål" %}
+                        <div class="ordet">
+                            <button name="option" style="width: 60px" onclick="fetchNewWord()">New</button>
+                            <label id="ordet-label" name="post-ord">{{ ordet }}</label>
+                            <input type="hidden" name="goal" value="{{ why_G }}">
+                            <input type="text" id="ordet-input" class="hidden" name="post-ord" value="{{ ordet }}">
+                            <div class="small-icon">
+                                <img src="{{ url_for('static', filename='images/plus-icon-större.png') }}" class="edit-icon" onclick="editTitle()" alt="Redigera" />
+                            </div>
                         </div>
-                    </div>
 
-                    <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
+                        <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
 
-                    <div id="activityForm" class="button-center">
-                        <button type="submit" id="time-less" class="button-style" name="option" value="timeless">Skicka</button>
-                        <button type="submit" id="write-on-time" class="button-style" name="option" style="display: none;" value="write-on-time">Save</button>
-                        <button type="button" id="start-timer" class="button-style" onclick="startTimerFromSelection()">Start Timer</button>
-                        <input id="goalSelect" value="{{ goal.id }}" style="display: none">
-                        <input id="activitySelect" value="{{ act_id }}" style="display: none">
-                        <input id="timeSelect" value="{{ time }}" style="display: none">
-                        <button id="startaAktivitet" style="display: none">A</button>
-                    </div>
-                    <div class="button-center">
-                        <button type="button" id="stopButton" class="button-style" style="display: none; background-color: red">Stop</button>
-                        <button type="button" id="continueButton" class="button-style" style="display: none; background-color: green">Continue</button>
-                    </div>
-                    <div class="repetitions" style="display: none">
-                        <h2 id="repetitons">0</h2>
-                    </div>
-                    <div id="completed-form" class="list-item" style="display: none;">
-                        <input type="text" id="gID" name="gID" value="{{ goal.id }}">
-                        <input type="text" id="aID" name="aID" value="{{ act_id }}">
-                        <input type="text" id="aDate" name="aDate" value="{{ current_date }}">
-                        <input type="text" id="score" name="score">
-                    </div>
-                {% elif sida == "Bullet" %}
-                <div class="ordet">
-                    <select class="select-style" style="padding-left: 20px; max-width: 80%; font-size:24px; background-color: #f0f0f0; border: none;" name="post-ord">
-                        {% for ord in ordet %}
-                            <option style="text-align: left;" value="{{ ord }}">{{ ord }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                    <div class="list-container" style="gap: 0;">
-                        <div class="form-box" style="flex-direction: row; margin-bottom: 0; margin-top: 0;">
-                            <label for="todo1" style="font-size: 16px">#1</label>
-                            <input id="todo1" type="text" name="#1" placeholder="">
+                        <div id="activityForm" class="button-center" style="display:none;">
+                            <button type="submit" id="time-less" class="button-style" name="option" value="timeless">Skicka</button>
+                            <button type="submit" id="write-on-time" class="button-style" name="option" style="display: none;" value="write-on-time">Save</button>
+                            <button type="button" id="start-timer" class="button-style" onclick="startTimerFromSelection()">Start Timer</button>
+                            <input id="goalSelect" value="{{ goal.id }}" style="display: none">
+                            <input id="activitySelect" value="{{ act_id }}" style="display: none">
+                            <input id="timeSelect" value="{{ time }}" style="display: none">
+                            <button id="startaAktivitet" style="display: none">A</button>
                         </div>
-                        <div class="form-box" style="flex-direction: row; margin-bottom: 0; margin-top: 0;">
-                            <label for="todo2" style="font-size: 16px">#2</label>
-                            <input id="todo2" type="text" name="#2" placeholder="">
+                        <div class="button-center">
+                            <button type="button" id="stopButton" class="button-style" style="display: none; background-color: red">Stop</button>
+                            <button type="button" id="continueButton" class="button-style" style="display: none; background-color: green">Continue</button>
                         </div>
-                        <div class="form-box" style="flex-direction: row; margin-bottom: 0; margin-top: 0;">
-                            <label for="todo3" style="font-size: 16px">#3</label>
-                            <input id="todo3" type="text" name="#3" placeholder="">
+                        <div class="repetitions" style="display: none">
+                            <h2 id="repetitons">0</h2>
                         </div>
-                        <div class="form-box" style="flex-direction: row; margin-bottom: 0; margin-top: 0;">
-                            <label for="todo4" style="font-size: 16px">#4</label>
-                            <input id="todo4" type="text" name="#4" placeholder="">
+                        <div id="completed-form" class="list-item" style="display: none;">
+                            <input type="text" id="gID" name="gID" value="{{ goal.id }}">
+                            <input type="text" id="aID" name="aID" value="{{ act_id }}">
+                            <input type="text" id="aDate" name="aDate" value="{{ current_date }}">
+                            <input type="text" id="score" name="score">
                         </div>
-                        <div class="form-box" style="flex-direction: row; margin-bottom: 0; margin-top: 0;">
-                            <label for="todo5" style="font-size: 16px">#5</label>
-                            <input id="todo5" type="text" name="#5" placeholder="">
-                        </div>
-                    </div>
+                    {% endif %}
                 </form>
-            {% endif %}
-        </div>
-    {% endif %}
-
-    {% if not act_id %}
-        {% if myPosts %}
-            <div class="blogg-post">
-                {% for post in myPosts %}
-                    <h3>{{ post.title }}</h3>
-                    <p class="post-content">{{ post.content }}</p>
-                    <p class="post-content">{{ post.author }} {{ post.date }}</p>
-                {% endfor %}
             </div>
         {% endif %}
-    {% endif %}
 
+        {% if not act_id %}
+            {% if myPosts %}
+                <div class="blogg-post">
+                    {% for post in myPosts %}
+                        <h3>{{ post.title }}</h3>
+                        <p class="post-content">{{ post.content }}</p>
+                        <p class="post-content">{{ post.author }} {{ post.date }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 {% endblock body %}

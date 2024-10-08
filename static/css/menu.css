@@ -1,58 +1,11 @@
-html, body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #ecf0f1;
-    color: #2c3e50;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-}
-#points-section {
-    display: none;
-}
-        .todo-list {
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            margin-top: 10px;
-            gap: 10px;
-        }
-
-        .todo-list ul {
-            list-style-type: none;
-            padding-left: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            /* Centrera
-        }
-
-        .todo-list li {
-            display: flex;
-            align-items: center;
-            justify-content: center; /* Centrera checkbox och text horisontellt */
-            gap: 5px; /* Sätt avståndet mellan checkbox och text */
-            width: 100%;
-            max-width: 300px; /* Gör så att listan inte blir för bred */
-            text-align: center; /* Centrera texten */
-        }
 header {
-    background-color: #1c2d5b;
-    width:100%;
-    max-height: 100px;
-    min-height: fit-content;
-    color: #ffffff;
+    background-color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-left: 30px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 24px;
 }
 
 header h1 {
@@ -60,6 +13,28 @@ header h1 {
     font-family: 'Montserrat', sans-serif;
     padding: 10px 25px 10px 25px ;
     margin: 0 auto;
+}
+
+.search-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+footer {
+    background-color: #ecf0f1;
+    padding: 10px;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+footer .footer-icons a img, footer .footer-icons span {
+    margin-left:50px;
+    height: 40px;
+    width: 40px;
 }
 
 @keyframes slideIn {
@@ -75,57 +50,7 @@ header h1 {
     animation: slideIn 0.5s ease forwards;
 }
 
-.info-button {
-    position: absolute;
-    top: 15%;
-    right: 10px;
-    width: 24px;
-    height: 24px;
-    background-color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    color: blue;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
 
-.tooltip {
-    display: none;
-    position: absolute;
-    top: 65%;
-    right: 10px;
-    width: 200px;
-    padding: 10px;
-    background-color: white;
-    border: 1px solid #4077ee;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-}
-
-.info-button:hover + .tooltip {
-    display: inline-block;
-
-}
-
-.tooltip-text {
-    visibility: hidden;
-    width: 200px;
-    background-color: black;
-    color: #fff;
-    text-align: center;
-    border-radius: 5px;
-    padding: 5px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%; /* Position the tooltip above the button */
-    left: 50%;
-    margin-left: -100px;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
 
 
 .side-menu {
@@ -205,32 +130,6 @@ header h1 {
     color: #ffffff;
 }
 
-.sub-menu {
-    width:100%;
-    background-color: #bb9256;
-    color: #ffffff;
-    padding: 5px;
-    display: flex;
-    justify-content: flex-start;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-.sub-menu li {
-    margin-left: 20px;
-    font-size: 12px;
-}
-.sub-menu a {
-    text-decoration: none;
-    color: #ffffff;
-    font-size: 16px;
-    padding: 10px 15px;
-    border-radius: 5px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.sub-menu a:hover {
-    background-color: #27ae60;
-}
-
 nav ul {
     list-style: none;
     padding: 0;
@@ -256,70 +155,4 @@ nav a.active {
 
 .record, .start-date {
     text-align: center;
-}
-
-footer {
-    margin-top: auto;
-}
-
-.sub-menu nav ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
-}
-
-.sub-menu nav ul li {
-    margin-right: 10px;
-}
-
-.sub-menu nav ul li a {
-    text-decoration: none;
-    color: #f9f9f9;
-    font-size: 16px;
-    font-weight: bold;
-    padding: 5px 10px;
-}
-
-.sub-menu nav ul li a:hover {
-    color: black;
-}
-
-.main-container {
-    width:100%;
-    padding: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    max-width:1200px;
-    margin: 0 auto;
-}
-
-.main-content {
-    width:100%;
-    padding: 20px;
-    transition: all 0.5s ease;
-}
-
-.flashes {
-    list-style-type: none;
-    padding: 0;
-}
-
-.flashes li {
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-}
-
-.flashes li.success {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.flashes li.error {
-    background-color: #f8d7da;
-    color: #721c24;
 }

@@ -2,52 +2,21 @@
 <html lang="sv">
 <head>
 
-    <meta name="viewport" content="width=device-width" initial-scale="1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/menu.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
+
     <title> {{ sida }} </title>
     {% block head %}{% endblock head %}
 </head>
 <body>
-    <header class="top-bar-menu">
-        {% block header %}{% endblock %}
-            <div class="menu-container">
-                <h1>{{ header }}</h1>
-                <button class="menu-toggle" onclick="toggleMenu()">&#9776; Meny</button>
-                <nav>
-                <ul>
-                    {% if current_user.is_authenticated %}
-                        <li><a href="/pmg/myday">Start</a></li>
-                        <li><a href="/cal/month">Kalender</a></li>
-                        <li><a href="/txt/journal">Text</a></li>
-                        <li><a href="/auth/settings">Inställningar</a></li>
-                        <li><a href="/friends/friends">Friends</a></li>
-                        <li><a href="/auth/logout">Logga ut</a></li>
-                    {% else %}
-                        <li><a href="/">Hem</a></li>
-                        <li><a href="/base/kontakt">Kontakt</a></li>
-                        <li><a href="/base/blogg">Blogg</a></li>
-                        <li><a href="/base/om-oss">Information</a></li>
-                        <li><a href="/base/tjanster">Tjänster</a></li>
-                        <li><a href="/auth/login">PMG</a></li>
-                    {% endif %}
-                </ul>
-            </nav>
+    <header class="top-header">
+            <h1>{{ header }}</h1>
+        <div class="header-right">
+            <button class="search-button"><img src="{{ url_for('static', filename='images/Search.png') }}" alt="Search"></button>
         </div>
     </header>
-
-    <div class="sub-menu">
-        <nav>
-            <ul>
-                {% if sub_menu %}
-                    {% for item in sub_menu %}
-                        <li><a href="{{ item.choice }}">{{ item.text }}</a></li>
-                    {% endfor %}
-                {% endif %}
-            </ul>
-        </nav>
-    </div>
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <ul class="flashes">
@@ -76,11 +45,24 @@
                     {% endfor %}
                 </nav>
             </div>
-
         {% endif %}
-
+    {% block body %}{% endblock %}
     </div>
-        {% block body %}{% endblock %}
+        <footer>
+            <div class="footer-icons">
+                <a href="/pmg/myday"><img src="{{ url_for('static', filename='images/Home.png') }}" alt="Home"></a>
+                <a href="/pmg/goals"><img src="{{ url_for('static', filename='images/Goals.png') }}" alt="Goal"></a>
+                <a href="/pmg/streak"><img src="{{ url_for('static', filename='images/Streak.png') }}" alt="Fire"></a>
+                {% if score %}
+                    <span>{{ score }}</span>
+                {% else %}
+                    <span>{{ 0 }}</span>
+                {% endif %}
+                <a href="/txt/journal"><img src="{{ url_for('static', filename='images/Texts.png') }}" alt="Text"></a>
+                <a href="/cal/month"><img src="{{ url_for('static', filename='images/Calendar.png') }}" alt="Calendar"></a>
+                <a href="/auth/settings"><img src="{{ url_for('static', filename='images/User.png') }}" alt="Profile"></a>
+            </div>
+        </footer>
     <script>
             document.addEventListener('DOMContentLoaded', function () {
     const sideMenu = document.querySelector('.side-menu');
@@ -100,10 +82,16 @@
     function hideTooltip() {
         document.getElementById('info-tooltip').style.display = 'none';
     }
-        function toggleMenu() {
-            var nav = document.querySelector('.menu-container nav');
-            nav.classList.toggle('active');
-        }
+
+function toggleMenu() {
+    var nav = document.querySelector('.menu-container nav');
+    if (nav.style.maxHeight) {
+        nav.style.maxHeight = null;
+    } else {
+        nav.style.maxHeight = nav.scrollHeight + "px";
+    }
+}
+
     </script>
 </body>
 </html>
