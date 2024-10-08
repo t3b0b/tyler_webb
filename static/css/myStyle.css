@@ -1,8 +1,4 @@
-/* =============================
-   Grid Lists Region
-   ============================= */
-/* Grundlayout för container */
-.container {
+.grid-container {
     display: grid;
     width: 90%;
     grid-template-columns: 2fr 1fr 2fr;  /* Tre kolumner */
@@ -44,23 +40,7 @@
 }
 
 /* Stil för knappen längst ner */
-.button-container {
-    text-align: center;
-    margin-top: 20px;
-}
 
-.new-activity-button {
-    background-color: #007BFF;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.new-activity-button:hover {
-    background-color: #0056b3;
-}
 
 
 /* =============================
@@ -92,13 +72,7 @@
 }
 
 /* Stil för "New" knappen */
-.new-button {
-    background-color: #ccc;
-    border: 1px solid #888;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-}
+
 
 /* Innehållssektionen med scrollbar */
 .list-content {
@@ -111,7 +85,7 @@
 }
 
 /* Stil för varje list-item, nu är det en knapp */
-.list-btn {
+.list-item {
     width: 100%;
     height:60px;
     background-color: #fff;
@@ -125,20 +99,20 @@
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.list-btn:hover {
+.list-item:hover {
     background-color: #f0f0f0;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Ta bort standard knapp-stilar */
-.list-btn {
+.list-item {
     appearance: none;
     border: none;
     font-size: 16px;
     font-family: inherit;
 }
 
-.list-btn:focus {
+.list-item:focus {
     outline: none;
     box-shadow: 0 0 5px 2px rgba(0, 0, 255, 0.3);
 }
@@ -183,19 +157,6 @@ th {
     background-color: #f2f2f2;
 }
 
-.button-style {
-    display: block;
-    width: 100px;
-    margin: 20px auto;
-    padding: 10px;
-    background-color: cornflowerblue;
-    color: white;
-    text-align: center;
-    text-decoration: none;
-    border-radius: 5px;
-}
-
-
 .list-content::-webkit-scrollbar-thumb:hover {
     background-color: #555;
 }
@@ -231,7 +192,7 @@ button#addEventButton {
 }
 
 
-.container {
+.two-grid-container {
     display: grid;
     grid-template-columns: 1fr 3fr;
     gap: 50px;
@@ -281,12 +242,6 @@ button#addEventButton {
     font-size: 22px;
 }
 
-.list-content {
-    display: none;
-    flex-direction: column;
-    gap: 10px;
-}
-
 .expanded .list-content {
     display: flex;
 }
@@ -296,11 +251,118 @@ button#addEventButton {
     overflow-y: scroll;
 }
 
+
 button {
+
     margin-top: 10px;
     padding: 5px 10px;
     background-color: #007bff;
     color: white;
     border: none;
     cursor: pointer;
+}
+
+.blue-btn {
+
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.button-style {
+    display: block;
+    width: 100px;
+    margin: 20px auto;
+    padding: 10px;
+    background-color: cornflowerblue;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.new-button {
+    background-color: #ccc;
+    border: 1px solid #888;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+h1 {
+    font-size: 48px;
+    margin-bottom: 60px;
+    text-align: center;
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f7f7f7;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+input[type="text"], input[type="email"], input[type="password"] {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #eaeaea;
+    margin-bottom: 20px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #007BFF;
+}
+
+/* För att hantera två halvbredd-fält bredvid varandra */
+.name-fields {
+    display: flex;
+    justify-content: space-between;
+    gap: 3%;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.input-half {
+    width: 48%;
+}
+
+.input-full {
+    width: 100%;
+}
+
+.blue-btn:hover {
+    background-color: #0056b3;
+}
+
+.link {
+    margin-top: 20px;
+}
+
+.link a {
+    color: #007BFF;
+    text-decoration: none;
+}
+
+.link a:hover {
+    text-decoration: underline;
 }

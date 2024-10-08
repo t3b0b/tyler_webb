@@ -9,22 +9,20 @@ from blueprints.base import base_bp,read_info
 from models import db, User, BloggPost, Streak, Goals, MyWords
 from blueprints.auth import auth_bp
 from blueprints.pmg import pmg_bp
+from blueprints.cal import cal_bp
+from blueprints.txt import txt_bp
 from flask_mail import Mail, Message
 import sshtunnel
 import os
-from dotenv import load_dotenv
 import mysql.connector
 
 # endregion
 
 #region Appconfig
-load_dotenv()  # Ladda miljövariabler från .env-filen
-
 app = Flask(__name__)
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@tylerobri.mysql.pythonanywhere-services.com/tylerobri$PMG'
-
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tylerobri.db'
 
 app.config['SECRET_KEY'] = "K6SM4x14"
 app.config['MAIL_SERVER'] = "smtp.gmail.com"
@@ -41,9 +39,16 @@ app.logger.addHandler(handler)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'auth.login'
+
+#region blueprints
 app.register_blueprint(pmg_bp, url_prefix='/pmg')
 app.register_blueprint(base_bp, url_prefix='/base')
 app.register_blueprint(friends_bp, url_prefix='/friends')
+app.register_blueprint(cal_bp, url_prefix='/cal')
+app.register_blueprint(txt_bp, url_prefix='/txt')
+
+# endregion
+
 mail = Mail(app)
 
 # Initiera SQLAlchemy med app

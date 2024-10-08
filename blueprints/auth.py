@@ -1,5 +1,11 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, session
-from flask_login import login_user, logout_user, login_manager, current_user, login_required
+from flask import (Blueprint, render_template, redirect, url_for,
+                   request, flash, session)
+from flask_login import (login_user, logout_user, login_manager,
+                         current_user, login_required)
+
+from pmg_func import (common_route,getInfo,query,add2db,
+                      readWords)
+
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Streak, Goals, Activity, Settings, MyWords
 from flask_mail import Mail, Message
@@ -9,18 +15,6 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 auth_bp = Blueprint('auth', __name__, template_folder='auth/templates')
 
 s = URLSafeTimedSerializer("K6SM4x14")
-def readWords(filename):
-    encodings = ['utf-8', 'latin-1', 'iso-8859-1', 'utf-8-sig']
-    for encoding in encodings:
-        try:
-            with open(filename, 'r', encoding=encoding) as file:
-                data = file.read()
-                ordet = data.split('\n')[0]
-                ord_lista = data.split('\n')[1:]
-                return ordet, ord_lista
-        except UnicodeDecodeError:
-            continue
-    raise UnicodeDecodeError(f"Could not decode the file {filename} with any of the tried encodings.")
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -87,6 +81,7 @@ def confirm_reset():
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     from main import mail
+
     if request.method == 'POST':
         first = request.form.get('first-name')
         last = request.form.get('last-name')
@@ -95,12 +90,13 @@ def register():
         password = request.form.get('password')
 
         existing_user = User.query.filter_by(email=email).first()
+
         if existing_user:
             flash('Email address already registered. Please use a different email address.', 'error')
             return redirect(url_for('auth.login'))
 
         if not existing_user:
-            hashed_password = generate_password_hash(password)
+            hashed_password = generate_password_hash(password, method='pbkdf2:sha256', salt_length=16)
             new_user = User(firstName=first, lastName=last, username=username, password=hashed_password, email=email,verified=False)
             db.session.add(new_user)
             db.session.commit()
@@ -161,3 +157,97 @@ def confirm_email(token):
         return '<h1>The token is expired!</h1>', 400
     except BadSignature:
         return '<h1>Ogiltig token!</h1>', 400
+
+# region Settings
+@auth_bp.route('/settings/<section_name>', methods=['GET', 'POST'])
+@auth_bp.route('/settings', methods=['GET', 'POST'])
+def settings(section_name=None):
+    if not section_name:
+        section_name = request.args.get('section_name', 'general')
+    sida, sub_menu = common_route('Settings', [
+        url_for('pmg.settings', section_name='timer'),
+        url_for('pmg.settings', section_name='skrivande'),
+        url_for('pmg.settings', section_name='konto')
+    ], ['Timer', 'Journal', 'Konto'])
+
+    if section_name == 'timer':
+        sida = 'Timer-inställningar'
+        page_info = getInfo('pageInfo.csv', 'Time-Settings')
+
+    elif section_name == 'skrivande':
+        sida = 'Blogg-inställningar'
+        page_info = getInfo('pageInfo.csv', 'Text-Settings')
+        Sett = Settings.query.filter_by(user_id=current_user.id).first()
+
+        if not Sett.wImp:
+            ordet, ord_lista = readWords('orden.txt')
+            for ord in ord_lista:
+                # Kontrollera om ordet redan finns i MyWords för den specifika användaren
+                existing_word = MyWords.query.filter_by(ord=ord, user_id=current_user.id).first()
+                if not existing_word:
+                    nyttOrd = MyWords(ord=ord, user_id=current_user.id)
+                    db.session.add(nyttOrd)
+                    db.session.commit()
+                stInt = Settings.query.filter_by(user_id=current_user.id).first()
+                stInt.wImp = True
+                db.session.commit()
+    elif section_name == 'konto':
+        sida = 'Konto-inställningar'
+        page_info = getInfo('pageInfo.csv', 'Account-Settings')
+    else:
+        sida = 'Allmänna Inställningar'
+        page_info = getInfo('pageInfo.csv', 'Settings')
+
+    mina_Ord = query(MyWords, 'user_id', current_user.id)
+
+    if request.method == 'POST':
+        action = request.form['action']
+        if action == 'password':
+            user = User.query.filter_by(id=current_user.id).first()
+
+            current_password = request.form.get('current_password')
+            new_password = request.form.get('new_password')
+            confirm_new_password = request.form.get('confirm_new_password')
+
+            if not check_password_hash(user.password, current_password):
+                flash('Felaktigt nuvarande lösenord.', 'danger')
+                return render_template('auth/settings.html', sida="Konto-inställningar",
+                                       header="Konto-inställningar", my_words=mina_Ord,
+                                       sub_menu=sub_menu, page_info=page_info, user=current_user)
+
+            if new_password != confirm_new_password:
+                flash('De nya lösenorden matchar inte.', 'danger')
+                return render_template('auth/settings.html', sida="Konto-inställningar",
+                                       header="Konto-inställningar", my_words=mina_Ord,
+                                       sub_menu=sub_menu, page_info=page_info, user=current_user)
+
+            current_user.password = generate_password_hash(new_password)
+            db.session.commit()
+            flash('Ditt lösenord har ändrats.', 'success')
+            return redirect(url_for('pmg.settings'))
+
+        elif action == "word":
+            add2db(MyWords, request, ['nytt-ord'], ['ord'], current_user)
+            flash('Nytt ord har lagts till.', 'success')
+            return redirect(url_for('pmg.settings', section_name=section_name))
+
+        elif action == "timer":
+            existing_setting = Settings.query.filter_by(user_id=current_user.id).first()
+            intervall = request.form.get('time-intervall')
+            if existing_setting:
+                existing_setting.stInterval = int(intervall)
+                flash('Timer-inställningar har uppdaterats.', 'success')
+
+        elif action == 'delete_word':
+            word_id = request.form.get('delete_word')
+            word_to_delete = MyWords.query.filter_by(id=word_id).first()
+            if word_to_delete and word_to_delete.user_id == current_user.id:
+                db.session.delete(word_to_delete)
+                db.session.commit()
+            return render_template('auth/settings.html', sida=sida, header=sida, my_words=mina_Ord,
+                                   sub_menu=sub_menu, page_info=page_info, user=current_user)
+
+    return render_template('auth/settings.html', sida=sida, header=sida, my_words=mina_Ord,
+                           sub_menu=sub_menu, page_info=page_info, user=current_user)
+
+# endregion

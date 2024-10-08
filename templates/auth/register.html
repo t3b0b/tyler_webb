@@ -1,20 +1,31 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
 {% endblock head %}
 
 {% block body %}
-<form method="POST", id="new-user-reg">
-    <div class="form-box">
-        <h3>Register User</h3>
-        <input type="text" name="first-name" placeholder="Name">
-        <input type="text" name="last-name" placeholder="Lastname">
-        <input type="text" name="username" placeholder="Username">
-        <input type="text" name="email" placeholder="Email">
-        <input type="password" name="password" placeholder="Password">
-        <input type="password" name="confirm-password" placeholder="Confirm Password">
-        <button id="reg-btn" type="submit">Register</button>
-    </div>
-</form>
+<div class="form-container">
+    <h1>Create Account</h1>
+    <form method="POST" id="new-user-reg">
+        <div class="input-group">
+            <div class="name-fields">
+                <input type="text" name="first-name" placeholder="Name" class="input-half">
+                <input type="text" name="last-name" placeholder="Lastname" class="input-half">
+            </div>
+        </div>
+        <div class="input-group">
+            <input type="text" name="username" placeholder="Username" class="input-full">
+            <input type="email" name="email" placeholder="Email" class="input-full">
+        </div>
+        <div class="input-group">
+        <input type="password" name="password" placeholder="Password" class="input-full">
+        <input type="password" name="confirm-password" placeholder="Repeat Password" class="input-full">
+        </div>
+        <div class="btn-container">
+            <button id="reg-btn" type="submit" class="blue-btn">Register</button>
+        </div>
+    </form>
+
+</div>
 {% endblock body %}

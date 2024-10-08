@@ -147,7 +147,7 @@
     border: 1px solid #ccc;
     width: 100%;
 }
-.container {
+.grid-container {
     display: grid;
     grid-template-columns: 1fr 2fr;
     gap: 0;

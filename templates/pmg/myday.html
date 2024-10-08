@@ -11,7 +11,7 @@
     <h2 class="sub-header-text"> {{ current_date }} </h2>
 </div>
 
-<div id="day-section" class="container">
+<div id="day-section" class="grid-container">
     {% for goal in my_goals %}
         <div class="todo-list" id="todo-list-{{ goal.id }}">
             <h4>To-Do {{ goal.name }}</h4>

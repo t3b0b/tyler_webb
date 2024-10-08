@@ -88,7 +88,7 @@
     {% if goals %}
         <div class="list-content">
         {% for goal in goals %}
-        <button class="list-btn" onclick="window.location.href = '/pmg/goal/{{ goal.id }}/activities';">
+        <button class="list-item" onclick="window.location.href = '/pmg/goal/{{ goal.id }}/activities';">
             {{ goal.name }}
         </button>
         {% endfor %}
@@ -100,9 +100,10 @@
     <form method="POST">
         <input type="text" placeholder="Goal Name" name="goalName">
         <select id="friend_id" name="friend_id" required>
-        {% for friend in friends %}
-        <option value="{{ friend.id }}">{{ friend.username }}</option>
-        {% endfor %}
+            <option value="none">None</option>
+            {% for friend in friends %}
+            <option value="{{ friend.id }}">{{ friend.username }}</option>
+            {% endfor %}
         </select>
         <button class="button-style" type="button" style="background-color: firebrick;" onclick="cancelNewGoalForm()">Cancel</button>
         <button class="button-style" type="submit" name="action" value="addGoal" style="background-color: cornflowerblue;">Save</button>

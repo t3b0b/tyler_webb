@@ -4,8 +4,8 @@ from datetime import datetime
 from sqlalchemy.dialects.postgresql import JSON
 
 db = SQLAlchemy()
+#region User
 
-#region DataModels
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -23,6 +23,27 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f'{self.username}, {self.email}, {self.password}'
 
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
+    recipient = db.relationship('User', foreign_keys=[recipient_id], backref='received_messages')
+
+class Settings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    wImp = db.Column(db.Boolean, nullable=False, default=False)
+    stInterval = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    def __repr__(self):
+        return f'{self.stInterval}, {self.wImp} ,{self.user_id}'
+
+# endregion
+
+#region Development
 class Goals(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -78,75 +99,6 @@ class Milestones(db.Model):
     date_achieved = db.Column(db.DateTime, nullable=True)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
 
-
-class Friendship(db.Model):
-    __tablename__ = 'friendship'
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    friend_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    status = db.Column(db.String(50), nullable=False)  # pending, accepted
-
-class FriendGoal(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
-    is_owner = db.Column(db.Boolean, default=False)
-    user = db.relationship('User', backref=db.backref('user_goals', cascade='all, delete-orphan'))
-    goal = db.relationship('Goals', backref=db.backref('user_goals', cascade='all, delete-orphan'))
-
-
-import enum
-
-# Skapa en enumeration för vytyperna
-class ViewType(enum.Enum):
-    myWeek = "myWeek"
-    myMonth = "myMonth"
-    myDay = "myDay"
-
-class CalendarBullet(db.Model):
-    __tablename__ = 'calendar_bullets'
-
-    id = db.Column(db.Integer, primary_key=True)
-    week_num = db.Column(db.Integer, nullable=True)
-    month = db.Column(db.Integer, nullable=True)
-    date = db.Column(db.Date, nullable=True)
-    to_do = db.Column(db.String(1000), nullable=True)
-    to_think = db.Column(db.String(1000), nullable=True)
-    remember = db.Column(db.String(1000), nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    view_type = db.Column(db.Enum('myDay', 'myWeek', 'myMonth'), nullable=False)
-
-    def __repr__(self):
-        return f"<CalendarBullet {self.date} ({self.view_type})>"
-
-
-class Bullet(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-
-    author = db.Column(db.String(50), nullable=False)
-    theme = db.Column(db.String(50), nullable=False)
-    content = db.Column(db.Text, unique=False, nullable=False)
-    date = db.Column(db.Date, unique=False, nullable=False, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-class WhyGoals(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    author=db.Column(db.String(50), nullable=False)
-    goal = db.Column(db.String(50))
-    title = db.Column(db.String(50), nullable=False)
-    text = db.Column(db.Text, unique=False, nullable=False)
-    date = db.Column(db.DateTime, unique=False, nullable=False, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-class BloggPost(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    author = db.Column(db.String(50), nullable=False)
-    title = db.Column(db.String(100), nullable=False)
-    content = db.Column(db.Text, unique=False, nullable=False)
-    date = db.Column(db.Date, unique=False, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    def __repr__(self):
-        return f"{self.author}, {self.title}, {self.content},{self.date}, {self.user_id}"
-
 class Streak(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -179,35 +131,50 @@ class Score(db.Model):
     def __repr__(self):
         return f'{self.Goal}, {self.Activity}, {self.Date}, {self.Time}, {self.user_id}'
 
-class MyWords(db.Model):
+# endregion
+
+# region Friends
+
+class Friendship(db.Model):
+    __tablename__ = 'friendship'
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    friend_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    status = db.Column(db.String(50), nullable=False)  # pending, accepted
+
+class FriendGoal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    word = db.Column(db.String(120), nullable=False)
-    what = db.Column(db.Boolean, nullable=False,default=False)
-    why = db.Column(db.Boolean, nullable=False, default=False)
-    when = db.Column(db.Boolean, nullable=False, default=False)
-    how = db.Column(db.Boolean, nullable=False, default=False)
-    used = db.Column(db.Boolean, nullable=False, default=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
+    is_owner = db.Column(db.Boolean, default=False)
+    user = db.relationship('User', backref=db.backref('user_goals', cascade='all, delete-orphan'))
+    goal = db.relationship('Goals', backref=db.backref('user_goals', cascade='all, delete-orphan'))
+
+# endregion
+
+# region Calendar
+
+import enum
+
+class ViewType(enum.Enum):
+    myWeek = "myWeek"
+    myMonth = "myMonth"
+    myDay = "myDay"
+
+class CalendarBullet(db.Model):
+    __tablename__ = 'calendar_bullets'
+
+    id = db.Column(db.Integer, primary_key=True)
+    week_num = db.Column(db.Integer, nullable=True)
+    month = db.Column(db.Integer, nullable=True)
+    date = db.Column(db.Date, nullable=True)
+    to_do = db.Column(db.String(1000), nullable=True)
+    to_think = db.Column(db.String(1000), nullable=True)
+    remember = db.Column(db.String(1000), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    view_type = db.Column(db.Enum('myDay', 'myWeek', 'myMonth'), nullable=False)
+
     def __repr__(self):
-        return f'{self.word}, {self.used},{self.user_id}'
-
-class Message(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-    sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
-    recipient = db.relationship('User', foreign_keys=[recipient_id], backref='received_messages')
-
-class Settings(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    wImp = db.Column(db.Boolean, nullable=False, default=False)
-    stInterval = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    def __repr__(self):
-        return f'{self.stInterval}, {self.wImp} ,{self.user_id}'
+        return f"<CalendarBullet {self.date} ({self.view_type})>"
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -265,6 +232,51 @@ class Idag(db.Model):
 
     def __repr__(self):
         return f'{self.date}, {self.viktigt}, {self.tankar}, {self.remember}'
+
+# endregion
+
+#region Text
+class Bullet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    author = db.Column(db.String(50), nullable=False)
+    theme = db.Column(db.String(50), nullable=False)
+    content = db.Column(db.Text, unique=False, nullable=False)
+    date = db.Column(db.Date, unique=False, nullable=False, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+class WhyGoals(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    author=db.Column(db.String(50), nullable=False)
+    goal = db.Column(db.String(50))
+    title = db.Column(db.String(50), nullable=False)
+    text = db.Column(db.Text, unique=False, nullable=False)
+    date = db.Column(db.DateTime, unique=False, nullable=False, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+class BloggPost(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    author = db.Column(db.String(50), nullable=False)
+    title = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, unique=False, nullable=False)
+    date = db.Column(db.Date, unique=False, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    def __repr__(self):
+        return f"{self.author}, {self.title}, {self.content},{self.date}, {self.user_id}"
+
+class MyWords(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    word = db.Column(db.String(120), nullable=False)
+    what = db.Column(db.Boolean, nullable=False,default=False)
+    why = db.Column(db.Boolean, nullable=False, default=False)
+    when = db.Column(db.Boolean, nullable=False, default=False)
+    how = db.Column(db.Boolean, nullable=False, default=False)
+    used = db.Column(db.Boolean, nullable=False, default=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    def __repr__(self):
+        return f'{self.word}, {self.used},{self.user_id}'
+
+# endregion
 
 class Mail(db.Model):
     _id = db.Column(db.Integer, primary_key=True)

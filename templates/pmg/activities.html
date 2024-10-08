@@ -17,7 +17,7 @@
 
     <div class="list-content">
         {% for activity in activities %}
-            <button class="list-btn" onclick="window.location.href = '/pmg/activity/{{ activity.id }}/tasks';">{{ activity.name }}</button>
+            <button class="list-item" onclick="window.location.href = '/pmg/activity/{{ activity.id }}/tasks';">{{ activity.name }}</button>
              <button class="delete-button" onclick="deleteActivity({{ activity.id }})">Delete</button>
         {% endfor %}
     </div>
