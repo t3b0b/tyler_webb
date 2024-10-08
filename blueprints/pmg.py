@@ -19,12 +19,6 @@ pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
 
 #region Streak
-@pmg_bp.route('/streak/<int:streak_id>/details', methods=['GET'])
-def streak_details(streak_id):
-    streak = Streak.query.get_or_404(streak_id)
-    streakdetail = Streak.query.filter_by(user_id=current_user.id, id = streak_id).first()
-    return render_template('pmg/details.html', streak=streak, detail=streakdetail)
-
 @pmg_bp.route('/streak',methods=['GET', 'POST'])
 def streak():
     current_date = date.today()
@@ -47,6 +41,11 @@ def streak():
                            todayDate=current_date,streaks=myStreaks,sub_menu=sub_menu,
                            goals=myGoals)
 
+@pmg_bp.route('/streak/<int:streak_id>/details', methods=['GET'])
+def streak_details(streak_id):
+    streak = Streak.query.get_or_404(streak_id)
+    streakdetail = Streak.query.filter_by(user_id=current_user.id, id = streak_id).first()
+    return render_template('pmg/details.html', streak=streak, detail=streakdetail)
 @pmg_bp.route('/update_streak/<int:streak_id>/<action>', methods=['POST'])
 def update_streak(streak_id, action):
     streak = Streak.query.get_or_404(streak_id)
@@ -94,11 +93,28 @@ def delete_streak(streak_id):
 # endregion
 
 # region Goals
-@pmg_bp.route('/goal/<int:goal_id>/activities', methods=['GET'])
+@pmg_bp.route('/goal/<int:goal_id>/activities', methods=['GET', 'POST'])
 def goal_activities(goal_id):
     goal = Goals.query.get_or_404(goal_id)
+    if request.method == 'POST':
+        # Hantera POST-begäran för att lägga till en aktivitet
+        userId=current_user.id
+        goalId = goal_id
+        activity_name = request.form.get('activity-name')
+        measurement = request.form.get('activity-measurement')
+        if activity_name and measurement:
+            new_activity = Activity(name=activity_name, goal_id=goalId, user_id=userId)
+            db.session.add(new_activity)
+            db.session.commit()
+            flash('Activity added successfully', 'success')
+            return redirect(url_for('pmg.goal_activities', goal_id=goal_id))
+        else:
+            flash('Activity name and measurement are required', 'danger')
+
+    # Hantera GET-begäran för att visa aktiviteterna
     activities = Activity.query.filter_by(goal_id=goal_id).all()
     return render_template('pmg/activities.html', goal=goal, activities=activities)
+
 
 # region Todos
 @pmg_bp.route('/activity/<int:activity_id>/tasks', methods=['GET'])
@@ -124,7 +140,6 @@ def add_task(activity_id):
 
     return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
 
-# endregion
 @pmg_bp.route('/goal/<int:goal_id>/todo', methods=['GET'])
 @login_required
 def get_todo_list(goal_id):
@@ -135,36 +150,7 @@ def get_todo_list(goal_id):
     tasks = ToDoList.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
     return render_template('pmg/todo_list.html', tasks=tasks)
 
-@pmg_bp.route('/get_activities/<goal_id>')
-def get_activities(goal_id):
-    activities = Activity.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
-    activity_list = [{'id': activity.id, 'name': activity.name} for activity in activities]
-    return jsonify(activity_list)
-
-@pmg_bp.route('/delete-activity/<int:activity_id>', methods=['POST'])
-def delete_activity(activity_id):
-    activity = Activity.query.get(activity_id)
-    if activity:
-        db.session.delete(activity)
-        db.session.commit()
-        return jsonify(success=True), 200
-    return jsonify(success=False), 404
-
-@pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
-def delete_goal(goal_id):
-    goal = Goals.query.get(goal_id)
-    if goal:
-        try:
-            db.session.delete(goal)
-            db.session.commit()
-            return jsonify(success=True)
-        except Exception as e:
-            db.session.rollback()
-            print(f"Error deleting goal: {e}")  # Lägg till detta för mer detaljerad felsökning
-            return jsonify(success=False, error=str(e))
-    else:
-        return jsonify(success=False, error="Goal not found")
-
+# endregion
 
 @pmg_bp.route('/goals', methods=['GET', 'POST'])
 @login_required
@@ -198,6 +184,36 @@ def goals():
     my_Goals = Goals.query.filter_by(user_id=current_user.id).all()
 
     return render_template('pmg/goals.html', sida=sida, header=sida, goals=my_Goals, sub_menu=sub_menu)
+
+@pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
+def delete_goal(goal_id):
+    goal = Goals.query.get(goal_id)
+    if goal:
+        try:
+            db.session.delete(goal)
+            db.session.commit()
+            return jsonify(success=True)
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error deleting goal: {e}")  # Lägg till detta för mer detaljerad felsökning
+            return jsonify(success=False, error=str(e))
+    else:
+        return jsonify(success=False, error="Goal not found")
+
+@pmg_bp.route('/get_activities/<goal_id>')
+def get_activities(goal_id):
+    activities = Activity.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
+    activity_list = [{'id': activity.id, 'name': activity.name} for activity in activities]
+    return jsonify(activity_list)
+
+@pmg_bp.route('/delete-activity/<int:activity_id>', methods=['POST'])
+def delete_activity(activity_id):
+    activity = Activity.query.get(activity_id)
+    if activity:
+        db.session.delete(activity)
+        db.session.commit()
+        return jsonify(success=True), 200
+    return jsonify(success=False), 404
 
 #region Milestones
 @pmg_bp.route('milestones/<int:goal_id>')
@@ -302,7 +318,6 @@ def myday():
                            my_goals=my_goals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
                            sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo, current_goal=current_goal)
 
-
 @pmg_bp.route('/myday/<date>')
 def myday_date(date):
     selected_date = datetime.strptime(date, '%Y-%m-%d').date()
@@ -326,7 +341,6 @@ def myday_date(date):
                                my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
     else:
         return redirect(url_for('pmg.myday'))
-
 # endregion
 
 @pmg_bp.route('/activity/<int:goal_id>', methods=['GET', 'POST'])

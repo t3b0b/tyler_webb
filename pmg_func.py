@@ -10,7 +10,7 @@ from flask_login import current_user
 # region Functions
 def section_content(db,section):
     list = db.query.filter_by(name=section).first()
-    return list.id
+    return list
 
 def get_activities_for_user(user_id, start_date, end_date):
     tz = timezone('Europe/Stockholm')  # Byt till din aktuella tidszon om den skiljer sig

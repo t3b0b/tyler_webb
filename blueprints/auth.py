@@ -165,9 +165,9 @@ def settings(section_name=None):
     if not section_name:
         section_name = request.args.get('section_name', 'general')
     sida, sub_menu = common_route('Settings', [
-        url_for('pmg.settings', section_name='timer'),
-        url_for('pmg.settings', section_name='skrivande'),
-        url_for('pmg.settings', section_name='konto')
+        url_for('auth.settings', section_name='timer'),
+        url_for('auth.settings', section_name='skrivande'),
+        url_for('auth.settings', section_name='konto')
     ], ['Timer', 'Journal', 'Konto'])
 
     if section_name == 'timer':
@@ -183,9 +183,9 @@ def settings(section_name=None):
             ordet, ord_lista = readWords('orden.txt')
             for ord in ord_lista:
                 # Kontrollera om ordet redan finns i MyWords för den specifika användaren
-                existing_word = MyWords.query.filter_by(ord=ord, user_id=current_user.id).first()
+                existing_word = MyWords.query.filter_by(word=ord, user_id=current_user.id).first()
                 if not existing_word:
-                    nyttOrd = MyWords(ord=ord, user_id=current_user.id)
+                    nyttOrd = MyWords(word=ord, user_id=current_user.id)
                     db.session.add(nyttOrd)
                     db.session.commit()
                 stInt = Settings.query.filter_by(user_id=current_user.id).first()

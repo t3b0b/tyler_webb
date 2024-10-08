@@ -91,9 +91,12 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                  'Distraherar mig', 'Motiverar mig',
                  'Jag borde...', 'Värt att fundera på', 'Jag ska försöka..']
 
-    time = Settings.query.filter_by(user_id=current_user.id).first().stInterval
-    if not time:
-        time = 15
+    timeInt = Settings.query.filter_by(user_id=current_user.id).first()
+    if timeInt and timeInt.stInterval:
+        time = timeInt.stInterval
+    else:
+        time = 15  # Standardvärde om stInterval saknas eller om ingen inställning hittas
+
     titles = []  # Initialisera titles här för att säkerställa att den alltid har ett värde
 
     if act_id is not None:
