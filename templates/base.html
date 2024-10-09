@@ -46,22 +46,26 @@
                 </nav>
             </div>
         {% endif %}
-    {% block body %}{% endblock %}
-    </div>
+        {% block body %}{% endblock %}
+        </div>
         <footer>
-            <div class="footer-icons">
-                <a href="/pmg/myday"><img src="{{ url_for('static', filename='images/Home.png') }}" alt="Home"></a>
-                <a href="/pmg/goals"><img src="{{ url_for('static', filename='images/Goals.png') }}" alt="Goal"></a>
-                <a href="/pmg/streak"><img src="{{ url_for('static', filename='images/Streak.png') }}" alt="Fire"></a>
+            <div class="footer-icons"
+                <div class="left-icons">
+                    <a href="/pmg/myday"><img src="{{ url_for('static', filename='images/Home.png') }}" alt="Home"></a>
+                    <a href="/pmg/goals"><img src="{{ url_for('static', filename='images/Goals.png') }}" alt="Goal"></a>
+                    <a href="/pmg/streak"><img src="{{ url_for('static', filename='images/Streak.png') }}" alt="Fire"></a>
+                </div>
                 {% if score %}
                     <span>{{ score }}</span>
                 {% else %}
                     <span>{{ 0 }}</span>
                 {% endif %}
-                <a href="/txt/journal"><img src="{{ url_for('static', filename='images/Texts.png') }}" alt="Text"></a>
-                <a href="/cal/month"><img src="{{ url_for('static', filename='images/Calendar.png') }}" alt="Calendar"></a>
-                <a href="/auth/settings"><img src="{{ url_for('static', filename='images/User.png') }}" alt="Profile"></a>
-            </div>
+                <div class="right-icons">
+                    <a href="/txt/journal"><img src="{{ url_for('static', filename='images/Texts.png') }}" alt="Text"></a>
+                    <a href="/cal/month"><img src="{{ url_for('static', filename='images/Calendar.png') }}" alt="Calendar"></a>
+                    <a href="/auth/profile"><img src="{{ url_for('static', filename='images/User.png') }}" alt="Profile"></a>
+                </div>
+                </div>
         </footer>
     <script>
             document.addEventListener('DOMContentLoaded', function () {

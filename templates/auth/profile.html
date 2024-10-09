@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+    .profile-container {
+    grid-template-columns: 1fr 2fr; /* Två kolumner, en för bilden och en för info */
+    justify-items: center;
+    gap: 50px;
+    margin-top: 20px;
+}
+
+/* Stil för profilbilden */
+.profile-picture img {
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    margin-bottom: 20px;
+}
+
+/* Stil för profilinformationen */
+.profile-info {
+    text-align: left;
+}
+
+.profile-info h2 {
+    font-size: 24px;
+    margin: 10px 0;
+}
+
+.profile-info p {
+    font-size: 18px;
+}
+</style>
+{% endblock head %}
+
+{% block body %}
+    <div class="container"> <!-- Återanvänd container från myStyle.css -->
+        <div class="column">
+            <div class="profile-picture">
+                <img src="{{ url_for('static', filename='uploads/profile.jpg') }}" alt="Profilbild" id="profile-img">
+            </div>
+            <form action="/upload" method="POST" enctype="multipart/form-data">
+                <label for="profile-pic">Ladda upp profilbild:</label>
+                <input type="file" name="profile-pic" accept="image/*">
+                <button class="new-activity-button" type="submit">Ladda upp</button> <!-- Återanvänd knappstil -->
+            </form>
+        </div>
+
+        <div class="column"> <!-- Återanvänd kolumn från myStyle.css -->
+            <div class="profile-info">
+                <h2>{{ user.name }}</h2>
+                <p>E-post: {{ user.email }}</p>
+                <p>Om mig: {{ user.bio }}</p>
+            </div>
+        </div>
+    </div>
+{% endblock body %}

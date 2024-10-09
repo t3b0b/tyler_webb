@@ -250,4 +250,26 @@ def settings(section_name=None):
     return render_template('auth/settings.html', sida=sida, header=sida, my_words=mina_Ord,
                            sub_menu=sub_menu, page_info=page_info, user=current_user)
 
+@auth_bp.route('/profile')
+@login_required
+def profile():
+    uID = current_user.id
+    my_user = User.query.filter_by(id=uID).first()
+    print(my_user)
+    sida, sub_menu = common_route(f'{my_user.firstName} {my_user.lastName}', ['/pmg/streak', '/pmg/goals', '/pmg/milestones'], ['Streaks','Goals','Milestones'])
+    return render_template('auth/profile.html', user=my_user, sida = sida, header=sida,)
+
+@auth_bp.route('/upload', methods=['POST'])
+def upload_file():
+    from main import app
+
+    if 'profile-pic' not in request.files:
+        return redirect(request.url)
+    file = request.files['profile-pic']
+    if file.filename == '':
+        return redirect(request.url)
+    if file:
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        return redirect(url_for('profile'))
 # endregion

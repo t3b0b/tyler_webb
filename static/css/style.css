@@ -52,12 +52,7 @@
         flex: 1; /* Gör alla element lika breda */
     }
 
-    .button-center {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        margin: 20px 0;
-    }
+
 
     .button-style {
         width: 30%;

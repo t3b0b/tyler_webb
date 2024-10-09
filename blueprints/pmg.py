@@ -121,7 +121,6 @@ def goal_activities(goal_id):
 def activity_tasks(activity_id):
     activity = Activity.query.get_or_404(activity_id)
     todos = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).all()
-    # Hämta endast överordnade uppgifter
     return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos)
 
 @pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST'])
@@ -229,7 +228,7 @@ def myday():
                                   ['My Day', 'Streaks', 'Goals'])
     date_now = date.today()
     update_dagar(current_user.id, Dagar)
-
+    myActs = Activity.query.filter_by(user_id=current_user.id).all()
     # Använd konsekvent my_goals istället för både my_goals och myGoals
     my_goals = Goals.query.filter_by(user_id=current_user.id).all()
     myStreaks = Streak.query.filter_by(user_id=current_user.id).all()
@@ -313,7 +312,7 @@ def myday():
         else:
             print("Score field is empty")
 
-    return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
+    return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now, acts=myActs,
                            my_goals=my_goals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
                            sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo, current_goal=current_goal)
 
@@ -342,14 +341,12 @@ def myday_date(date):
         return redirect(url_for('pmg.myday'))
 # endregion
 
-@pmg_bp.route('/activity/<int:goal_id>', methods=['GET', 'POST'])
+@pmg_bp.route('/activity/<int:activity_id>', methods=['GET', 'POST'])
 @login_required
 def start_activity(goal_id):
-    # Hämta målet baserat på goal_id
-    goal = Goals.query.get_or_404(goal_id)
-    tasks = Task.query.filter_by(goal_id=goal_id).all()
+    Act = Activity.query.get_or_404(activity_id)
+    todos = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).all()
 
-    # Om användaren startar en aktivitet
     if request.method == 'POST':
         task_id = request.form.get('task_id')
         task = Task.query.get(task_id)

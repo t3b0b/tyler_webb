@@ -9,10 +9,9 @@ body {
     flex-direction: column;
 }
 
-
 .main-container {
     flex-grow: 1;
-    display: flex;
+    display:flex;
     flex-direction: column;
     justify-content: center; /* Innehållet centrerat vertikalt om möjligt */
 }
@@ -30,9 +29,8 @@ body {
     display: flex;
     justify-content: space-between; /* Sprid ut innehållet mellan vänster och höger */
     align-items: center;
-    padding: 10px 20px;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-    font-size: 24px;
+    font-size: 18px;
     position: relative;
     width: 100%;
 }
@@ -51,15 +49,13 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-left: 30px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-header h1 {
-    font-size:24px;
+.top-header h1 {
+    font-size:18px;
     font-family: 'Montserrat', sans-serif;
     padding: 10px 25px 10px 25px ;
-    margin: 0 auto;
     color: black;
 }
 
@@ -145,7 +141,7 @@ header h1 {
     .ordet input {
         margin-inline: auto;
         height: 30px;
-        width: 80%;
+        width: 100%;
         font-family: 'Arial', sans-serif;
         font-size: larger;
         font-weight: bold;
@@ -178,60 +174,34 @@ header h1 {
     transition: width 0.3s ease-in-out;
 }
 
-.top-bar-menu ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    gap: 20px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.top-bar-menu ul li {
-    list-style: none;
-}
-
-.top-bar-menu ul li a {
-    text-decoration: none;
-    color: #ffffff;
-    font-size: 18px;
-    padding: 10px 15px;
-    border-radius: 5px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.top-bar-menu ul li a:hover {
-    background-color: #2980b9;
-    color: #ffffff;
-}
-
 .todo-list {
-    display: none;
+    display: flex;
     justify-content: center;
     align-items: center;
+    width: 60%;
     flex-direction: column;
     margin-top: 10px;
+    margin: 0 auto; /* Centrerar elementet */
     gap: 10px;
 }
 
 .todo-list ul {
     list-style-type: none;
-    padding-left: 0;
+    padding-left: ;
     margin: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* Centrera
 }
 
 .todo-list li {
     display: flex;
     align-items: center;
     justify-content: center; /* Centrera checkbox och text horisontellt */
-    gap: 5px; /* Sätt avståndet mellan checkbox och text */
+    gap: 10px; /* Sätt avståndet mellan checkbox och text */
     width: 100%;
     max-width: 300px; /* Gör så att listan inte blir för bred */
-    text-align: center; /* Centrera texten */
+    text-align: left; /* Centrera texten */
 }
 
 .side-menu {
@@ -271,8 +241,8 @@ header h1 {
 }
 
 .small-icon, img {
-    height: 24px;
-    width: 24px;
+    height: 16px;
+    width: 16px;
     cursor: pointer;
 }
 
@@ -296,20 +266,34 @@ footer {
 }
 
 .footer-icons img {
-    height: 40px;
-    width: 40px;
+    height: 30px;
+    width: 30px;
 }
 
 .footer-icons {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    width: 100%; /* Gör så att alla ikoner täcker hela bredden av footern */
+    width: 90%; /* Gör så att alla ikoner täcker hela bredden av footern */
+}
+
+.left-icons {
+    justify-content: space-between;
+    align-items: flex-start;
+    width:40%;
+    margin-left:10px;
+}
+
+.right-icons {
+    justify-content: space-between;
+    align-items: flex-end;
+    width:40%;
+    margin-right:10px;
 }
 
 .footer-icons img:hover {
-    height: 50px;
-    width: 50px;
+    height: 40px;
+    width: 40px;
+    color:black;
 }
 
 .footer-icons a, .footer-icons span {
@@ -326,38 +310,14 @@ footer {
     display: grid;
     width: 90%;
     grid-template-columns: 2fr 1fr 2fr;  /* Tre kolumner */
+    height:60%;
     gap: 20px;
+    margin-left:5%;
+    margin-right:5%;
     justify-items: center;
     padding: 10px;
 }
 
-/* Stil för kolumnerna */
-.column {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 80%;
-    height:100%;
-}
-
-/* Rubrikstil */
-.column-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-/* Scrollningsbar lista */
-.scrollable-list {
-    height: 50%;  /* Höjd på listan */
-    width: 80%;    /* Full bredd */
-    border: 1px solid #000;
-    overflow-y: auto;  /* Vertikal scrollning */
-    padding: 5px;
-    background-color: #fff;
-}
-
-/* Individuella listobjekt */
 .list-container {
     width: 60%; /* Anpassar sig till skärmens bredd */
     height:80%;
@@ -387,6 +347,13 @@ footer {
 
 /* Stil för "New" knappen */
 
+.button-center {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items:center;
+    margin: 20px 0;
+}
 
 /* Innehållssektionen med scrollbar */
 .list-content {
@@ -407,10 +374,12 @@ footer {
     justify-content: space-between; /* Gör så att innehållet sprids ut */
     align-items: center; /* Centrera text och knapp vertikalt */
     width:100%;
-    padding: 10px;
+    padding: 0 10px;
     border-bottom: 1px solid #ddd;
     cursor: pointer;
     height: 10%;
+    margin: 5px auto;
+    box-sizing: border-box;
     background-color: #fff;
     margin-bottom: 5px;
     border-radius: 5px;
@@ -418,7 +387,7 @@ footer {
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     appearance: none;
-    font-size: 16px;
+    font-size: 20px;
     font-family: inherit;
     color: black;
 }
@@ -426,7 +395,7 @@ footer {
 input[type="checkbox"] {
     margin-left: auto;
     margin-right: 15px; /* Lägg till marginal till höger */
-    transform: scale(1.5); /* Gör kryssrutan lite större om nödvändigt */
+    transform: scale(1); /* Gör kryssrutan lite större om nödvändigt */
 }
 
 .list-item:hover {
@@ -587,14 +556,6 @@ button#addEventButton {
     overflow-y: scroll;
 }
 
-
-button {
-    padding: 5px 10px;
-    color: black;
-    border: none;
-    cursor: pointer;
-}
-
 .blue-btn {
     width: 100%;
     padding: 15px;
@@ -608,13 +569,15 @@ button {
 
 .button-style {
     display: block;
-    width: 100px;
+    max-height:80px;
+    width: 100%;
     margin: 20px auto;
     padding: 10px;
     background-color: cornflowerblue;
     color: white;
     text-align: center;
     text-decoration: none;
+    font-size:16px;
     border-radius: 5px;
 }
 
@@ -631,14 +594,18 @@ button {
     margin-top: 20px;
 }
 
-
 .form-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    background-color: #f7f7f7;
+    width:100%;
+    min-height: fit-content;
+    background-color:white;
+}
+
+.form-container select {
+    width:100%;
 }
 
 .input-group {
@@ -648,10 +615,10 @@ button {
 input[type="text"], input[type="email"], input[type="password"] {
     width: 100%;
     padding: 15px;
-    font-size: 16px;
+    font-size: 14px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    background-color: #eaeaea;
+    background-color: white;
     margin-bottom: 20px;
 }
 
@@ -673,8 +640,8 @@ input[type="text"], input[type="email"], input[type="password"] {
     white-space: pre-wrap;
 }
 
-textarea {
-    width: 100%;
+.blogg-container textarea {
+    width: 600px;
     flex-wrap: wrap;
     font-size: 12px;
     min-height: 30lh;
@@ -798,7 +765,7 @@ input:focus {
 .calendar-container {
     display: flex;
     flex-direction: column;
-        justify-content: center;
+    justify-content: center;
     align-items: center;
     margin: 0 auto;
     width: 100%; /* Se till att den alltid täcker hela skärmens bredd */
@@ -907,54 +874,68 @@ input:focus {
 
 
 @media (max-width: 720px) {
-    .calendar-grid {
-        grid-template-columns: repeat(7, 1fr); /* Ändra från 7 kolumner till 2 på små skärmar */
-    }
+.calendar-grid {
+    grid-template-columns: repeat(7, 1fr); /* Ändra från 7 kolumner till 2 på små skärmar */
+}
 
-    .day {
-        flex: 1;
-        padding: 5px;
-        font-size: 12px; /* Minska textstorlek */
+.day {
+    flex: 1;
+    padding: 5px;
+    font-size: 12px; /* Minska textstorlek */
 
-    }
+}
 
-    .day .day-date {
-        font-size: 12px; /* Anpassa storlek på datum */
-    }
+.day .day-date {
+    font-size: 12px; /* Anpassa storlek på datum */
+}
 
-    .send-button {
-        width: 80%; /* Gör knappen bredare på små skärmar */
-    }
-    .day .streak-count {
+.send-button {
+    width: 80%; /* Gör knappen bredare på små skärmar */
+}
+.day .streak-count {
     justify-self: flex-start;
     top: 5px;
     font-size: 10px;
-    }
-    .day .total-points {
-        bottom: 5px;
-        font-size: 10px;
-    }
-    .day-header {
+}
+.day .total-points {
+    bottom: 5px;
+    font-size: 10px;
+}
+.day-header {
     font-size:10px;
     background-color: #be9949;
     border: 1px solid #524021;
     color: #ffffff;
     padding: 5px;
     text-align: center;
-    }
+}
 
-    .calendar-header {
+.calendar-header {
     grid-column: span 7;
     text-align: center;
     font-size: 16px;
     font-weight: bold;
 }
-    .scrollable-list {
-        height: 50%;  /* Höjd på listan */
-        width: 80%;    /* Full bredd */
-        border: 1px solid #000;
-        overflow-y: auto;  /* Vertikal scrollning */
-        padding: 5px;
-        background-color: #fff;
-    }
+
+.scrollable-list {
+    height: 50%;  /* Höjd på listan */
+    width: 80%;    /* Full bredd */
+    border: 1px solid #000;
+    overflow-y: auto;  /* Vertikal scrollning */
+    padding: 5px;
+    background-color: #fff;
+}
+
+.grid-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width:70%;
+}
+
+textarea {
+    width: 200px;
+    max-height:50%;
+}
 }
