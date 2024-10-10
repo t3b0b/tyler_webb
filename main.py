@@ -12,15 +12,27 @@ from blueprints.pmg import pmg_bp
 from blueprints.cal import cal_bp
 from blueprints.txt import txt_bp
 from flask_mail import Mail, Message
+import sshtunnel
+import os
+from dotenv import load_dotenv
 
 
 # endregion
 
 #region Appconfig
+load_dotenv()  # Ladda miljövariabler från .env-filen
+
 app = Flask(__name__)
 
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@tylerobri.mysql.pythonanywhere-services.com/tylerobri$PMG'
+if os.getenv('FLASK_ENV') == 'development':
+    tunnel = sshtunnel.SSHTunnelForwarder(
+        ('ssh.pythonanywhere.com'), ssh_username='tylerobri', ssh_password='Winter!sComing92',
+        remote_bind_address=('tylerobri.mysql.pythonanywhere-services.com', 3306)
+    )
+    tunnel.start()
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@127.0.0.1:{}/tylerobri$PMG'.format(tunnel.local_bind_port)
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@tylerobri.mysql.pythonanywhere-services.com/tylerobri$PMG'
 
 
 

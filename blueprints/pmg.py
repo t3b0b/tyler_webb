@@ -230,9 +230,11 @@ def myday():
     update_dagar(current_user.id, Dagar)
     myActs = Activity.query.filter_by(user_id=current_user.id).all()
     # Använd konsekvent my_goals istället för både my_goals och myGoals
-    my_goals = Goals.query.filter_by(user_id=current_user.id).all()
-    myStreaks = Streak.query.filter_by(user_id=current_user.id).all()
+    update_dagar(current_user.id, Dagar)
+    my_Goals = query(Goals, 'user_id', current_user.id)
+    myStreaks = Streak.query.filter(Streak.user_id == current_user.id).all()
     myScore, total = myDayScore(date_now, current_user.id)
+
     aggregated_scores = {}
     # Bygg den aggregerade poänglistan och koppla till to-dos
     for score in myScore:
@@ -278,27 +280,10 @@ def myday():
                 print(f'Hantera ogiltigt datum: {e}, streak ID: {streak.id}, lastReg: {streak.lastReg}')
         else:
             valid_streaks.append(streak)
-
     if myScore:
         sorted_myScore = sorted(myScore, key=lambda score: score[0])
 
-    # Ta emot tiden från GET-parametern (från timern på activities.html)
-    duration = request.args.get('duration')
-    if duration:
-        try:
-            # Omvandla tiden till sekunder (om nödvändigt)
-            minutes, seconds = map(int, duration.split(":"))
-            total_seconds = minutes * 60 + seconds
-            print(f"Total time for activity: {total_seconds} seconds")
-
-            # Här kan du spara tiden eller använda den för att uppdatera poäng
-            # Till exempel:
-            # add2db(Score, {'time_spent': total_seconds}, ['goal_id', 'activity_id', 'time_spent'], current_user)
-
-            flash(f"Activity completed in {duration}!", "success")
-        except ValueError:
-            flash("Invalid time format received.", "error")
-
+    if request.method == 'POST':
         score_str = request.form.get('score', '').strip()
         if score_str:
             try:
@@ -313,7 +298,7 @@ def myday():
             print("Score field is empty")
 
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now, acts=myActs,
-                           my_goals=my_goals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
+                           my_goals=my_Goals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
                            sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo, current_goal=current_goal)
 
 @pmg_bp.route('/myday/<date>')
@@ -326,7 +311,6 @@ def myday_date(date):
         print(name)
     myGoals = query(Goals, 'user_id', current_user.id)
     myStreaks = Streak.query.filter(Streak.user_id == current_user.id, Streak.lastReg != today).all()
-    myScore = query(Score, 'user_id', current_user.id)
     myScore, total = myDayScore(selected_date, current_user.id)
 
     if selected_date < today:

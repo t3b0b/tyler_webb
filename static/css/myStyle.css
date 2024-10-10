@@ -187,8 +187,6 @@ header {
 
 .todo-list ul {
     list-style-type: none;
-    padding-left: ;
-    margin: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -279,7 +277,7 @@ footer {
 .left-icons {
     justify-content: space-between;
     align-items: flex-start;
-    width:40%;
+    flex-grow:3;
     margin-left:10px;
 }
 

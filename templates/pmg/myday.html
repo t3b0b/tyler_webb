@@ -2,10 +2,22 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
+<style>
+.container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    align-items: center; /* Centrera elementen horisontellt */
+    justify-content: center; /* Centrera elementen vertikalt */
+}
+</style>
+
 {% endblock head %}
 
 {% block body %}
     {% for act in acts %}
+<div class="container">
         <div class="todo-list" id="todo-list-{{ act.id }}" style="display:none;">
             <h4>To-Do {{ act.name }}</h4>
             <ul>
@@ -106,14 +118,6 @@
             </div>
         </div>
     </form>
-
-    {% for activity_name, data in sum_scores.items() %}
-        <div class="activity">
-            <h3>{{ activity_name }}</h3>
-            <p>Total tid: {{ data.total_time }}</p>
-        </div>
-    {% endfor %}
-
     <div id="startaAktivitet" class="button-center">
         <button class="button-style" type="submit">Starta Aktivitet</button>
     </div>
@@ -142,7 +146,7 @@
     <button id="continueButton" class="button-style" style="display: none; background-color: green">Continue</button>
 </div>
 
-
+</div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>

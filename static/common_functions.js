@@ -317,20 +317,54 @@ window.addEventListener('load', function() {
 
         // Om tid kvar, återställ aktiviteten
         if (remainingTime > 0) {
-            var display = document.getElementById('continueButton');
+            let display = document.getElementById('continueButton');
             document.getElementById('goalSelect').value = selectedGoalId;
             document.getElementById('activitySelect').value = selectedActivityId;
 
             // Återställ layout för en pågående aktivitet
             applyActivityLayout();
+            todoList = document.getElementById('todo-list-' + selectedActivityId);
 
+            if (todoList) {
+                todoList.style.display = 'flex';  // Ändra till 'block' för att visa listan
+            }
             // Återstarta timern med återstående tid
             startTimer(remainingTime, display);
-        } else {
+        } else let todoList;
+        if (remainingTime <= 0 && timerStopped !== 'true') {
+            console.log("Tiden har gått ut, men timern har inte stoppats. Återställ aktiviteten.");
 
-            // Om tiden är slut, rensa localStorage och visa slutfört
+            // Här kan du återställa aktiviteten, om du har en process för detta
+            document.getElementById('goalSelect').value = selectedGoalId;
+            document.getElementById('activitySelect').value = selectedActivityId;
+
+            // Återställ layout för en pågående aktivitet
+            applyActivityLayout();
+            let todoList = document.getElementById('todo-list-' + selectedActivityId);
+
+            if (todoList) {
+                todoList.style.display = 'flex';  // Ändra till 'block' för att visa listan
+            }
+
+            // Rensa localStorage för att börja om
             localStorage.clear();
-            console.log("Tid är slut");
+            console.log("Aktiviteten återställd och lagringen rensad.");
+
+            // Villkor 3: Om tiden är slut och timern har stoppats, ge möjlighet att återuppta för att spara aktivitet och ladda om sidan
+        } else if (remainingTime <= 0 && timerStopped === 'true') {
+            console.log("Tiden är slut och timern har stoppats. Du kan återuppta aktiviteten för att spara.");
+
+            // Visa knappen för att slutföra eller återuppta aktiviteten
+            var display = document.getElementById('continueButton');
+            display.style.display = "block"; // Visa knappen för att återuppta aktiviteten
+
+            // När användaren klickar på knappen kan du t.ex. spara aktiviteten och sedan ladda om sidan
+            display.addEventListener('click', function () {
+                // Här kan du lägga till logik för att spara den slutförda aktiviteten
+
+                // Ladda om myday.html
+                window.location.href = "myday.html"; // Ladda om sidan
+            });
         }
     }
 });
