@@ -249,13 +249,14 @@ footer {
     background-color: #ecf0f1;
     padding: 10px;
     display: flex;
-    justify-content: space-between; /* Sprid ut ikonerna */
+    justify-content: center; /* Sprid ut ikonerna */
     align-items: center;
+    align-content:center;
     width: 100%; /* Se till att footern täcker hela skärmen */
     max-height:50px;
     box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1);
     position: relative;
-    bottom: 0;
+    top: 0;
 }
 
 .footer-icons a, .footer-icons span {
@@ -264,28 +265,31 @@ footer {
 }
 
 .footer-icons img {
-    height: 30px;
-    width: 30px;
+    height: 40px;
+    width: 40px;
 }
 
 .footer-icons {
     display: flex;
-    justify-content: space-between;
-    width: 90%; /* Gör så att alla ikoner täcker hela bredden av footern */
+    flex-direction:row;
+    justify-content: center;
+    align-items: center;
+    width: 100%; /* Gör så att alla ikoner täcker hela bredden av footern */
+
 }
 
 .left-icons {
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-grow:3;
-    margin-left:10px;
+    display:flex;
+    flex-direction:row;
+    width: 40%;
+    justify-content:space-around;
 }
 
 .right-icons {
-    justify-content: space-between;
-    align-items: flex-end;
-    width:40%;
-    margin-right:10px;
+    display:flex;
+    flex-direction:row;
+    width: 40%;
+    justify-content:space-between;
 }
 
 .footer-icons img:hover {
@@ -301,6 +305,34 @@ footer {
 
 .footer-icons span {
     font-size: 30px;
+    font-weight: bold;
+}
+
+/* Förhindra understrykning av texten */
+.icon-text a {
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Dölj texten som standard */
+.icon-text .icon-label {
+    display: none;
+    font-size: 14px;
+    color: #333;
+    text-align: center; /* Centrerar texten under ikonen */
+}
+
+/* När användaren hovrar, döljs bilden och texten visas */
+.icon-text:hover img {
+    display: none;
+}
+
+.icon-text:hover .icon-label {
+    display: inline;
+    font-size: 16px;
     font-weight: bold;
 }
 

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css')}}">
 
     <title> {{ sida }} </title>
     {% block head %}{% endblock head %}
@@ -49,23 +49,37 @@
         {% block body %}{% endblock %}
         </div>
         <footer>
-            <div class="footer-icons"
-                <div class="left-icons">
-                    <a href="/pmg/myday"><img src="{{ url_for('static', filename='images/Home.png') }}" alt="Home"></a>
-                    <a href="/pmg/goals"><img src="{{ url_for('static', filename='images/Goals.png') }}" alt="Goal"></a>
-                    <a href="/pmg/streak"><img src="{{ url_for('static', filename='images/Streak.png') }}" alt="Fire"></a>
-                </div>
-                {% if score %}
-                    <span>{{ score }}</span>
-                {% else %}
-                    <span>{{ 0 }}</span>
-                {% endif %}
-                <div class="right-icons">
-                    <a href="/txt/journal"><img src="{{ url_for('static', filename='images/Texts.png') }}" alt="Text"></a>
-                    <a href="/cal/month"><img src="{{ url_for('static', filename='images/Calendar.png') }}" alt="Calendar"></a>
-                    <a href="/auth/profile"><img src="{{ url_for('static', filename='images/User.png') }}" alt="Profile"></a>
-                </div>
-                </div>
+    <div class="footer-icons">
+        <div class="left-icons">
+            <a href="/pmg/myday" class="icon-text">
+                <img src="{{ url_for('static', filename='images/Home.png') }}" alt="Hem">
+                <span class="icon-label">Hem</span>
+            </a>
+            <a href="/pmg/goals" class="icon-text">
+                <img src="{{ url_for('static', filename='images/Goals.png') }}" alt="Mål">
+                <span class="icon-label">Mål</span>
+            </a>
+            <a href="/pmg/streak" class="icon-text">
+                <img src="{{ url_for('static', filename='images/Streak.png') }}" alt="Streak">
+                <span class="icon-label">Streak</span>
+            </a>
+        </div>
+        <span>{{ score }}</span>
+        <div class="right-icons">
+            <a href="/txt/journal" class="icon-text">
+                <img src="{{ url_for('static', filename='images/Texts.png') }}" alt="Journal">
+                <span class="icon-label">Journal</span>
+            </a>
+            <a href="/cal/month" class="icon-text">
+                <img src="{{ url_for('static', filename='images/Calendar.png') }}" alt="Kalender">
+                <span class="icon-label">Kalender</span>
+            </a>
+            <a href="/auth/profile" class="icon-text">
+                <img src="{{ url_for('static', filename='images/User.png') }}" alt="Profil">
+                <span class="icon-label">Profil</span>
+            </a>
+        </div>
+    </div>
         </footer>
     <script>
             document.addEventListener('DOMContentLoaded', function () {

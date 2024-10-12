@@ -15,7 +15,9 @@
             {% for task in tasks %}
                 <div class="list-item">{{ task.task }}
                     <!-- Checkbox for marking the task as completed -->
-                    <input type="checkbox" {% if task.completed %}checked{% endif %}>
+                     <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
+                        <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
+                    </form>
                 </div>
             {% endfor %}
         {% else %}
@@ -37,7 +39,36 @@
     }
 
     // Function to handle the task completion toggle
+function updateTaskStatus(taskId, isCompleted) {
+    console.log(`Task ID: ${taskId}, Completed: ${isCompleted}`);  // Lägg till denna rad för felsökning
 
+    fetch('/pmg/update-task-status/' + taskId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()  // Om CSRF-skydd används
+        },
+        body: JSON.stringify({
+            completed: isCompleted
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Task updated successfully');
+        } else {
+            console.error('Error updating task:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Network error:', error);
+    });
+}
+
+
+function getCSRFToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
 </script>
 
 {% endblock body %}

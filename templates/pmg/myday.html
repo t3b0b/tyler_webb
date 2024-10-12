@@ -21,17 +21,18 @@
         <div class="todo-list" id="todo-list-{{ act.id }}" style="display:none;">
             <h4>To-Do {{ act.name }}</h4>
             <ul>
-                <!-- Lista över To-Dos för varje mål -->
                 {% for task in act.todo_list %}
                     <li>
                         {{ task.task }}
-                        <input type="checkbox" {% if task.completed %}checked{% endif %}>
+                         <form method="POST" action="{{ url_for('pmg.update_task', activity_id=act.id, task_id=task.id) }}">
+                            <input type="checkbox" name="completed" value="start" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
+                        </form>
                     </li>
                     {% if task.subtasks %}
                     <ul>
                         {% for subtask in task.subtasks %}
                         <li>
-                            <input type="checkbox" {% if subtask.completed %}checked{% endif %}> {{ subtask.task }}
+                            <input type="checkbox" onchange="updateTaskStatus({{ subtask.id }}, this.checked)" {% if subtask.completed %}checked{% endif %}> {{ subtask.task }}
                         </li>
                         {% endfor %}
                     </ul>
@@ -40,8 +41,8 @@
             </ul>
             <!-- Form för att lägga till ny uppgift -->
             <form method="POST">
-                <input type="hidden" name="goalId" value="{{ act.id }}">
-                <input type="text" name="task" placeholder="Enter new task" required style="width:30%;height:15%;">
+                <input type="hidden" name="act-Id" value="{{ act.id }}">
+                <input type="text" name="task_name" placeholder="Enter new task" required style="width:30%;height:15%;">
                 <button type="submit" name="action" value="addTodo">Add Task</button>
             </form>
         </div>
@@ -114,7 +115,7 @@
             <input type="hidden" id="end" name="end" style="display: none;">
             <input type="text" id="score" name="score" style="display: none;">
             <div class="button-center" id="complete-form" style="display: none">
-                <button type="submit" id="save-btn" class="button-style">Save</button>
+                <button type="submit" name="action" id="save-btn" class="button-style" value="save-score">Save</button>
             </div>
         </div>
     </form>

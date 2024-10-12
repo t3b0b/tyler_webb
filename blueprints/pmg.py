@@ -1,6 +1,6 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
-from models import (User, db, Streak,Goals,Task,
+from models import (User, db, Streak,Goals,
                     Activity, Score,Dagar,ToDoList)
 
 from datetime import datetime, timedelta, date
@@ -20,6 +20,7 @@ pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
 #region Streak
 @pmg_bp.route('/streak',methods=['GET', 'POST'])
+@login_required
 def streak():
     current_date = date.today()
     current_date = current_date.strftime('%Y-%m-%d')
@@ -93,64 +94,6 @@ def delete_streak(streak_id):
 # endregion
 
 # region Goals
-@pmg_bp.route('/goal/<int:goal_id>/activities', methods=['GET', 'POST'])
-def goal_activities(goal_id):
-    goal = Goals.query.get_or_404(goal_id)
-    if request.method == 'POST':
-        # Hantera POST-begäran för att lägga till en aktivitet
-        userId=current_user.id
-        goalId = goal_id
-        activity_name = request.form.get('activity-name')
-        measurement = request.form.get('activity-measurement')
-        if activity_name and measurement:
-            new_activity = Activity(name=activity_name, goal_id=goalId, user_id=userId)
-            db.session.add(new_activity)
-            db.session.commit()
-            flash('Activity added successfully', 'success')
-            return redirect(url_for('pmg.goal_activities', goal_id=goal_id))
-        else:
-            flash('Activity name and measurement are required', 'danger')
-
-    # Hantera GET-begäran för att visa aktiviteterna
-    activities = Activity.query.filter_by(goal_id=goal_id).all()
-    return render_template('pmg/activities.html', goal=goal, activities=activities)
-
-
-# region Todos
-@pmg_bp.route('/activity/<int:activity_id>/tasks', methods=['GET'])
-def activity_tasks(activity_id):
-    activity = Activity.query.get_or_404(activity_id)
-    todos = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).all()
-    return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos)
-
-@pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST'])
-def add_task(activity_id):
-    activity = Activity.query.get_or_404(activity_id)
-    task_name = request.form.get('task_name')
-
-    if not task_name:
-        flash('Task name is required!', 'danger')  # Meddelande vid fel
-        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
-
-    # Skapa ny task
-    new_task = ToDoList(task=task_name, completed=False, user_id=current_user.id, activity_id=activity_id)
-    db.session.add(new_task)
-    db.session.commit()
-
-    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
-
-@pmg_bp.route('/goal/<int:goal_id>/todo', methods=['GET'])
-@login_required
-def get_todo_list(goal_id):
-    # Kontrollera att målet existerar och tillhör den inloggade användaren
-    goal = Goals.query.get_or_404(goal_id)
-    if goal.user_id != current_user.id:
-        return jsonify({'error': 'Unauthorized'}), 403
-    tasks = ToDoList.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
-    return render_template('pmg/todo_list.html', tasks=tasks)
-
-# endregion
-
 @pmg_bp.route('/goals', methods=['GET', 'POST'])
 @login_required
 def goals():
@@ -183,6 +126,73 @@ def goals():
 
     return render_template('pmg/goals.html', sida=sida, header=sida, goals=my_Goals, sub_menu=sub_menu)
 
+@pmg_bp.route('/goal/<int:goal_id>/activities', methods=['GET', 'POST'])
+def goal_activities(goal_id):
+    goal = Goals.query.get_or_404(goal_id)
+    if request.method == 'POST':
+        # Hantera POST-begäran för att lägga till en aktivitet
+        userId=current_user.id
+        goalId = goal_id
+        activity_name = request.form.get('activity-name')
+        measurement = request.form.get('activity-measurement')
+        if activity_name and measurement:
+            new_activity = Activity(name=activity_name, goal_id=goalId, user_id=userId)
+            db.session.add(new_activity)
+            db.session.commit()
+            flash('Activity added successfully', 'success')
+            return redirect(url_for('pmg.goal_activities', goal_id=goal_id))
+        else:
+            flash('Activity name and measurement are required', 'danger')
+
+    # Hantera GET-begäran för att visa aktiviteterna
+    activities = Activity.query.filter_by(goal_id=goal_id).all()
+    return render_template('pmg/activities.html', goal=goal, activities=activities)
+
+@pmg_bp.route('/get_activities/<goal_id>')
+def get_activities(goal_id):
+    activities = Activity.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
+    activity_list = [{'id': activity.id, 'name': activity.name} for activity in activities]
+    return jsonify(activity_list)
+
+# region Todos
+@pmg_bp.route('/activity/<int:activity_id>/tasks', methods=['GET'])
+def activity_tasks(activity_id):
+    activity = Activity.query.get_or_404(activity_id)
+    todos = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).all()
+    return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos)
+
+@pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST'])
+def add_task(activity_id):
+    activity = Activity.query.get_or_404(activity_id)
+    task_name = request.form.get('task_name')
+
+    if not task_name:
+        flash('Task name is required!', 'danger')  # Meddelande vid fel
+        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+
+    # Skapa ny task
+    new_task = ToDoList(task=task_name, completed=False, user_id=current_user.id, activity_id=activity_id)
+    db.session.add(new_task)
+    db.session.commit()
+
+    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+
+
+@pmg_bp.route('/activity/<int:activity_id>/update_task/<int:task_id>', methods=['POST'])
+def update_task(activity_id, task_id):
+    task = ToDoList.query.get_or_404(task_id)
+
+    # Hämta den nya statusen från formuläret eller begäran
+    completed = request.form.get('completed') == 'on'
+
+    # Uppdatera task status
+    task.completed = completed
+    db.session.commit()
+    # Omdirigera tillbaka till aktivitetsuppgifterna efter uppdateringen
+    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+
+# endregion
+
 @pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
 def delete_goal(goal_id):
     goal = Goals.query.get(goal_id)
@@ -198,12 +208,6 @@ def delete_goal(goal_id):
     else:
         return jsonify(success=False, error="Goal not found")
 
-@pmg_bp.route('/get_activities/<goal_id>')
-def get_activities(goal_id):
-    activities = Activity.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
-    activity_list = [{'id': activity.id, 'name': activity.name} for activity in activities]
-    return jsonify(activity_list)
-
 @pmg_bp.route('/delete-activity/<int:activity_id>', methods=['POST'])
 def delete_activity(activity_id):
     activity = Activity.query.get(activity_id)
@@ -215,6 +219,7 @@ def delete_activity(activity_id):
 
 #region Milestones
 @pmg_bp.route('milestones/<int:goal_id>')
+@login_required
 def milestones(goal_id):
     return render_template('pmg/milestones.html')
 
@@ -284,24 +289,33 @@ def myday():
         sorted_myScore = sorted(myScore, key=lambda score: score[0])
 
     if request.method == 'POST':
-        score_str = request.form.get('score', '').strip()
-        if score_str:
-            try:
-                score_check = float(score_str)
-                if score_check >= 1:
-                    add2db(Score, request, ['gID', 'aID', 'aDate', 'start', 'end', 'score'],
-                           ['Goal', 'Activity', 'Date', 'Start', 'End', 'Time'], current_user)
-                    return redirect(url_for('pmg.myday'))
-            except ValueError:
-                print(f"Invalid score value: {score_str}")
-        else:
-            print("Score field is empty")
+        if 'save-score' in request.form['action']:
+            score_str = request.form.get('score', '').strip()
+            if score_str:
+                try:
+                    score_check = float(score_str)
+                    if score_check >= 1:
+                        add2db(Score, request, ['gID', 'aID', 'aDate', 'start', 'end', 'score'],
+                               ['Goal', 'Activity', 'Date', 'Start', 'End', 'Time'], current_user)
+                        return redirect(url_for('pmg.myday'))
+                except ValueError:
+                    print(f"Invalid score value: {score_str}")
+            else:
+                print("Score field is empty")
 
+        elif 'addTodo' in request.form['action']:
+            task_name = request.form.get('task_name')
+            task_name = request.form.get('aID')
+
+            new_task = ToDoList(task=task_name, completed=False, user_id=current_user.id, activity_id=activity_id)
+            db.session.add(new_task)
+            db.session.commit()
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now, acts=myActs,
                            my_goals=my_Goals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
                            sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo, current_goal=current_goal)
 
 @pmg_bp.route('/myday/<date>')
+@login_required
 def myday_date(date):
     selected_date = datetime.strptime(date, '%Y-%m-%d').date()
 
@@ -339,7 +353,7 @@ def start_activity(goal_id):
             db.session.commit()
             return redirect(url_for('pmg.start_activity', goal_id=goal_id))
 
-    return render_template('pmg/activity.html', goal=goal, tasks=tasks)
+    return render_template('pmg/activity.html', goal=goal, tasks=task)
 
 
 

@@ -5,17 +5,45 @@ var activity = 0;
 var goal = 0;
 let openTime;
 let closeTime;
-
+var stopped;
 //
+function requestNotificationPermission() {
+    if ("Notification" in window) {
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission().then(function(permission) {
+                if (permission === "granted") {
+                    console.log("Notification permission granted.");
+                }
+            });
+        }
+    } else {
+        console.error("This browser does not support notifications.");
+    }
+}
+
+function showTimerEndNotification() {
+    if (Notification.permission === "granted") {
+        const notification = new Notification("Tiden har gått ut!", {
+            body: "Din aktivitet är klar. Klicka här för att återgå till sidan.",
+            icon: "/static/icons/timer-icon.png"  // Valfri ikon, justera URL till din ikon
+        });
+
+        // Lägg till en händelse för när användaren klickar på notifikationen
+        notification.onclick = function() {
+            window.focus();  // Fokusera webbläsaren
+        };
+    }
+}
+
 function startTimerFromSelection() {
+
     var duration = document.getElementById('timeSelect').value * 60; // Konverterar minuter till sekunder
     var display = document.getElementById('continueButton');
     openTime = new Date(); // Starta tiden när timern börjar
+    stopped=false
 
-    let active = true
-    goal = document.getElementById('goalSelect')?.value;
-    activity = document.getElementById('activitySelect')?.value;
-
+    goal = document.getElementById('goalSelect').value;
+    activity = document.getElementById('activitySelect').value;
     document.getElementById('aID').value = activity;
     document.getElementById('gID').value = goal;
 
@@ -25,6 +53,7 @@ function startTimerFromSelection() {
     localStorage.setItem('selectedActivityId', document.getElementById('activitySelect').value);
     localStorage.setItem('duration', duration);
     localStorage.setItem('timerStopped', 'false');
+
     const selectedAct = document.getElementById('activitySelect').value;
     const todoList = document.getElementById('todo-list-' + selectedAct);
 
@@ -60,6 +89,7 @@ function startTimer(duration, display) {
             document.getElementById('stopButton').style.display = 'block';
             document.getElementById('continueButton').style.display = 'block';
             document.getElementById('continueButton').textContent = 'Continue';
+            showTimerEndNotification();
         }
     }, 1000);
 }
@@ -84,8 +114,9 @@ function continueTimer() {
 
 function stopTimer() {
     if (timeEnded) {
-        var timerStopped = localStorage.getItem('timerStopped'); // Kolla om timern har stoppats
-        activeTimer = false;
+        localStorage.setItem('timerStopped', true);
+        localStorage.setItem('activeTimer',false);
+
         localStorage.removeItem('activeTimer');
         localStorage.setItem('activeTimer', activeTimer);
 
@@ -101,18 +132,12 @@ function stopTimer() {
         document.getElementById('continueButton').style.display = 'none';
         document.getElementById('day-section').style.display = 'grid';
 
-        localStorage.setItem('timerStopped', 'true'); // Flagga för att markera att timern har stoppats
-
         saveActivity()
     }
 }
 
 function saveActivity() {
     closeTime = new Date(); // Stoppa tiden när timern stoppas
-    goal = document.getElementById('goalSelect')?.value;
-    activity = document.getElementById('activitySelect')?.value;
-    document.getElementById('aID').value = activity;
-    document.getElementById('gID').value = goal;
     document.getElementById("start").value = new Date(openTime).toISOString().slice(0, 19).replace('T', ' ');
     document.getElementById("end").value = new Date(closeTime).toISOString().slice(0, 19).replace('T', ' ');
     let elapsedTime = (closeTime - openTime) / 1000 / 60; // Konvertera millisekunder till minuter
@@ -120,6 +145,7 @@ function saveActivity() {
     document.getElementById('score-disp').textContent = elapsedTime;
     document.getElementById('score').value = elapsedTime;
     document.getElementById('complete-form').style.display = 'block';
+    localStorage.setItem('activeTimer',false);
 }
 
 function updateTimerDisplay(timer, display) {
@@ -278,6 +304,31 @@ function animateCheck(event, form) {
     }, 1000);
 }
 
+function updateTaskStatus(taskId, isCompleted) {
+    fetch('/pmg/update-task-status/' + taskId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()  // Använd om du har CSRF-skydd
+        },
+        body: JSON.stringify({
+            completed: isCompleted
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Task updated successfully');
+        } else {
+            console.error('Error updating task:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Network error:', error);
+    });
+}
+
+
 $(document).ready(function () {
     $('#goalSelect').change(function () {
         var goalId = $(this).val();
@@ -309,7 +360,6 @@ window.addEventListener('load', function() {
     // Kontrollera om alla nödvändiga värden finns
     if (ActInProg && savedOpenTime && selectedGoalId && selectedActivityId && savedDuration) {
         openTime = new Date(savedOpenTime);
-
         // Beräkna hur mycket tid som har gått
         let now = new Date();
         let elapsedTime = Math.floor((now - openTime) / 1000); // Tid i sekunder
@@ -320,9 +370,11 @@ window.addEventListener('load', function() {
             let display = document.getElementById('continueButton');
             document.getElementById('goalSelect').value = selectedGoalId;
             document.getElementById('activitySelect').value = selectedActivityId;
-
+            document.getElementById('aID').value = selectedActivityId;
+            document.getElementById('gID').value = selectedGoalId;
             // Återställ layout för en pågående aktivitet
             applyActivityLayout();
+
             todoList = document.getElementById('todo-list-' + selectedActivityId);
 
             if (todoList) {
@@ -330,13 +382,15 @@ window.addEventListener('load', function() {
             }
             // Återstarta timern med återstående tid
             startTimer(remainingTime, display);
-        } else let todoList;
-        if (remainingTime <= 0 && timerStopped !== 'true') {
+        } else if (remainingTime <= 0 && timerStopped !== 'true') {
             console.log("Tiden har gått ut, men timern har inte stoppats. Återställ aktiviteten.");
-
+            let display = document.getElementById('continueButton');
             // Här kan du återställa aktiviteten, om du har en process för detta
+
             document.getElementById('goalSelect').value = selectedGoalId;
             document.getElementById('activitySelect').value = selectedActivityId;
+            document.getElementById('aID').value = selectedActivityId;
+            document.getElementById('gID').value = selectedGoalId;
 
             // Återställ layout för en pågående aktivitet
             applyActivityLayout();
@@ -351,12 +405,14 @@ window.addEventListener('load', function() {
             console.log("Aktiviteten återställd och lagringen rensad.");
 
             // Villkor 3: Om tiden är slut och timern har stoppats, ge möjlighet att återuppta för att spara aktivitet och ladda om sidan
+            // Återstarta timern med återstående tid
+            startTimer(0, display);
         } else if (remainingTime <= 0 && timerStopped === 'true') {
             console.log("Tiden är slut och timern har stoppats. Du kan återuppta aktiviteten för att spara.");
 
             // Visa knappen för att slutföra eller återuppta aktiviteten
             var display = document.getElementById('continueButton');
-            display.style.display = "block"; // Visa knappen för att återuppta aktiviteten
+            display.style.display = "none"; // Visa knappen för att återuppta aktiviteten
 
             // När användaren klickar på knappen kan du t.ex. spara aktiviteten och sedan ladda om sidan
             display.addEventListener('click', function () {
@@ -370,6 +426,9 @@ window.addEventListener('load', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+
+    requestNotificationPermission();  // Begär tillstånd vid sidladdning
+
     var startaAktivitetButton = document.getElementById('startaAktivitet');
     if (startaAktivitetButton) {
         startaAktivitetButton.addEventListener('click', toggleActivityForm);

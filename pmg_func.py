@@ -1,4 +1,4 @@
-from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet, Task,
+from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet,
                     Activity, Score, MyWords, Settings, Dagar, Message,ToDoList,
                     Idag, Week, Month, WhyGoals,Event,CalendarBullet,ViewType)
 from datetime import datetime, timedelta, date

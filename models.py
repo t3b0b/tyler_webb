@@ -69,6 +69,7 @@ class Activity(db.Model):
     todo_list = db.relationship('ToDoList', backref='activity', lazy=True)
     tasks = db.relationship('Task', back_populates='activity')
 
+
 # Koppling till att-göra-lista och tasks
 class ToDoList(db.Model):
     id = db.Column(db.Integer, primary_key=True)
