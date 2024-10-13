@@ -101,6 +101,7 @@ def blog():
 # endregion
 
 #region Login/Out
+
 app.register_blueprint(auth_bp, url_prefix='/auth')
 
 #endregion

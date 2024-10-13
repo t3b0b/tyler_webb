@@ -1,7 +1,10 @@
+import os
+
 from flask import (Blueprint, render_template, redirect, url_for,
                    request, flash, session)
 from flask_login import (login_user, logout_user, login_manager,
                          current_user, login_required)
+from werkzeug.utils import secure_filename
 
 from pmg_func import (common_route,getInfo,query,add2db,
                       readWords)
@@ -59,23 +62,28 @@ def confirm_reset():
     streaks_to_reset = Streak.query.filter(Streak.id.in_(streak_ids)).all()
 
     if request.method == 'POST':
+        # Hämta alla kryssade streaks
         checked_streaks = request.form.getlist('streak')
+
         for streak in streaks_to_reset:
             if str(streak.id) in checked_streaks:
-                # Nollställ streaks
+                # Nollställ streaken om den är kryssad
                 streak.count = 0
                 streak.active = False
+                streak.lastReg = datetime.now()  # Uppdatera lastReg till nu
             else:
-                # Uppdatera streak.count för streaks som inte nollställs
+                # Om streak inte nollställs, uppdatera streak.count
                 last_reg = streak.lastReg
                 yesterday = datetime.now() - timedelta(days=1)
                 delta_days = (yesterday - last_reg).days
                 streak.count += delta_days
                 streak.lastReg = yesterday
+
         db.session.commit()
         session.pop('streaks_to_reset', None)
         flash('Streaks har uppdaterats.', 'success')
         return redirect(url_for('pmg.myday'))
+
     return render_template('auth/reset.html', sida=sida, header=sida, streaks=streaks_to_reset)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])

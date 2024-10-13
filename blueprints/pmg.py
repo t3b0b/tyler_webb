@@ -305,7 +305,7 @@ def myday():
 
         elif 'addTodo' in request.form['action']:
             task_name = request.form.get('task_name')
-            task_name = request.form.get('aID')
+            activity_id = request.form.get('aID')
 
             new_task = ToDoList(task=task_name, completed=False, user_id=current_user.id, activity_id=activity_id)
             db.session.add(new_task)
@@ -313,7 +313,6 @@ def myday():
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now, acts=myActs,
                            my_goals=my_Goals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
                            sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo, current_goal=current_goal)
-
 @pmg_bp.route('/myday/<date>')
 @login_required
 def myday_date(date):
@@ -329,11 +328,11 @@ def myday_date(date):
 
     if selected_date < today:
         sida='Past Day'
-        return render_template('pmg/pastDays.html', sida=sida, header=sida, current_date=selected_date,
+        return render_template('cal/pastDays.html', sida=sida, header=sida, current_date=selected_date,
                                my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
     elif selected_date > today:
         sida = 'Post Day'
-        return render_template('pmg/postDays.html', sida=sida, header=sida, current_date=selected_date,
+        return render_template('cal/postDays.html', sida=sida, header=sida, current_date=selected_date,
                                my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
     else:
         return redirect(url_for('pmg.myday'))

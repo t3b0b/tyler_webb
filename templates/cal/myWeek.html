@@ -6,11 +6,11 @@
 {% endblock head %}
 
 {% block body %}
-<div class="grid-container">
+<div class="two-grid-container">
     <div class="notes">
-        <div class="list">
+        <div class="list-container">
             <div class="list-header" onclick="toggleList(this)">Att-göra</div>
-            <div class="list-content">
+            <div class="list-content" style="display:none;">
                 <form method="POST">
                     {% for num in range(1, 6) %}
                         <input type="text" name="todo_{{ num }}" placeholder="Att-göra {{ num }}" value="{{ to_do_list[num-1] if to_do_list|length >= num else '' }}">
@@ -20,7 +20,7 @@
             </div>
 
             <div class="list-header" onclick="toggleList(this)">Att tänka på</div>
-            <div class="list-content">
+            <div class="list-content" style="display:none;">
                 <form method="POST">
                     {% for num in range(1, 6) %}
                         <input type="text" name="think_{{ num }}" placeholder="Att tänka på {{ num }}" value="{{ to_think_list[num-1] if to_think_list|length >= num else '' }}">
@@ -30,7 +30,7 @@
             </div>
 
             <div class="list-header" onclick="toggleList(this)">Kom-ihåg</div>
-            <div class="list-content">
+            <div class="list-content" style="display:none;">
                 <form method="POST">
                     {% for num in range(1, 6) %}
                         <input type="text" name="remember_{{ num }}" placeholder="Kom-ihåg {{ num }}" value="{{ remember_list[num-1] if remember_list|length >= num else '' }}">
@@ -42,34 +42,45 @@
     </div>
 
     <div class="timebox">
+        <h1>Vecka {{ current_date.isocalendar()[1] }}</h1>
         <div class="scrollable">
             <table>
-                <thead>
-                    <tr>
-                        <th>Time</th>
-                        <th>Måndag</th>
-                        <th>Tisdag</th>
-                        <th>Onsdag</th>
-                        <th>Torsdag</th>
-                        <th>Fredag</th>
-                        <th>Lördag</th>
-                        <th>Söndag</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for i in range(6, 22) %}
-                    <tr>
-                        <td>{{ '{:02d}:00'.format(i) }}</td>
-                        <td></td> <!-- Fill these cells dynamically -->
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Måndag</th>
+                    <th>Tisdag</th>
+                    <th>Onsdag</th>
+                    <th>Torsdag</th>
+                    <th>Fredag</th>
+                    <th>Lördag</th>
+                    <th>Söndag</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for hour in range(6, 24) %}
+                <tr>
+                    <td>{{ '{:02d}:00'.format(hour) }}</td>
+
+                    {% for day_str in week_dates %}
+                        <td>
+                            {% if week_scores.get(day_str) %}
+                                {% for score in week_scores[day_str] %}
+                                    {% if score.Start.hour <= hour and hour <= score.End.hour %}
+                                        <div>
+                                            {{ score.activity_name }} <!--<br>
+                                         Från: {{ score.Start.strftime('%H:%M') }}<br>
+                                            Till: {{ score.End.strftime('%H:%M') }}<br> -->
+                                            {{ score.Time }} minuter
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </td>
                     {% endfor %}
-                </tbody>
+                </tr>
+                {% endfor %}
+            </tbody>
             </table>
         </div>
     </div>
@@ -77,8 +88,8 @@
 
 <script>
 function toggleList(element) {
-    const list = element.parentElement;
-    list.classList.toggle('expanded');
+    const content = element.nextElementSibling;
+    content.style.display = content.style.display === 'none' || content.style.display === '' ? 'block' : 'none';
 }
 </script>
 

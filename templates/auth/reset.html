@@ -11,7 +11,8 @@
         {% for streak in streaks %}
         <div class="list-item">
             <span class="streak-name">{{ streak.name }}</span>
-            <input type="checkbox" name="action_{{ streak.id }}" value={{streak.id}}> Bekräfta nollställning
+            <!-- Ändra namn till "streak" så att alla checkboxes kan skickas som en lista -->
+            <input type="checkbox" name="streak" value="{{ streak.id }}"> Bekräfta nollställning
         </div>
         {% endfor %}
         <button type="submit" class="button-style">OK</button>

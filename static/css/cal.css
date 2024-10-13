@@ -1,6 +1,117 @@
+.calendar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centrera kalendern horisontellt */
+    margin: 0 auto; /* Centrerar kalendern */
+    width: 100%; /* Låter kalendern ta upp hela bredden */
+    max-width: 1200px; /* Ställer in en maxbredd för stora skärmar */
+    padding: 10px; /* Lägger till padding runt om */
+    box-sizing: border-box; /* Inkluderar padding i bredden */
+}
 
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0;
+    width: 100%; /* Gör kalendern så bred som möjligt inom container */
+    box-sizing: border-box; /* Inkluderar padding och border i bredden */
+}
 
+.calendar-header {
+    grid-column: span 7;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+}
 
+.day-header {
+    background-color: #be9949;
+    border: 1px solid #524021;
+    color: #ffffff;
+    padding: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.day {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-right: 30px;
+    padding-left: 30px;
+    border: 1px solid #b7b6b6;
+    text-align: center;
+    vertical-align: top;
+    background-color: #fff;
+    cursor: pointer;
+    transition: all 0.5s ease;
+}
+.day .streak-count {
+    justify-self: flex-start;
+    top: 5px;
+    font-size: 14px;
+}
+.day .day-date {
+    font-size: 20px;
+    font-weight: bold;
+}
+.day .total-points {
+    bottom: 5px;
+    font-size: 14px;
+}
+.day.expand {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: 100vh;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background: white;
+    font-size: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.other-month {
+    background-color: #f0f0f0;
+    color: #ccc;
+    cursor: default;
+}
+
+.today {
+    border: 2px solid #e1c971;
+    background-color: rgba(144, 187, 196, 0.4);
+}
+.day-header, .calendar-header {
+    text-align: center;
+    font-weight: bold;
+    background-color: #be9949;
+    border: 1px solid #524021;
+    color: #ffffff;
+    padding: 5px;
+}
+
+.day-header, .day {
+    text-align: center;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background-color: #ffffff;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.day.today {
+    background-color: #ffeb3b;
+}
+
+.day.clickable {
+    cursor: pointer;
+}
+
+.day.other-month {
+    background-color: #f9f9f9;
+}
 
 .timebox {
     width: 100%;
@@ -35,9 +146,9 @@
     border: 1px solid #ccc;
     width: 100%;
 }
-.grid-container {
+.container {
     display: grid;
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: 1fr 3fr;
     gap: 0;
     padding: 10px;
     height: 100%; /* Ger hela container full höjd på sidan */

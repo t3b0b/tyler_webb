@@ -125,9 +125,14 @@ def add2db(db_model, request, form_fields, model_fields, user):
 
     # Iterera över form_fields och model_fields och sätt attribut på new_entry
     for form_field, model_field in zip(form_fields, model_fields):
-        value = request.form[form_field]
-        if model_field in ['Start', 'End']:
-            value = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+        value = request.form.get(form_field)  # Använd .get() för att undvika KeyError
+        if model_field in ['Start', 'End'] and value:  # Endast om värdet finns
+            try:
+                value = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+            except ValueError as e:
+                # Hantera fel, t.ex. logga fel eller flasha ett felmeddelande
+                print(f"Fel vid konvertering av tid: {e}")
+                value = None  # Eller hantera på ett annat sätt
         setattr(new_entry, model_field, value)
 
     # Lägg till user_id om det är en del av modellen

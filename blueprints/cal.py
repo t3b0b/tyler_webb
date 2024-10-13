@@ -100,44 +100,41 @@ def month(year=None, month=None):
 def week():
     current_date = datetime.now()
     year, week_num, weekday = current_date.isocalendar()
-    month = current_date.month
-    date = current_date.date()
-
-
+    start_week = current_date - timedelta(days=current_date.weekday())  # Start of the current week
+    end_week = start_week + timedelta(days=6)  # End of the current week
     page_info = getInfo('pageInfo.csv', 'myWeek')
-    date_now = datetime.now()
     user_id = current_user.id
     sida, sub_menu = common_route('Min Vecka', ['/cal/month', '/cal/week', '/cal/timebox'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])
 
-    start_week = date_now - timedelta(days=date_now.weekday())
-    end_week = start_week + timedelta(days=6)
+    # Generera alla datum för veckan som en lista av strängar
+    week_dates = [(start_week + timedelta(days=day)).strftime('%Y-%m-%d') for day in range(7)]
 
-    activities = get_activities_for_user(current_user.id, start_week, end_week)
-    activities_dict = organize_activities_by_time(activities)
-
-    myScore = db.session.query(
-        Goals.name.label('goal_name'),
+    # Fetch all scores for the user during the week
+    scores = db.session.query(
         Activity.name.label('activity_name'),
-        Score.Date,
+        Score.Start,
+        Score.End,
         Score.Time,
-        Streak.name.label('streak_name')
-    ).outerjoin(
-        Goals, Goals.id == Score.Goal
-    ).outerjoin(
+        Score.Date
+    ).join(
         Activity, Activity.id == Score.Activity
-    ).outerjoin(
-        Streak, Streak.id == Score.Streak
-    ).filter(
-        Score.Date >= start_week
-    ).filter(
-        Score.Date <= end_week
     ).filter(
         Score.user_id == user_id
+    ).filter(
+        Score.Date >= start_week.date()
+    ).filter(
+        Score.Date <= end_week.date()
     ).all()
-    weekly_data = process_weekly_scores(myScore, start_week, end_week)
 
-    bullet = CalendarBullet.query.filter_by(user_id=current_user.id, week_num=week_num,view_type="myWeek").first()
+    # Organize scores by day and hour
+    week_scores = {date: [] for date in week_dates}  # Initiera alla datum i veckan med tomma listor
+    for score in scores:
+        day_str = score.Date.strftime('%Y-%m-%d')
+        week_scores[day_str].append(score)
+        print(f"Added score: {score.activity_name} to {score.Date} from {score.Start} to {score.End}")
+
+    bullet = CalendarBullet.query.filter_by(user_id=current_user.id, week_num=week_num, view_type="myWeek").first()
 
     # Om det inte finns något, skapa ett nytt objekt
     if not bullet:
@@ -166,8 +163,10 @@ def week():
     to_think_list = bullet.to_think.split(',') if bullet.to_think else []
     remember_list = bullet.remember.split(',') if bullet.remember else []
 
-    return render_template('cal/myWeek.html', sida='Veckoplanering', weekly_data=weekly_data, header='Veckoplanering',
-                           total_score=0, sub_menu=sub_menu, activities=activities_dict,page_info=page_info, bullet=bullet, to_do_list=to_do_list, to_think_list=to_think_list, remember_list=remember_list, date=current_date)
+    return render_template('cal/myWeek.html', sida='Veckoplanering', week_scores=week_scores, header='Veckoplanering',
+                           total_score=0, sub_menu=sub_menu, page_info=page_info, bullet=bullet, timedelta=timedelta,
+                           week=week_num, week_dates=week_dates, to_do_list=to_do_list, to_think_list=to_think_list,
+                           remember_list=remember_list, current_date=current_date)
 
 @cal_bp.route('/timebox', methods=['GET', 'POST'])
 @login_required

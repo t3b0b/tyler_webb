@@ -7,33 +7,37 @@ let openTime;
 let closeTime;
 var stopped;
 //
-function requestNotificationPermission() {
-    if ("Notification" in window) {
-        if (Notification.permission !== "granted") {
-            Notification.requestPermission().then(function(permission) {
-                if (permission === "granted") {
-                    console.log("Notification permission granted.");
-                }
-            });
-        }
-    } else {
-        console.error("This browser does not support notifications.");
-    }
-}
-
-function showTimerEndNotification() {
-    if (Notification.permission === "granted") {
-        const notification = new Notification("Tiden har gått ut!", {
-            body: "Din aktivitet är klar. Klicka här för att återgå till sidan.",
-            icon: "/static/icons/timer-icon.png"  // Valfri ikon, justera URL till din ikon
+function askNotificationPermission() {
+    // Kontrollera om webbläsaren stödjer Notification API
+    if (!("Notification" in window)) {
+        alert("Din webbläsare stöder inte notifikationer.");
+    } else if (Notification.permission !== "granted") {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                console.log("Notifikationsåtkomst beviljad");
+            } else {
+                console.log("Notifikationsåtkomst nekad");
+            }
         });
-
-        // Lägg till en händelse för när användaren klickar på notifikationen
-        notification.onclick = function() {
-            window.focus();  // Fokusera webbläsaren
-        };
     }
 }
+
+function playSound() {
+    var audio = new Audio('/path/to/your/sound.mp3'); // Länka till ljudfil
+    audio.play();
+}
+
+function notifyUser() {
+    if (Notification.permission === "granted") {
+        new Notification("Tiden är ute!", {
+            body: "Din timer har gått ut. Dags att ta en paus eller börja en ny aktivitet!",
+            icon: "/path/to/your/icon.png"
+        });
+    }
+    // Spela upp ljudet
+}
+
+
 
 function startTimerFromSelection() {
 
@@ -41,6 +45,8 @@ function startTimerFromSelection() {
     var display = document.getElementById('continueButton');
     openTime = new Date(); // Starta tiden när timern börjar
     stopped=false
+
+    askNotificationPermission();
 
     goal = document.getElementById('goalSelect').value;
     activity = document.getElementById('activitySelect').value;
@@ -55,11 +61,8 @@ function startTimerFromSelection() {
     localStorage.setItem('timerStopped', 'false');
 
     const selectedAct = document.getElementById('activitySelect').value;
-    const todoList = document.getElementById('todo-list-' + selectedAct);
+    toggleTodoList(selectedAct)
 
-    if (todoList) {
-        todoList.style.display = 'block';  // Ändra till 'block' för att visa listan
-    }
     if (selectedAct !== '----') {
         startTimer(duration, display); // Starta timern
         applyActivityLayout();
@@ -89,7 +92,7 @@ function startTimer(duration, display) {
             document.getElementById('stopButton').style.display = 'block';
             document.getElementById('continueButton').style.display = 'block';
             document.getElementById('continueButton').textContent = 'Continue';
-            showTimerEndNotification();
+            notifyUser();
         }
     }, 1000);
 }
@@ -115,17 +118,13 @@ function continueTimer() {
 function stopTimer() {
     if (timeEnded) {
         localStorage.setItem('timerStopped', true);
-        localStorage.setItem('activeTimer',false);
 
         localStorage.removeItem('activeTimer');
-        localStorage.setItem('activeTimer', activeTimer);
+        localStorage.setItem('activeTimer', false);
 
         const selectedAct = document.getElementById('activitySelect').value;
-        const todoList = document.getElementById('todo-list-' + selectedAct);
+        toggleTodoList(selectedAct)
 
-        if (todoList) {
-            todoList.style.display = 'none';  // Ändra till 'block' för att visa listan
-        }
         document.getElementById('startaAktivitet').style.display = 'none';
         document.getElementById('start-timer').style.display = 'none';
         document.getElementById('stopButton').style.display = 'none';
@@ -138,13 +137,19 @@ function stopTimer() {
 
 function saveActivity() {
     closeTime = new Date(); // Stoppa tiden när timern stoppas
+
     document.getElementById("start").value = new Date(openTime).toISOString().slice(0, 19).replace('T', ' ');
     document.getElementById("end").value = new Date(closeTime).toISOString().slice(0, 19).replace('T', ' ');
-    let elapsedTime = (closeTime - openTime) / 1000 / 60; // Konvertera millisekunder till minuter
+
+    // Beräkna tidsdifferensen i minuter och avrunda
+    let elapsedTime = (closeTime - openTime) / 1000 / 60; // Millisekunder -> sekunder -> minuter
     elapsedTime = Math.round(elapsedTime);
+
+    // Visa den beräknade poängen i gränssnittet
     document.getElementById('score-disp').textContent = elapsedTime;
     document.getElementById('score').value = elapsedTime;
-    document.getElementById('complete-form').style.display = 'block';
+
+    document.getElementById('complete-form').style.display = 'flex';
     localStorage.setItem('activeTimer',false);
 }
 
@@ -158,8 +163,9 @@ function updateTimerDisplay(timer, display) {
     }
 }
 
-function toggleTodoList(button, goalId) {
-const todoList = document.getElementById('todo-list-' + goalId);
+function toggleTodoList(actId) {
+const todoList = document.getElementById('todo-list-' + actId);
+
 if (todoList.style.display === 'none' || todoList.style.display === '') {
     todoList.style.display = 'block'; // Ändra till 'block'
 } else {
@@ -234,33 +240,6 @@ function deleteStreak(streakId) {
 
 function getCSRFToken() {
     return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-}
-
-function deleteGoal(Button, goalId) {
-    if (confirm('Är du säker på att du vill radera detta mål?')) {
-        const goal = document.getElementById('deleteGoal-' + goalId).value;
-        fetch('/pmg/deleteGoal/' + goalId, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()  // Lägg till CSRF-token i headers
-            },
-            body: JSON.stringify({ goal: goal })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Målet har raderats!');
-                location.reload(); // Ladda om sidan för att uppdatera listan
-            } else {
-                alert('Ett fel inträffade. Försök igen.');
-            }
-        })
-        .catch(error => {
-            console.error('Fel vid borttagning av mål:', error);
-            alert('Ett nätverksfel inträffade. Försök igen.');
-        });
-    }
 }
 
 
@@ -427,7 +406,7 @@ window.addEventListener('load', function() {
 
 document.addEventListener('DOMContentLoaded', function() {
 
-    requestNotificationPermission();  // Begär tillstånd vid sidladdning
+    askNotificationPermission();
 
     var startaAktivitetButton = document.getElementById('startaAktivitet');
     if (startaAktivitetButton) {
