@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
     <style>
     button {
-      width: 100px;
+      width: 60px;
     }
 
     .hidden {
@@ -14,6 +14,10 @@
 {% endblock head %}
 
 {% block body %}
+        <div class="view-toggle" style="background-color: #fdfdfd">
+            <button class="active-view" onclick="window.location.href='/txt/journal/skriva'">Write</button>
+            <button class="toggle-button" onclick="window.location.href=href='{{ url_for('txt.journal', section_name='blogg') }}'">Blog</button>
+        </div>
         {% if act_id %}
         <div class="blogg-container">
                 <form method="POST">
@@ -54,19 +58,20 @@
                         </div>
                     {% endif %}
                 </form>
-            </div>
         {% endif %}
+    </div>
 
         {% if not act_id %}
             {% if myPosts %}
                 <div class="blogg-post">
                     {% for post in myPosts %}
-                        <h3>{{ post.title }}</h3>
+                        <h3 class="post-title">{{ post.title }}</h3>
                         <p class="post-content">{{ post.content }}</p>
-                        <p class="post-content">{{ post.author }} {{ post.date }}</p>
+                        <p class="post-author">{{ post.author }} {{ post.date }}</p>
                     {% endfor %}
                 </div>
             {% endif %}
         {% endif %}
+
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 {% endblock body %}

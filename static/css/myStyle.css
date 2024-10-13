@@ -239,21 +239,6 @@ body {
         color: #721c24;
     }
 
-    .ordet label {
-        font-family: 'Arial', sans-serif;
-        font-size: x-large;
-        font-weight: bold;
-    }
-
-    .ordet input {
-        margin-inline: auto;
-        height: 30px;
-        width: 100%;
-        font-family: 'Arial', sans-serif;
-        font-size: larger;
-        font-weight: bold;
-    }
-
     .score-style {
         width: 100%;
         font-size: 22px;
@@ -735,9 +720,8 @@ input[type="text"], input[type="email"], input[type="password"] {
 }
 
 .blogg-container {
-    width: 90%;
+    width: 100%;
     display: flex;
-    top:30%;
     justify-content: center;
     align-items: center;
     min-height: 40%;
@@ -748,8 +732,29 @@ input[type="text"], input[type="email"], input[type="password"] {
     margin: 20px;
 }
 
+.blogg-post{
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    max-width: 80%;
+    margin-inline: auto;
+}
+
 .post-content {
     white-space: pre-wrap;
+
+}
+.post-title {
+    text-align: left; /* Vänsterjustera rubriken */
+    margin-bottom: 8px;
+}
+
+.post-author {
+    text-align: right; /* Högerjustera författar-raden */
+    font-size: 0.9em;  /* Eventuellt minska textstorleken */
+    color: #666;       /* Eventuellt en ljusare färg */
+    margin-bottom: 12px;
+    border-bottom: gray solid 1px;
 }
 
 .blogg-container textarea {
@@ -768,10 +773,24 @@ input[type="text"], input[type="email"], input[type="password"] {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding-top: 5px;
+    padding-top: 15px;
     padding-bottom: 15px;
     width: 100%;
 }
+    .ordet label {
+        font-family: 'Arial', sans-serif;
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .ordet input {
+        margin-inline: auto;
+        height: 30px;
+        width: 100%;
+        font-family: 'Arial', sans-serif;
+        font-size: larger;
+        font-weight: bold;
+    }
 
 input:focus {
     outline: none;

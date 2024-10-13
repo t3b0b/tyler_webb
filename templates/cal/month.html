@@ -2,7 +2,7 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
-
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cal.css') }}">
 {% endblock head %}
 
 {% block body %}
@@ -63,7 +63,7 @@
 <script>
 function onDateClick(element, date) {
     if (!element.classList.contains('other-month')) {
-        window.location.href = '/pmg/day/' + date;
+        window.location.href = '/cal/day/' + date;
     }
 }
 

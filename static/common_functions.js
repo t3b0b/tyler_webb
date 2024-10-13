@@ -7,35 +7,6 @@ let openTime;
 let closeTime;
 var stopped;
 //
-function askNotificationPermission() {
-    // Kontrollera om webbläsaren stödjer Notification API
-    if (!("Notification" in window)) {
-        alert("Din webbläsare stöder inte notifikationer.");
-    } else if (Notification.permission !== "granted") {
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-                console.log("Notifikationsåtkomst beviljad");
-            } else {
-                console.log("Notifikationsåtkomst nekad");
-            }
-        });
-    }
-}
-
-function playSound() {
-    var audio = new Audio('/path/to/your/sound.mp3'); // Länka till ljudfil
-    audio.play();
-}
-
-function notifyUser() {
-    if (Notification.permission === "granted") {
-        new Notification("Tiden är ute!", {
-            body: "Din timer har gått ut. Dags att ta en paus eller börja en ny aktivitet!",
-            icon: "/path/to/your/icon.png"
-        });
-    }
-    // Spela upp ljudet
-}
 
 
 
@@ -44,9 +15,8 @@ function startTimerFromSelection() {
     var duration = document.getElementById('timeSelect').value * 60; // Konverterar minuter till sekunder
     var display = document.getElementById('continueButton');
     openTime = new Date(); // Starta tiden när timern börjar
-    stopped=false
+    stopped=false;
 
-    askNotificationPermission();
 
     goal = document.getElementById('goalSelect').value;
     activity = document.getElementById('activitySelect').value;
@@ -61,7 +31,7 @@ function startTimerFromSelection() {
     localStorage.setItem('timerStopped', 'false');
 
     const selectedAct = document.getElementById('activitySelect').value;
-    toggleTodoList(selectedAct)
+    toggleTodoList(selectedAct);
 
     if (selectedAct !== '----') {
         startTimer(duration, display); // Starta timern
@@ -92,7 +62,6 @@ function startTimer(duration, display) {
             document.getElementById('stopButton').style.display = 'block';
             document.getElementById('continueButton').style.display = 'block';
             document.getElementById('continueButton').textContent = 'Continue';
-            notifyUser();
         }
     }, 1000);
 }
@@ -123,7 +92,7 @@ function stopTimer() {
         localStorage.setItem('activeTimer', false);
 
         const selectedAct = document.getElementById('activitySelect').value;
-        toggleTodoList(selectedAct)
+        toggleTodoList(selectedAct);
 
         document.getElementById('startaAktivitet').style.display = 'none';
         document.getElementById('start-timer').style.display = 'none';
@@ -131,7 +100,7 @@ function stopTimer() {
         document.getElementById('continueButton').style.display = 'none';
         document.getElementById('day-section').style.display = 'grid';
 
-        saveActivity()
+        saveActivity();
     }
 }
 
@@ -354,7 +323,7 @@ window.addEventListener('load', function() {
             // Återställ layout för en pågående aktivitet
             applyActivityLayout();
 
-            todoList = document.getElementById('todo-list-' + selectedActivityId);
+            let todoList = document.getElementById('todo-list-' + selectedActivityId);
 
             if (todoList) {
                 todoList.style.display = 'flex';  // Ändra till 'block' för att visa listan
@@ -408,15 +377,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     askNotificationPermission();
 
-    var startaAktivitetButton = document.getElementById('startaAktivitet');
+    let startaAktivitetButton = document.getElementById('startaAktivitet');
     if (startaAktivitetButton) {
         startaAktivitetButton.addEventListener('click', toggleActivityForm);
     } else {
         console.error('startaAktivitet button not found');
     }
 
-    var continueButton = document.getElementById('continueButton');
-    var stopButton = document.getElementById('stopButton');
+    let continueButton = document.getElementById('continueButton');
+    let stopButton = document.getElementById('stopButton');
 
     if (continueButton) {
         continueButton.addEventListener('click', continueTimer);
