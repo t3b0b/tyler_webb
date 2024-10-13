@@ -16,10 +16,10 @@
     {% if goals %}
         <div class="list-content">
         {% for goal in goals %}
-        <button class="list-item" onclick="window.location.href = '/pmg/goal/{{ goal.id }}/activities';">
-            {{ goal.name }}
-
-        </button>
+            <div class="list-item" data-goal-id="{{ goal.id }}" onclick="window.location.href = '/pmg/goal/{{ goal.id }}/activities';">
+                {{ goal.name }}
+                <button class="tgl-btn" onclick="event.stopPropagation(); deleteGoal({{ goal.id }})">&#10060;</button>
+            </div>
         {% endfor %}
         </div>
         {% endif %}
@@ -50,6 +50,29 @@
         document.getElementById('new-goal-form').style.display = 'none';
         document.getElementById('new-goal-button').style.display = 'block';
     }
+    function deleteGoal(goalId) {
+    if (confirm('Är du säker på att du vill radera detta mål?')) {
+        fetch('/pmg/delete-goal/' + goalId, {
+            method: 'POST',  // Använder POST här då DELETE-begäran ibland är blockerad på vissa servrar
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Målet har raderats!');
+                location.reload();  // Laddar om sidan för att uppdatera listan
+            } else {
+                alert('Ett fel inträffade. Försök igen.');
+            }
+        })
+        .catch(error => {
+            console.error('Fel vid radering:', error);
+            alert('Ett oväntat fel inträffade.');
+        });
+    }
+}
 
 </script>
 {% endblock body %}

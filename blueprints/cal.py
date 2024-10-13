@@ -176,7 +176,7 @@ def week():
 def timebox():
     page_info = getInfo('pageInfo.csv', 'myDay')
     today = datetime.now()
-    current_date = today.strftime("%Y-%m-%d")
+    current_date = today.date()
 
     sida, sub_menu = common_route('Min Dag', ['/cal/month', '/cal/week', '/cal/timebox'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])

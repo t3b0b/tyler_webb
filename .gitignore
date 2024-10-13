@@ -1,6 +1,5 @@
 .venv
 .idea
-instance
 .env
 error.log
 error.log.1

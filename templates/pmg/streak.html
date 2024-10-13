@@ -16,7 +16,7 @@
             <div class="list-content">
             {% for streak in streaks %}
                 <div class="list-item" data-level="{{ streak.level }}" onclick="window.location.href = '/pmg/streak/{{ streak.id }}/details';"> {{ streak.name }}
-                <button class="toggle-button" onclick="deleteStreak({{ streak.id }})">&#10060;</button>
+                    <button class="tgl-btn" onclick="deleteStreak({{ streak.id }})">&#10060;</button>
                 </div>
             {% endfor %}
             </div>

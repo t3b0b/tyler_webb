@@ -159,13 +159,15 @@ def get_activities(goal_id):
 def activity_tasks(activity_id):
     activity = Activity.query.get_or_404(activity_id)
     todos = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).all()
-    return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos)
+    sida=f"{activity.name} ToDos"
+    return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos, sida=sida, header=sida)
 
 @pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST'])
 def add_task(activity_id):
     activity = Activity.query.get_or_404(activity_id)
     task_name = request.form.get('task_name')
 
+    sida=f"{activity.name} ToDos"
     if not task_name:
         flash('Task name is required!', 'danger')  # Meddelande vid fel
         return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
@@ -182,31 +184,27 @@ def add_task(activity_id):
 def update_task(activity_id, task_id):
     task = ToDoList.query.get_or_404(task_id)
 
-    # Hämta den nya statusen från formuläret eller begäran
-    completed = request.form.get('completed') == 'on'
+    # Hämta den nya statusen från formuläret
+    completed = 'completed' in request.form  # Checkbox skickar bara värde om den är markerad
 
     # Uppdatera task status
     task.completed = completed
     db.session.commit()
-    # Omdirigera tillbaka till aktivitetsuppgifterna efter uppdateringen
-    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
 
+    # Omdirigera tillbaka till aktivitetsuppgifterna efter uppdateringen
+    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id),)
 # endregion
 
 @pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
 def delete_goal(goal_id):
+    # Här kan du implementera logiken för att ta bort målet från databasen
     goal = Goals.query.get(goal_id)
     if goal:
-        try:
-            db.session.delete(goal)
-            db.session.commit()
-            return jsonify(success=True)
-        except Exception as e:
-            db.session.rollback()
-            print(f"Error deleting goal: {e}")  # Lägg till detta för mer detaljerad felsökning
-            return jsonify(success=False, error=str(e))
+        db.session.delete(goal)
+        db.session.commit()
+        return jsonify({'success': True}), 200
     else:
-        return jsonify(success=False, error="Goal not found")
+        return jsonify({'success': False, 'error': 'Goal not found'}), 404
 
 @pmg_bp.route('/delete-activity/<int:activity_id>', methods=['POST'])
 def delete_activity(activity_id):
@@ -232,6 +230,7 @@ def myday():
     sida, sub_menu = common_route("Min Grind", ['/pmg/timebox', '/pmg/streak', '/pmg/goals'],
                                   ['My Day', 'Streaks', 'Goals'])
     date_now = date.today()
+    print(date_now)
     update_dagar(current_user.id, Dagar)
     myActs = Activity.query.filter_by(user_id=current_user.id).all()
     # Använd konsekvent my_goals istället för både my_goals och myGoals
@@ -239,7 +238,7 @@ def myday():
     my_Goals = query(Goals, 'user_id', current_user.id)
     myStreaks = Streak.query.filter(Streak.user_id == current_user.id).all()
     myScore, total = myDayScore(date_now, current_user.id)
-
+    print(total)
     aggregated_scores = {}
     # Bygg den aggregerade poänglistan och koppla till to-dos
     for score in myScore:
@@ -310,6 +309,7 @@ def myday():
             new_task = ToDoList(task=task_name, completed=False, user_id=current_user.id, activity_id=activity_id)
             db.session.add(new_task)
             db.session.commit()
+
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now, acts=myActs,
                            my_goals=my_Goals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
                            sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo, current_goal=current_goal)
@@ -337,22 +337,6 @@ def myday_date(date):
     else:
         return redirect(url_for('pmg.myday'))
 # endregion
-
-@pmg_bp.route('/activity/<int:activity_id>', methods=['GET', 'POST'])
-@login_required
-def start_activity(goal_id):
-    Act = Activity.query.get_or_404(activity_id)
-    todos = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).all()
-
-    if request.method == 'POST':
-        task_id = request.form.get('task_id')
-        task = Task.query.get(task_id)
-        if task:
-            task.status = 'in_progress'
-            db.session.commit()
-            return redirect(url_for('pmg.start_activity', goal_id=goal_id))
-
-    return render_template('pmg/activity.html', goal=goal, tasks=task)
 
 
 

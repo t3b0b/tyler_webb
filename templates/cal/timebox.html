@@ -58,11 +58,11 @@
         </div>
         <div class="timebox">
             <div class="cal-header">
-                <h2 style="font-size: 24px;"> {{ current_date }}</h2>
+                <h3 style="font-size: 24px;"> {{ current_date.strftime('%Y-%m-%d') }}</h3>
                 <div class="view-toggle">
-                    <button class="toggle-button" onclick="window.location.href='/cal/month'">Month</button>
-                    <button class="active-view" onclick="window.location.href='/cal/week'">Week</button>
-                    <button class="toggle-button" onclick="window.location.href='/cal/timebox'">Day</button>
+                    <button class="page-toggle-btn" onclick="window.location.href='/cal/month'">Month</button>
+                    <button class="page-toggle-btn" onclick="window.location.href='/cal/week'">Week</button>
+                    <button class="active-view" onclick="window.location.href='/cal/timebox'">Day</button>
                 </div>
             </div>
             <div class="scrollable">
@@ -81,10 +81,8 @@
                         {% for score in scores %}
                             {% if score.Start.hour == i %}
                                 <div>
-                                    <strong>{{ score.activity_name }}</strong><br>
-                                    Från: {{ score.Start.strftime('%H:%M') }}<br>
-                                    Till: {{ score.End.strftime('%H:%M') }}<br>
-                                    Poäng: {{ score.Time }} minuter
+                                    <strong>{{ score.activity_name }}</strong>
+                                    {{ score.Time }} minuter
                                 </div>
                             {% endif %}
                         {% endfor %}

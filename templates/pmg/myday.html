@@ -133,25 +133,24 @@
         <select id="activitySelect" class="select-style">
             <!-- Aktiviteter kommer att laddas här -->
         </select>
-        <select id="timeSelect" class="select-style">
+<!--        <select id="timeSelect" class="select-style">
             <option value="5">5 min</option>
             <option value="10">10 min</option>
             <option value="15">15 min</option>
-        </select>
-        <button id="start-timer" onclick="startTimerFromSelection()" class="button-style" style="display:none;">Starta</button>
+        </select> -->
+        <button id="start-timer" onclick="startActivity()" class="button-style" style="display:none;">Starta</button>
     </div>
 </div>
 
 <div class="button-center" style="width:30%">
-    <button id="stopButton" class="button-style" style="display: none; background-color: red" onclick="stopTimer()">Stop</button>
-    <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="continueTimer()">Continue</button>
+    <button id="stopButton" class="button-style" style="display: none; background-color: red" onclick="stopActivity()">Stop</button>
+    <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
 </div>
 
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
-
     var maxScore = 0
     var myScore = 0
     var percentage = 0
@@ -175,19 +174,6 @@
         document.getElementById('Gear').style.animation = 'gear 2s linear forwards';
     }
 
-function startAndRedirect() {
-    const selectedGoalId = document.getElementById('goalSelect').value;
-    const selectedActivityId = document.getElementById('activitySelect').value;
-    const selectedTime = document.getElementById('timeSelect').value;
-
-    if (selectedGoalId !== '----' && selectedActivityId !== '') {
-        // Redirect om valen är gjorda
-        window.location.href = `/pmg/activity/${selectedGoalId}?activity_id=${selectedActivityId}&time=${selectedTime}`;
-    } else {
-        // Meddelande om inte alla val är gjorda
-        alert('Please select both a goal and an activity to start.');
-    }
-}
 
 
     // Kör funktionen när sidan laddas
@@ -196,5 +182,6 @@ function startAndRedirect() {
         maxScore = 350; // Sätt max poäng
         updateProgress(myScore, maxScore);
     });
+
 </script>
 {% endblock body %}

@@ -58,28 +58,33 @@ def login():
 def confirm_reset():
     sida = 'Nollställning'
     today_date = datetime.now()
+
+    # Hämta streak-IDs som behöver nollställas från session
     streak_ids = session.get('streaks_to_reset', [])
     streaks_to_reset = Streak.query.filter(Streak.id.in_(streak_ids)).all()
 
     if request.method == 'POST':
-        # Hämta alla kryssade streaks
-        checked_streaks = request.form.getlist('streak')
+        # Hämta alla kryssade streaks från formuläret
+        checked_streaks = request.form.getlist('streak')  # List of streak IDs that were checked
 
         for streak in streaks_to_reset:
-            if str(streak.id) in checked_streaks:
-                # Nollställ streaken om den är kryssad
+            if str(streak.id) in checked_streaks:  # Om streaken är i listan av kryssade streaks
+                # Nollställ streaken
                 streak.count = 0
                 streak.active = False
-                streak.lastReg = datetime.now()  # Uppdatera lastReg till nu
+                streak.lastReg = datetime.now()  # Uppdatera lastReg till dagens datum
             else:
-                # Om streak inte nollställs, uppdatera streak.count
+                # Om streaken inte är kryssad, uppdatera streak.count utan att nollställa
                 last_reg = streak.lastReg
                 yesterday = datetime.now() - timedelta(days=1)
                 delta_days = (yesterday - last_reg).days
                 streak.count += delta_days
                 streak.lastReg = yesterday
 
+        # Spara ändringar till databasen
         db.session.commit()
+
+        # Töm sessionens streaks att nollställa efter nollställning
         session.pop('streaks_to_reset', None)
         flash('Streaks har uppdaterats.', 'success')
         return redirect(url_for('pmg.myday'))

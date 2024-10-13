@@ -15,8 +15,6 @@ from flask_mail import Mail, Message
 import sshtunnel
 import os
 from dotenv import load_dotenv
-
-
 # endregion
 
 #region Appconfig
@@ -33,8 +31,6 @@ if os.getenv('FLASK_ENV') == 'development':
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@127.0.0.1:{}/tylerobri$PMG'.format(tunnel.local_bind_port)
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@tylerobri.mysql.pythonanywhere-services.com/tylerobri$PMG'
-
-
 
 app.config['SECRET_KEY'] = "K6SM4x14"
 app.config['MAIL_SERVER'] = "smtp.gmail.com"

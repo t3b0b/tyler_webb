@@ -6,15 +6,18 @@
 {% endblock head %}
 
 {% block body %}
-    <h2>Bekräfta Nollställning av Streaks</h2>
-    <form method="POST">
+<form method="POST">
+    <h2>Streaks som behöver nollställas</h2>
+    <ul>
         {% for streak in streaks %}
-        <div class="list-item">
-            <span class="streak-name">{{ streak.name }}</span>
-            <!-- Ändra namn till "streak" så att alla checkboxes kan skickas som en lista -->
-            <input type="checkbox" name="streak" value="{{ streak.id }}"> Bekräfta nollställning
-        </div>
+            <li>
+                <label>
+                    <input type="checkbox" name="streak" value="{{ streak.id }}">
+                    {{ streak.name }} - Aktuell count: {{ streak.count }}
+                </label>
+            </li>
         {% endfor %}
-        <button type="submit" class="button-style">OK</button>
-    </form>
+    </ul>
+    <button type="submit">Bekräfta och nollställ valda streaks</button>
+</form>
 {% endblock body %}
