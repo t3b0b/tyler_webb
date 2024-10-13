@@ -20,8 +20,7 @@ from flask_mail import Mail, Message
 app = Flask(__name__)
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@tylerobri.mysql.pythonanywhere-services.com/tylerobri$PMG'
-
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tylerobri.db'
 
 
 app.config['SECRET_KEY'] = "K6SM4x14"

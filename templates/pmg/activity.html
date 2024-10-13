@@ -70,7 +70,7 @@
                 </li>
             {% endfor %}
         </ul>
-    <form method="POST" action="{{ url_for('pmg.manage_todo', goal_id=goal.id) }}">
+    <form method="POST" action="{{ url_for('pmg.get_todo_list', goal_id=goal.id) }}">
         <input type="hidden" name="goalId" value="{{ goal.id }}">
         <input type="text" name="task" placeholder="Lägg till en ny uppgift" required>
         <button type="submit" name="action" value="addTodo">Lägg till</button>
@@ -81,7 +81,7 @@
             <button id="continueButton" class="button-style" style="background-color: green; display: none;">Continue</button>
         </div>
     </div>
-
+</div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
 

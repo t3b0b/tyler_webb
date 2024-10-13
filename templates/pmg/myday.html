@@ -8,29 +8,20 @@
 
 {% block body %}
 <div id="day-section" class="grid-container">
-    {% for goal in my_goals %}
-        <div class="todo-list" id="todo-list-{{ goal.id }}">
-            <h4>To-Do {{ goal.name }}</h4>
+    {% for act in acts %}
+        <div class="todo-list" id="todo-list-{{ act.id }}">
+            <h4>To-Do {{ act.name }}</h4>
             <ul>
                 <!-- Lista över To-Dos för varje mål -->
-                {% for task in goal.todo_list %}
+                {% for task in act.todo_list %}
                     <li>
                         <input type="checkbox" {% if task.completed %}checked{% endif %}> {{ task.task }}
                     </li>
-                    {% if task.subtasks %}
-                    <ul>
-                        {% for subtask in task.subtasks %}
-                        <li>
-                            <input type="checkbox" {% if subtask.completed %}checked{% endif %}> {{ subtask.task }}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% endif %}
                 {% endfor %}
             </ul>
             <!-- Form för att lägga till ny uppgift -->
             <form method="POST">
-                <input type="hidden" name="goalId" value="{{ goal.id }}">
+                <input type="hidden" name="goalId" value="{{ act.goal_id }}">
                 <input type="text" name="task" placeholder="Enter new task" required>
                 <button type="submit" name="action" value="addTodo">Add Task</button>
             </form>
@@ -93,7 +84,7 @@
     </div>
 </div>
 <form method="POST">
-    <div id="completed-form" class="form-box">
+    <div id="completed-form" class="list-item">
         <input type="hidden" id="gID" name="gID" style="display: none;">
         <input type="hidden" id="aID" name="aID" style="display: none;">
         <input type="hidden" id="aDate" name="aDate" value="{{ current_date }}" style="display: none;">
@@ -112,33 +103,32 @@
         <p>Total tid: {{ data.total_time }}</p>
     </div>
 {% endfor %}
-
-<div id="activityForm" class="form-container" style="display: none; border: none; background-color: #eaeeef; width:30%;">
-    <select id="goalSelect" name="goalSel" class="select-style">
-        <option value="----"></option>
-        {% for goal in my_goals %}
-        <option  value="{{ goal.id }}">{{ goal.name }}</option>
-        {% endfor %}
-    </select>
-    <select id="activitySelect" class="select-style">
-        <!-- Aktiviteter kommer att laddas här -->
-    </select>
-    <select id="timeSelect" class="select-style">
-        <option value="0.1">6 s</option>
-        <option value="5">5 min</option>
-        <option value="10">10 min</option>
-        <option value="15">15 min</option>
-    </select>
-        <button id="start-timer" onclick="startTimerFromSelection()" class="button-style">Starta</button>
-    </div>
+        <form method="post">
+        <div id="activityForm" style= "display: none; border: none; background-color: #eaeeef; width:30%;">
+            <select id="goalSelect" class="select-style">
+                {% for goal in my_goals %}
+                    <option  value="{{ goal.id }}">{{ goal.name }}</option>
+                {% endfor %}
+            </select>
+            <select id="activitySelect" class="select-style">
+                <!-- Aktiviteter kommer att laddas här -->
+            </select>
+            <select id="timeSelect" class="select-style">
+                <option value="0.1">6 s</option>
+                <option value="5">5 min</option>
+                <option value="10">10 min</option>
+                <option value="15">15 min</option>
+            </select>
+        </div>
+        </form>
+    <button style="display: none" id="start-timer" onclick="startTimerFromSelection()" class="button-style">Starta</button>
     <div class="button-center">
         <button id="startaAktivitet" class="button-style" type="submit">New Activity</button>
     </div>
-
-<div class="button-center">
-    <button id="stopButton" class="button-style" style="display: none; background-color: red">Stop</button>
-    <button id="continueButton" class="button-style" style="display: none; background-color: green">Continue</button>
-</div>
+    <div  class="button-center">
+        <button id="stopButton" class="button-style" style="display: none; background-color: red">Stop</button>
+        <button id="continueButton" class="button-style" style="display: none; background-color: green">Continue</button>
+    </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
@@ -147,6 +137,7 @@
     var maxScore = 0
     var myScore = 0
     var percentage = 0
+
     function updateProgress(myScore, maxScore) {
         const styleSheet = document.styleSheets[0];
 
@@ -173,11 +164,23 @@ function startAndRedirect() {
     const selectedTime = document.getElementById('timeSelect').value;
 
     if (selectedGoalId !== '----' && selectedActivityId !== '') {
-        window.location.href = `/pmg/activity/${selectedGoalId}?activity_id=${selectedActivityId}&time=${selectedTime}`;
+        window.location.href = `/pmg/activity/${selectedGoalId}?actSel=${selectedActivityId}&timeSel=${selectedTime}`;
+
     } else {
         alert('Please select both a goal and an activity to start.');
     }
 }
+document.addEventListener('DOMContentLoaded', function() {
+    const startTimerButton = document.getElementById('start-timer');
+    if (startTimerButton) {
+        startTimerButton.addEventListener('click', function(event) {
+            event.preventDefault();  // Förhindrar sidladdning om knappen finns i ett formulär
+            startTimerFromSelection(); // Anropa din funktion
+        });
+    } else {
+        console.error('Start timer button not found');
+    }
+});
 
     // Kör funktionen när sidan laddas
     document.addEventListener("DOMContentLoaded", function() {

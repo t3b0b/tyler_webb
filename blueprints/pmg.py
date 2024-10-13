@@ -18,6 +18,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
 
+@pmg_bp.route('/timer')
+def timer():
+    sida='Timer'
+    duration = request.args.get('duration', default=60, type=int)
+    return render_template('pmg/timer.html',sida=sida,
+                           header=sida, duration=duration)
+
 #region Streak
 @pmg_bp.route('/streak',methods=['GET', 'POST'])
 def streak():
@@ -124,6 +131,48 @@ def activity_tasks(activity_id):
     # Hämta endast överordnade uppgifter
     return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos)
 
+@pmg_bp.route('/get_tasks/<int:goal_id>', methods=['GET'])
+def get_tasks(goal_id):
+    tasks = Task.query.filter_by(goal_id=goal_id).all()
+    tasks_data = [{"id": task.id, "name": task.task, "completed": task.completed} for task in tasks]
+    return jsonify({"tasks": tasks_data})
+
+
+@pmg_bp.route('/activity/<int:goal_id>', methods=['GET', 'POST'])
+@login_required
+def start_activity(goal_id):
+    activity_id = request.args.get('actSel')
+    time = request.args.get('timeSel')
+
+    # Kontrollera att variablerna finns
+    if not activity_id or not time:
+        return "Error: Missing activity_id or time", 400
+
+    # Gör något med goal_id, activity_id och time
+    activity = Activity.query.get(activity_id)
+    goal = Goals.query.get(goal_id)
+
+    activity = Activity.query.get(activity_id)
+
+    todos = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).all()
+
+    # Returnera JSON om det är en GET-begäran från JavaScript
+    if request.method == 'GET':
+        tasks_data = [{'id': task.id, 'task': task.task, 'completed': task.completed == 'completed'} for task in todos]
+        return jsonify(tasks=tasks_data)
+
+    # Om användaren startar en aktivitet
+    if request.method == 'POST':
+        task_id = request.form.get('task_id')
+        task = Task.query.get(task_id)
+        if task:
+            task.status = 'in_progress'
+            db.session.commit()
+            return redirect(url_for('pmg.start_activity', activity_id=activity_id))
+
+    return render_template('pmg/activity.html', activity=activity, tasks=todos, goal=goal, time=time)
+
+
 @pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST'])
 def add_task(activity_id):
     activity = Activity.query.get_or_404(activity_id)
@@ -221,6 +270,7 @@ def milestones(goal_id):
 
 # endregion
 
+
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 @login_required
 def myday():
@@ -231,6 +281,10 @@ def myday():
     update_dagar(current_user.id, Dagar)
 
     # Använd konsekvent my_goals istället för både my_goals och myGoals
+    my_activities = Activity.query.filter_by(user_id = current_user.id).all()
+
+    for act in my_activities:
+        todos = [{"id": task.id, "name": task.task, "completed": task.completed} for task in act.todo_list]
     my_goals = Goals.query.filter_by(user_id=current_user.id).all()
     myStreaks = Streak.query.filter_by(user_id=current_user.id).all()
     myScore, total = myDayScore(date_now, current_user.id)
@@ -314,7 +368,7 @@ def myday():
             print("Score field is empty")
 
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
-                           my_goals=my_goals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
+                           my_goals=my_goals, my_streaks=valid_streaks, my_score=myScore, total_score=total, acts=my_activities,
                            sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo, current_goal=current_goal)
 
 @pmg_bp.route('/myday/<date>')
@@ -341,26 +395,5 @@ def myday_date(date):
     else:
         return redirect(url_for('pmg.myday'))
 # endregion
-
-@pmg_bp.route('/activity/<int:goal_id>', methods=['GET', 'POST'])
-@login_required
-def start_activity(goal_id):
-    # Hämta målet baserat på goal_id
-    goal = Goals.query.get_or_404(goal_id)
-    tasks = Task.query.filter_by(goal_id=goal_id).all()
-
-    # Om användaren startar en aktivitet
-    if request.method == 'POST':
-        task_id = request.form.get('task_id')
-        task = Task.query.get(task_id)
-        if task:
-            task.status = 'in_progress'
-            db.session.commit()
-            return redirect(url_for('pmg.start_activity', goal_id=goal_id))
-
-    return render_template('pmg/activity.html', goal=goal, tasks=tasks)
-
-
-
 
 

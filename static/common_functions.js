@@ -18,19 +18,21 @@ function startTimerFromSelection() {
     localStorage.setItem('goalId', document.getElementById('goalSelect').value);
     localStorage.setItem('selectedActivityId', document.getElementById('activitySelect').value);
     localStorage.setItem('duration', duration);
+    document.getElementById('start-timer').style.display = 'none';
+    const SelActivityId = document.getElementById('activitySelect').value;
+    applyActivityLayout();
 
-    const selectedGoalId = document.getElementById('goalSelect').value;
-
-    if (selectedGoalId !== '----') {
+    if (SelActivityId !== '----') {
         // Ladda tasks för det valda målet
-        loadTasksForGoal(selectedGoalId);
+        loadTasksForActivity(SelActivityId);
         startTimer(duration, display); // Starta timern
-        applyActivityLayout();
+
 
     } else {
         alert('Please select a goal before starting the activity.');
     }
 }
+
 function applyActivityLayout() {
     document.getElementById('continueButton').style.backgroundColor = 'green';
     document.getElementById('startaAktivitet').style.display = 'none';
@@ -44,12 +46,8 @@ function applyActivityLayout() {
     document.getElementById('stopButton').style.display = 'block';
     document.getElementById('continueButton').style.display = 'block';
 
-    const selectedGoalId = document.getElementById('goalSelect').value;
-    const todoList = document.getElementById('todo-list-' + selectedGoalId);
-    if (todoList) {
-        todoList.style.display = 'block';  // Ändra till 'block' för att visa listan
-    }
-}
+
+
 
 function startTimer(duration, display) {
     var timer = duration, minutes, seconds;
@@ -94,8 +92,8 @@ function stopTimer() {
         localStorage.removeItem('activeTimer');
         localStorage.setItem('activeTimer', activeTimer);
 
-        const selectedGoalId = document.getElementById('goalSelect').value;
-        const todoList = document.getElementById('todo-list-' + selectedGoalId);
+        const SelActivityId = document.getElementById('activitySelect').value;
+        const todoList = document.getElementById('todo-list-' + SelActivityId);
         if (todoList) {
             todoList.style.display = 'none'; // Visa att-göra-listan om den finns
         }
@@ -161,9 +159,8 @@ function saveActivity() {
     console.log(`Activity saved with goal: ${goal}, activity: ${activity}, elapsedTime: ${elapsedTime}`);
 }
 
-function loadTasksForGoal(goalId) {
-    // Gör en AJAX-förfrågan till servern för att hämta tasks för valt mål
-    fetch(`/get_tasks/${goalId}`)
+function loadTasksForActivity(activityId) {
+    fetch(`/activity/${activityId}`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -179,7 +176,7 @@ function loadTasksForGoal(goalId) {
             data.tasks.forEach(task => {
                 const listItem = document.createElement('li');
                 listItem.innerHTML = `
-                    <input type="checkbox" ${task.completed ? 'checked' : ''}> ${task.name}
+                    <input type="checkbox" ${task.completed ? 'checked' : ''}> ${task.task}
                 `;
                 taskList.appendChild(listItem);
             });
@@ -188,6 +185,8 @@ function loadTasksForGoal(goalId) {
             console.error('Error fetching tasks:', error);
         });
 }
+
+
 
 function updateTimerDisplay(timer, display) {
     var minutes = parseInt(timer / 60, 10);
@@ -215,10 +214,6 @@ function toggleEditMode(button) {
         btn.style.display = btn.style.display === 'none' || btn.style.display === '' ? 'inline-block' : 'none';
     });
     button.textContent = button.textContent === '🖉' ? '✔' : '🖉';
-}
-
-function formatDateForMySQL(date) {
-    return date.toISOString().slice(0, 19).replace('T', ' ');
 }
 
 function deleteActivity(activityId) {
@@ -277,34 +272,6 @@ function getCSRFToken() {
     return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 }
 
-function deleteGoal(Button, goalId) {
-    if (confirm('Är du säker på att du vill radera detta mål?')) {
-        const goal = document.getElementById('deleteGoal-' + goalId).value;
-        fetch('/pmg/deleteGoal/' + goalId, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()  // Lägg till CSRF-token i headers
-            },
-            body: JSON.stringify({ goal: goal })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Målet har raderats!');
-                location.reload(); // Ladda om sidan för att uppdatera listan
-            } else {
-                alert('Ett fel inträffade. Försök igen.');
-            }
-        })
-        .catch(error => {
-            console.error('Fel vid borttagning av mål:', error);
-            alert('Ett nätverksfel inträffade. Försök igen.');
-        });
-    }
-}
-
-
 function fetchNewWord() {
 fetch('/pmg/get-new-word')
     .then(response => response.json())
@@ -326,6 +293,8 @@ function toggleActivityForm() {
     if (form) {
         form.style.display = form.style.display === 'none' ? 'block' : 'none';
         document.getElementById('startaAktivitet').style.display = 'none';
+        document.getElementById('start-timer').style.display = 'block';
+
     } else {
         console.error('Activity form element not found');
     }

@@ -85,7 +85,7 @@ class Task(db.Model):
     parent_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=True)
     # Relations
     activity = db.relationship('Activity', back_populates='tasks')
 

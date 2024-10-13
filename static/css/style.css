@@ -52,31 +52,7 @@
         flex: 1; /* Gör alla element lika breda */
     }
 
-    .button-center {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        margin: 20px 0;
-    }
 
-    .button-style {
-        width: 30%;
-        padding: 10px 20px;
-        margin: 20px auto;
-        display: block;
-        font-size: 1.2em;
-        cursor: pointer;
-        background-color: #111c91;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        transition: background-color 0.3s ease, color 0.3s ease;
-    }
-
-
-    .button-style:hover {
-        background-color: #419a44;
-    }
 
     nav ul {
         list-style: none;
