@@ -1,36 +1,104 @@
 {% extends 'base.html' %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cal.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
+
+<style>
+    input[type="text"], input[type="email"], input[type="password"] {
+    width: 100%;
+    padding: 10px; /* Lägg till padding för att skapa utrymme inuti input-rutan */
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: white;
+    box-sizing: border-box; /* Inkluderar padding i bredden så att den inte överstiger containern */
+    margin-bottom: 15px; /* Lägger till mellanrum under varje input */
+}
+
+/* Om du vill lägga till extra utrymme inuti själva containern */
+.list-content {
+    padding: 20px; /* Ger lite extra padding inuti containern så att input-rutorna inte når kanten */
+    box-sizing: border-box; /* Inkluderar padding i elementets totala storlek */
+}
+</style>
 {% endblock head %}
-    {% block body %}
-    <div class="two-grid-container">
+
+{% block body %}
+<div class="two-grid-container">
         <div class="notes">
-            <form method="POST">
-                <h2>Viktigt</h2>
-                {% for num in range(1, 6) %}
-                    <input style="font-size: 14px;" type="text" name="viktig_{{ num }}" value="{{ viktigt_saved[num-1] if viktigt_saved|length >= num else '' }}">
-                {% endfor %}
-                <h2>Reflektioner</h2>
-                {% for num in range(1, 6) %}
-                    <input style="font-size: 14px;" type="text" name="tankar_{{ num }}" value="{{ tankar_saved[num-1] if tankar_saved|length >= num else '' }}">
-                {% endfor %}
-                <button type="submit" class="send-button">Spara</button>
-            </form>
+            <div class="list-header" onclick="toggleList(this)">Att-göra</div>
+            <div class="list-content" style="display:none;">
+                <form method="POST">
+                    {% for num in range(1, 6) %}
+                        <input type="text" name="todo_{{ num }}" placeholder="Att-göra {{ num }}" value="{{ to_do_list[num-1] if to_do_list|length >= num else '' }}">
+                    {% endfor %}
+                    <button type="submit" name="save_todo">Spara Att-göra</button>
+                </form>
+            </div>
+
+            <div class="list-header" onclick="toggleList(this)">Att tänka på</div>
+            <div class="list-content" style="display:none;">
+                <form method="POST">
+                    {% for num in range(1, 6) %}
+                        <input type="text" name="think_{{ num }}" placeholder="Att tänka på {{ num }}" value="{{ to_think_list[num-1] if to_think_list|length >= num else '' }}">
+                    {% endfor %}
+                    <button type="submit" name="save_think">Spara Att tänka på</button>
+                </form>
+            </div>
+
+            <div class="list-header" onclick="toggleList(this)">Kom-ihåg</div>
+            <div class="list-content" style="display:none;">
+                <form method="POST">
+                    {% for num in range(1, 6) %}
+                        <input type="text" name="remember_{{ num }}" placeholder="Kom-ihåg {{ num }}" value="{{ remember_list[num-1] if remember_list|length >= num else '' }}">
+                    {% endfor %}
+                    <button type="submit" name="save_remember">Spara Kom-ihåg</button>
+                </form>
+            </div>
         </div>
         <div class="timebox">
-            <h1> {{ current_date }} </h1>
-            <table>
-                <tr>
-                    <th>Time</th>
-                    <th>Activity</th>
-                </tr>
+            <div class="cal-header">
+                <h2 style="font-size: 24px;"> {{ current_date }}</h2>
+                <div class="view-toggle">
+                    <button class="toggle-button" onclick="window.location.href='/cal/month'">Month</button>
+                    <button class="active-view" onclick="window.location.href='/cal/week'">Week</button>
+                    <button class="toggle-button" onclick="window.location.href='/cal/timebox'">Day</button>
+                </div>
+            </div>
+            <div class="scrollable">
+                        <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Activity</th>
+                    </tr>
+                </thead>
+                <tbody>
                 {% for i in range(6, 23) %}
                 <tr>
                     <td>{{ '{:02d}:00'.format(i) }}</td>
-                    <td></td>
+                    <td>
+                        {% for score in scores %}
+                            {% if score.Start.hour == i %}
+                                <div>
+                                    <strong>{{ score.activity_name }}</strong><br>
+                                    Från: {{ score.Start.strftime('%H:%M') }}<br>
+                                    Till: {{ score.End.strftime('%H:%M') }}<br>
+                                    Poäng: {{ score.Time }} minuter
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
                 </tr>
                 {% endfor %}
+                </tbody>
             </table>
         </div>
     </div>
+<script>
+function toggleList(element) {
+    const content = element.nextElementSibling;
+    content.style.display = content.style.display === 'none' || content.style.display === '' ? 'block' : 'none';
+}
+</script>
 {% endblock body %}

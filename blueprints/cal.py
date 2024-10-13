@@ -70,6 +70,7 @@ def day_view(date):
 
 @cal_bp.route('/month', methods=['GET', 'POST'])
 @cal_bp.route('/month/<int:year>/<int:month>')
+@login_required
 def month(year=None, month=None):
     page_info=getInfo('pageInfo.csv', 'myMonth')
     sida, sub_menu = common_route('Min Månad', ['/cal/month', '/cal/week', '/cal/timebox'],
@@ -97,8 +98,10 @@ def month(year=None, month=None):
                            sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data,page_info=page_info)
 
 @cal_bp.route('/week', methods=['GET', 'POST'])
+@login_required
 def week():
     current_date = datetime.now()
+
     year, week_num, weekday = current_date.isocalendar()
     start_week = current_date - timedelta(days=current_date.weekday())  # Start of the current week
     end_week = start_week + timedelta(days=6)  # End of the current week
@@ -172,17 +175,38 @@ def week():
 @login_required
 def timebox():
     page_info = getInfo('pageInfo.csv', 'myDay')
-    current_date = datetime.now().strftime("%Y-%m-%d")
     today = datetime.now()
-    viktigt = Idag.query.filter_by(date=today, user_id=current_user.id).all()
-    tankar = Idag.query.filter_by(date=today, user_id=current_user.id).all()
+    current_date = today.strftime("%Y-%m-%d")
 
     sida, sub_menu = common_route('Min Dag', ['/cal/month', '/cal/week', '/cal/timebox'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])
+
     start_date = today.replace(hour=0, minute=0, second=0, microsecond=0)
     end_date = today.replace(hour=23, minute=59, second=59, microsecond=999999)
-    activities = get_activities_for_user(current_user.id, start_date, end_date)
-    activities_dict = organize_activities_by_time(activities)
+
+    bullet = CalendarBullet.query.filter_by(user_id=current_user.id, date=today.date(), view_type='myDay').first()
+
+    # Om ingen CalendarBullet finns för idag, skapa en ny
+    if not bullet:
+        bullet = CalendarBullet(user_id=current_user.id, date=today.date(), view_type='myDay')
+        db.session.add(bullet)
+
+    # Hämta aktiviteter (scores) för användaren för den aktuella dagen
+    scores = db.session.query(
+        Activity.name.label('activity_name'),
+        Score.Start,
+        Score.End,
+        Score.Time,
+        Score.Date
+    ).join(
+        Activity, Activity.id == Score.Activity
+    ).filter(
+        Score.user_id == current_user.id
+    ).filter(
+        Score.Date >= start_date.date()
+    ).filter(
+        Score.Date <= end_date.date()
+    ).all()
 
     if request.method == 'POST':
         viktig_list = []
@@ -197,29 +221,21 @@ def timebox():
             if tanke:
                 tankar_list.append(tanke)
 
-        # Kombinera listorna till en enda sträng
-        viktig_str = ",".join(viktig_list)
-        tankar_str = ",".join(tankar_list)
-
-        # Spara strängarna i databasen
-        ny_viktig_punkt = Idag(date=current_date, viktigt=viktig_str, user_id=current_user.id)
-        ny_tanke = Idag(date=current_date, tankar=tankar_str, user_id=current_user.id)
-        db.session.add(ny_viktig_punkt)
-        db.session.add(ny_tanke)
+        # Spara till CalendarBullet
+        bullet.to_do = ','.join(viktig_list)
+        bullet.to_think = ','.join(tankar_list)
         db.session.commit()
 
         return redirect(url_for('cal.timebox'))
 
-    # Hämta sparade punkter
-    saved_entry = Idag.query.filter_by(date=current_date, user_id=current_user.id).first()
-    if saved_entry:
-        viktigt_saved = saved_entry.viktigt.split(",") if saved_entry.viktigt else []
-        tankar_saved = saved_entry.tankar.split(",") if saved_entry.tankar else []
-    else:
-        viktigt_saved = [""] * 5
-        tankar_saved = [""] * 5
-    return render_template('cal/timebox.html', current_date=current_date, sida=sida,
-                           header=sida, sub_menu=sub_menu, activities=activities_dict,
-                           page_info=page_info, viktigt_saved=viktigt_saved, tankar_saved=tankar_saved)
+        # Hämta sparade CalendarBullet-data
+    to_do_list = bullet.to_do.split(',') if bullet.to_do else []
+    to_think_list = bullet.to_think.split(',') if bullet.to_think else []
+    remember_list = bullet.remember.split(',') if bullet.remember else []
+
+    return render_template('cal/timebox.html', current_date=today, sida=sida,today=current_date,
+                           header=sida, sub_menu=sub_menu, scores=scores,
+                           to_do_list=to_do_list, to_think_list=to_think_list, remember_list=remember_list,
+                           page_info=page_info)
 
 # endregion

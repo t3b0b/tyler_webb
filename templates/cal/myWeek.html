@@ -3,12 +3,29 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cal.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
+<style>
+    input[type="text"], input[type="email"], input[type="password"] {
+    width: 100%;
+    padding: 10px; /* Lägg till padding för att skapa utrymme inuti input-rutan */
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: white;
+    box-sizing: border-box; /* Inkluderar padding i bredden så att den inte överstiger containern */
+    margin-bottom: 15px; /* Lägger till mellanrum under varje input */
+}
+
+/* Om du vill lägga till extra utrymme inuti själva containern */
+.list-content {
+    padding: 20px; /* Ger lite extra padding inuti containern så att input-rutorna inte når kanten */
+    box-sizing: border-box; /* Inkluderar padding i elementets totala storlek */
+}
+</style>
 {% endblock head %}
 
 {% block body %}
 <div class="two-grid-container">
     <div class="notes">
-        <div class="list-container">
             <div class="list-header" onclick="toggleList(this)">Att-göra</div>
             <div class="list-content" style="display:none;">
                 <form method="POST">
@@ -18,7 +35,6 @@
                     <button type="submit" name="save_todo">Spara Att-göra</button>
                 </form>
             </div>
-
             <div class="list-header" onclick="toggleList(this)">Att tänka på</div>
             <div class="list-content" style="display:none;">
                 <form method="POST">
@@ -28,7 +44,6 @@
                     <button type="submit" name="save_think">Spara Att tänka på</button>
                 </form>
             </div>
-
             <div class="list-header" onclick="toggleList(this)">Kom-ihåg</div>
             <div class="list-content" style="display:none;">
                 <form method="POST">
@@ -39,10 +54,16 @@
                 </form>
             </div>
         </div>
-    </div>
 
     <div class="timebox">
-        <h1>Vecka {{ current_date.isocalendar()[1] }}</h1>
+        <div class="cal-header">
+            <h2 style="font-size: 24px;">Vecka {{ current_date.isocalendar()[1] }}</h2>
+            <div class="view-toggle">
+                <button class="toggle-button" onclick="window.location.href='/cal/month'">Month</button>
+                <button class="active-view" onclick="window.location.href='/cal/week'">Week</button>
+                <button class="toggle-button" onclick="window.location.href='/cal/timebox'">Day</button>
+            </div>
+        </div>
         <div class="scrollable">
             <table>
             <thead>
@@ -85,7 +106,6 @@
         </div>
     </div>
 </div>
-
 <script>
 function toggleList(element) {
     const content = element.nextElementSibling;

@@ -18,6 +18,7 @@
         {% for goal in goals %}
         <button class="list-item" onclick="window.location.href = '/pmg/goal/{{ goal.id }}/activities';">
             {{ goal.name }}
+
         </button>
         {% endfor %}
         </div>
@@ -39,45 +40,6 @@
 </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
-
-    function deleteGoal(goalId) {
-        if (confirm('Är du säker på att du vill radera detta mål?')) {
-            fetch('/pmg/delete-goal/' + goalId, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ goalId: goalId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Målet har raderats!');
-                    location.reload();
-                } else {
-                    alert('Ett fel inträffade. Försök igen.');
-                }
-            });
-        }
-    }
-
-    function toggleActivities(button) {
-        const activityList = button.closest('.items-container').querySelector('.activity-list');
-        activityList.style.display = activityList.style.display === 'none' ? 'flex' : 'none';
-        button.textContent = activityList.style.display === 'none' ? 'ᐅ' : 'ᐁ';
-    }
-
-    function showAddActivityForm(button) {
-        const form = button.nextElementSibling;
-        form.style.display = 'flex';
-        button.style.display = 'none';
-    }
-
-    function hideAddActivityForm(button) {
-        const form = button.parentElement;
-        form.style.display = 'none';
-        form.previousElementSibling.style.display = 'block';
-    }
 
     function expandNewGoalForm() {
         document.getElementById('new-goal-button').style.display = 'none';
