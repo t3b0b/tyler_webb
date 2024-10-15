@@ -6,14 +6,15 @@ from flask_login import (login_user, logout_user, login_manager,
                          current_user, login_required)
 from werkzeug.utils import secure_filename
 
-from pmg_func import (common_route,getInfo,query,add2db,
-                      readWords)
+from pmg_func import (common_route,getInfo,filter_mod,add2db,readWords)
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Streak, Goals, Activity, Settings, MyWords
 from flask_mail import Mail, Message
+
 from datetime import datetime, timedelta
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from sqlalchemy.orm import scoped_session
 
 auth_bp = Blueprint('auth', __name__, template_folder='auth/templates')
 
@@ -23,9 +24,11 @@ s = URLSafeTimedSerializer("K6SM4x14")
 def login():
     sida = 'P.M.G'
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        user = User.query.filter_by(username=username).first()
+        session = scoped_session(db.session)
+        with session.begin():
+            username = request.form.get('username')
+            password = request.form.get('password')
+            user = User.query.filter_by(username=username).first()
 
         if user and check_password_hash(user.password, password):
             if not user.verified:
@@ -80,10 +83,11 @@ def confirm_reset():
                 delta_days = (yesterday - last_reg).days
                 streak.count += delta_days
                 streak.lastReg = yesterday
-
-        # Spara ändringar till databasen
-        db.session.commit()
-
+        try:
+            # Spara ändringar till databasen
+            db.session.commit()
+        except Exception:
+            db.session.rollback()  # Lägg till detta för att säkerställa rollback på fel
         # Töm sessionens streaks att nollställa efter nollställning
         session.pop('streaks_to_reset', None)
         flash('Streaks har uppdaterats.', 'success')
@@ -211,7 +215,7 @@ def settings(section_name=None):
         sida = 'Allmänna Inställningar'
         page_info = getInfo('pageInfo.csv', 'Settings')
 
-    mina_Ord = query(MyWords, 'user_id', current_user.id)
+    mina_Ord = filter_mod(MyWords, user_id=current_user.id)
 
     if request.method == 'POST':
         action = request.form['action']

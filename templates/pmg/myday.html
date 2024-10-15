@@ -16,38 +16,6 @@
 {% endblock head %}
 
 {% block body %}
-    {% for act in acts %}
-<div class="container">
-        <div class="todo-list" id="todo-list-{{ act.id }}" style="display:none;">
-            <h4>To-Do {{ act.name }}</h4>
-            <ul>
-                {% for task in act.todo_list %}
-                    <li>
-                        {{ task.task }}
-                         <form method="POST" action="{{ url_for('pmg.update_task', activity_id=act.id, task_id=task.id) }}">
-                            <input type="checkbox" name="completed" value="start" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
-                        </form>
-                    </li>
-                    {% if task.subtasks %}
-                    <ul>
-                        {% for subtask in task.subtasks %}
-                        <li>
-                            <input type="checkbox" onchange="updateTaskStatus({{ subtask.id }}, this.checked)" {% if subtask.completed %}checked{% endif %}> {{ subtask.task }}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-            <!-- Form för att lägga till ny uppgift -->
-            <form method="POST">
-                <input type="hidden" name="act-Id" value="{{ act.id }}">
-                <input type="text" name="task_name" placeholder="Enter new task" required style="width:30%;height:15%;">
-                <button type="submit" name="action" value="addTodo">Add Task</button>
-            </form>
-        </div>
-    {% endfor %}
-
 <div id="day-section" class="grid-container">
 
     <div id="goal-section" class="list-container" style="width:100%;">
@@ -178,6 +146,11 @@
 
     // Kör funktionen när sidan laddas
     document.addEventListener("DOMContentLoaded", function() {
+        if (localStorage.getItem('active') === 'true') {
+            let activityId = localStorage.getItem('selectedActivityId')
+            console.log("En aktivitet är redan aktiv.");
+            window.location.href = `/pmg/focus_room/${activityId}`;
+        }
         myScore = {{ total_score }} // Ersätt med den faktiska variabeln
         maxScore = 350; // Sätt max poäng
         updateProgress(myScore, maxScore);

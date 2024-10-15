@@ -4,6 +4,8 @@ from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet,
 from datetime import datetime, timedelta, date
 import pandas as pd
 from pytz import timezone
+from sqlalchemy import and_
+from sqlalchemy.exc import SQLAlchemyError
 from flask_login import current_user
 
 
@@ -160,14 +162,33 @@ def add2db(db_model, request, form_fields, model_fields, user):
             setattr(new_entry, 'goal_id', goal_id_value)
         else:
             setattr(new_entry, 'goal_id', None)
-
+    try:
     # Lägg till den nya posten i sessionen och committa
-    db.session.add(new_entry)
-    db.session.commit()
+        db.session.add(new_entry)
+        db.session.commit()
+    except:
+        db.session.rollback()  # Lägg till detta för att säkerställa rollback på fel
 
 
-def query(db, key, filter):
-    return db.query.filter_by(**{key: filter}).all()
+def filter_mod(model, **filters):
+
+    query = model.query
+    filter_conditions = []
+
+    try:
+        for field, value in filters.items():
+            filter_conditions.append(getattr(model, field) == value)
+
+        if filter_conditions:
+            query = query.filter(and_(*filter_conditions))
+
+        return query.all()
+
+    except SQLAlchemyError as e:
+        # Logga felet och gör rollback
+        db.session.rollback()  # Rollback till senaste fungerande state
+        print(f"Error during query execution: {str(e)}")
+        return None
 
 
 def unique(db, by_db):

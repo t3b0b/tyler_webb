@@ -9,56 +9,39 @@ function startActivity() {
     openTime = new Date(); // Spara starttiden
     localStorage.setItem('openTime', openTime.toISOString()); // Spara starttiden i localStorage om sidan laddas om
     localStorage.setItem('active',true);
-    localStorage.setItem('goalId', document.getElementById('goalSelect').value);
     localStorage.setItem('selectedActivityId', document.getElementById('activitySelect').value);
-    active = true
-    activity = localStorage.getItem('selectedActivityId')
-    toggleTodoList(activity);
-
-    // Dölja startknappen och visa stop-knappen
-    applyActivityLayout()
+    activityId = localStorage.getItem('selectedActivityId')
+    window.location.href = `/pmg/focus_room/${activityId}`;
 }
 
 function stopActivity() {
-    localStorage.removeItem('active');
     localStorage.setItem('active', false);
-
     closeTime = new Date(); // Spara stopptiden
-
+    openTime = localStorage.getItem('openTime');
     localStorage.setItem('closeTime', closeTime.toISOString()); // Spara stopptiden i localStorage om sidan laddas om
-
     // Beräkna skillnaden mellan start- och stopptiden
     let elapsedTime = (closeTime - openTime) / 1000 / 60; // Tidsdifferens i minuter
     elapsedTime = Math.round(elapsedTime); // Avrunda till närmsta minut
 
-    document.getElementById('startaAktivitet').style.display = 'none';
-    document.getElementById('start-timer').style.display = 'none';
-    document.getElementById('day-section').style.display = 'grid';
-
-    // Dölja stop-knappen och visa startknappen för att återställa aktiviteten
     document.getElementById('stopButton').style.display = 'none';
     document.getElementById('continueButton').style.display = 'block';
-    // Spara aktivitetstiden eller skicka till servern om det behövs
-    saveActivity(elapsedTime);
 
+    saveActivity(elapsedTime);
 }
 
 function saveActivity(elapsedTime) {
-    document.getElementById("gID").value = localStorage.getItem('goalId');
+    openTime = localStorage.getItem('openTime');
+    closeTime = localStorage.getItem('closeTime');
+    document.getElementById('completed-form').style.display = "block"; // Exempel på form-submission
+    document.getElementById('complete-form').style.display = "block";
+
     document.getElementById("aID").value = localStorage.getItem('selectedActivityId');
-    document.getElementById('score-disp').textContent = elapsedTime;
     document.getElementById('score').value = elapsedTime;
     document.getElementById("start").value = new Date(openTime).toISOString().slice(0, 19).replace('T', ' ');
     document.getElementById("end").value = new Date(closeTime).toISOString().slice(0, 19).replace('T', ' ');
 
-    activity = localStorage.getItem('selectedActivityId')
-    toggleTodoList(activity);
-
-    // Skicka formuläret om det är ett submit-formulär, annars kan du använda AJAX här
-    document.getElementById('complete-form').style.display = "block"; // Exempel på form-submission
     localStorage.removeItem('active');
     localStorage.removeItem('openTime');
-    location.reload()
 }
 
 function applyActivityLayout() {
@@ -77,7 +60,7 @@ const todoList = document.getElementById('todo-list-' + actId);
 if (todoList.style.display === 'none' || todoList.style.display === '') {
     todoList.style.display = 'flex'; // Ändra till 'block'
 } else {
-    todoList.style.display = 'none';
+    todoList.classList.toggle('hidden');;
 }
 
 }
@@ -146,19 +129,15 @@ function deleteStreak(streakId) {
     }
 }
 
-function getCSRFToken() {
-    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-}
 
-
-function fetchNewWord() {
-fetch('/pmg/get-new-word')
-    .then(response => response.json())
-    .then(text => {
-        var wordLabel = document.getElementById('ordet-label');
-        wordLabel.textContent = text;  // 'text' ska vara den rena strängen från JSON-svaret
-    })
-    .catch(error => console.error('Error fetching new word:', error));
+async function fetchNewWord() {
+    try {
+        let response = await fetch('/pmg/get-new-word');
+        let text = await response.json();
+        document.getElementById('ordet-label').textContent = text;
+    } catch (error) {
+        console.error('Error fetching new word:', error);
+    }
 }
 
 function editTitle() {
@@ -261,15 +240,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     let stopButton = document.getElementById('stopButton');
-
-
     if (stopButton) {
         stopButton.addEventListener('click', stopActivity);
     } else {
         console.error('stopButton not found');
     }
 });
-
-
-document.getElementById('stopButton').addEventListener('click', stopActivity);
-document.getElementById('startaAktivitet').addEventListener('click', toggleActivityForm);

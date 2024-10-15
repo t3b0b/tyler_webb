@@ -8,16 +8,15 @@
 <div class="list-container">
     <div class="list-header">
         <h3>{{ activity.name }} - Tasks</h3>
-
     </div>
     <div class="list-content">
         {% if tasks %}
             {% for task in tasks %}
                 <div class="list-item">{{ task.task }}
-                    <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
-                        <input type="checkbox" name="completed" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
+                    <form method="POST" action="{{ url_for('pmg.update_task', activity_id=act.id, task_id=task.id) }}">
+                        <input type="hidden" name="origin" value="todo">
+                        <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
                     </form>
-
                 </div>
             {% endfor %}
         {% else %}
@@ -26,6 +25,7 @@
     </div>
     <div class="add-form-container" style="display:flex; flex-direction: row; justify-content: center; align-items: center; width:100%; margin-inline: auto">
         <form action="{{ url_for('pmg.add_task', activity_id=activity.id) }}" method="POST">
+            <input type="hidden" name="origin" value="todo">
             <input style="text-align: left; width: 500px; height: 20px; padding:5px; border: black solid 1px;" type="text" name="task_name" placeholder="New Task Name" required>
             <button style="margin: 20px; color: white;font-weight: bold; background-color: #4caf50; border-radius: 3px;" type="submit">Add</button>
         </form>

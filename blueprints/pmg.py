@@ -1,20 +1,24 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from models import (User, db, Streak,Goals,
-                    Activity, Score,Dagar,ToDoList)
+                    Activity, Score, Dagar, ToDoList)
 
 from datetime import datetime, timedelta, date
 
 from pmg_func import (get_activities_for_user, getWord, getInfo,
-                      organize_activities_by_time, parse_date, process_weekly_scores,
-                      readWords, common_route, add2db, query, unique,
+                      organize_activities_by_time, parse_date,
+                      process_weekly_scores, readWords,
+                      common_route, add2db, unique,
                       section_content, update_dagar, completed_streaks,
-                      update_streak_details, myDayScore, generate_calendar_weeks)
+                      update_streak_details, myDayScore,
+                      generate_calendar_weeks, filter_mod)
 import pandas as pd
 from pytz import timezone
 from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.orm import scoped_session
 
+session = scoped_session(db.session)
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
 
@@ -25,8 +29,8 @@ def streak():
     current_date = date.today()
     current_date = current_date.strftime('%Y-%m-%d')
     sida, sub_menu = common_route("Mina Streaks", ['/pmg/streak', '/pmg/goals', '/pmg/milestones'], ['Streaks','Goals','Milestones'])
-    myStreaks = query(Streak,'user_id',current_user.id)
-    myGoals = query(Goals, 'user_id', current_user.id)
+    myStreaks = filter_mod(Streak,user_id=current_user.id)
+    myGoals = filter_mod(Goals, user_id=current_user.id)
 
     if request.method == 'POST':
         form_fields = ['streakName','streakInterval','streakCount',
@@ -47,6 +51,7 @@ def streak_details(streak_id):
     streak = Streak.query.get_or_404(streak_id)
     streakdetail = Streak.query.filter_by(user_id=current_user.id, id = streak_id).first()
     return render_template('pmg/details.html', streak=streak, detail=streakdetail)
+
 @pmg_bp.route('/update_streak/<int:streak_id>/<action>', methods=['POST'])
 def update_streak(streak_id, action):
     streak = Streak.query.get_or_404(streak_id)
@@ -122,7 +127,7 @@ def goals():
             return redirect(url_for('pmg.goals'))
 
     # Hämta mål på nytt varje gång sidan laddas för att säkerställa att listan är uppdaterad
-    my_Goals = query(Goals, 'user_id', current_user.id)
+    my_Goals = filter_mod(Goals, user_id=current_user.id)
 
     return render_template('pmg/goals.html', sida=sida, header=sida, goals=my_Goals, sub_menu=sub_menu)
 
@@ -158,7 +163,7 @@ def get_activities(goal_id):
 @pmg_bp.route('/activity/<int:activity_id>/tasks', methods=['GET'])
 def activity_tasks(activity_id):
     activity = Activity.query.get_or_404(activity_id)
-    todos = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).all()
+    todos = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).order_by(ToDoList.completed.desc()).all()
     sida=f"{activity.name} ToDos"
     return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos, sida=sida, header=sida)
 
@@ -166,18 +171,20 @@ def activity_tasks(activity_id):
 def add_task(activity_id):
     activity = Activity.query.get_or_404(activity_id)
     task_name = request.form.get('task_name')
+    origin = request.form.get('origin')
 
-    sida=f"{activity.name} ToDos"
-    if not task_name:
-        flash('Task name is required!', 'danger')  # Meddelande vid fel
-        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+    sida="PMG"
 
-    # Skapa ny task
-    new_task = ToDoList(task=task_name, completed=False, user_id=current_user.id, activity_id=activity_id)
+    new_task = ToDoList(task=task_name, completed=False, user_id=current_user.id, activity_id=activity.id)
     db.session.add(new_task)
     db.session.commit()
 
-    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+    if origin == 'todo':
+        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+    elif origin == 'focus':
+        return redirect(url_for('pmg.focus_room', activity_id=activity_id))
+
+    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id),sida=sida, header=sida)
 
 
 @pmg_bp.route('/activity/<int:activity_id>/update_task/<int:task_id>', methods=['POST'])
@@ -186,32 +193,45 @@ def update_task(activity_id, task_id):
 
     # Hämta den nya statusen från formuläret
     completed = 'completed' in request.form  # Checkbox skickar bara värde om den är markerad
+    origin = request.form.get('origin')  # Hämta ursprungssidan
 
     # Uppdatera task status
     task.completed = completed
     db.session.commit()
 
-    # Omdirigera tillbaka till aktivitetsuppgifterna efter uppdateringen
-    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id),)
-# endregion
+    # Omdirigera till rätt sida baserat på ursprungssidan
+    if origin == 'todo':
+        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+    elif origin == 'focus':
+        return redirect(url_for('pmg.focus_room', activity_id=activity_id))
+
+    # Om ingen origin skickas med, omdirigera till standard-sidan
+    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
 
 @pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
 def delete_goal(goal_id):
     # Här kan du implementera logiken för att ta bort målet från databasen
-    goal = Goals.query.get(goal_id)
-    if goal:
-        db.session.delete(goal)
-        db.session.commit()
-        return jsonify({'success': True}), 200
-    else:
-        return jsonify({'success': False, 'error': 'Goal not found'}), 404
+    with session.begin():
+        goal = Goals.query.get(goal_id)
+        if goal:
+            try:
+                db.session.delete(goal)
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+            return jsonify({'success': True}), 200
+        else:
+            return jsonify({'success': False, 'error': 'Goal not found'}), 404
 
 @pmg_bp.route('/delete-activity/<int:activity_id>', methods=['POST'])
 def delete_activity(activity_id):
     activity = Activity.query.get(activity_id)
     if activity:
-        db.session.delete(activity)
-        db.session.commit()
+        try:
+            db.session.delete(activity)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()  # Rollback om något går fel
         return jsonify(success=True), 200
     return jsonify(success=False), 404
 
@@ -226,18 +246,16 @@ def milestones(goal_id):
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 @login_required
 def myday():
-    pageInfo = getInfo('pageInfo.csv', 'Start')
+    pageInfo = getInfo('/home/tylerobri/mysite/tyler_webb/pageInfo.csv', 'Start')
     sida, sub_menu = common_route("Min Grind", ['/pmg/timebox', '/pmg/streak', '/pmg/goals'],
                                   ['My Day', 'Streaks', 'Goals'])
     date_now = date.today()
-    print(date_now)
-    update_dagar(current_user.id, Dagar)
-    myActs = Activity.query.filter_by(user_id=current_user.id).all()
     # Använd konsekvent my_goals istället för både my_goals och myGoals
-    update_dagar(current_user.id, Dagar)
-    my_Goals = query(Goals, 'user_id', current_user.id)
-    myStreaks = Streak.query.filter(Streak.user_id == current_user.id).all()
-    myScore, total = myDayScore(date_now, current_user.id)
+    with session.begin():
+        myActs = filter_mod(Activity, user_id=current_user.id)
+        my_Goals = filter_mod(Goals, user_id=current_user.id)
+        myStreaks = filter_mod(Streak, user_id=current_user.id)
+        myScore, total = myDayScore(date_now, current_user.id)
     print(total)
     aggregated_scores = {}
     # Bygg den aggregerade poänglistan och koppla till to-dos
@@ -322,9 +340,10 @@ def myday_date(date):
     completed_streakNames = completed_streaks(selected_date.strftime('%Y-%m-%d'),Dagar)
     for name in completed_streakNames:
         print(name)
-    myGoals = query(Goals, 'user_id', current_user.id)
-    myStreaks = Streak.query.filter(Streak.user_id == current_user.id, Streak.lastReg != today).all()
-    myScore, total = myDayScore(selected_date, current_user.id)
+    with session.begin():
+        myGoals = query(Goals, 'user_id', current_user.id)
+        myStreaks = Streak.query.filter(Streak.user_id == current_user.id, Streak.lastReg != today).all()
+        myScore, total = myDayScore(selected_date, current_user.id)
 
     if selected_date < today:
         sida='Past Day'
@@ -336,6 +355,45 @@ def myday_date(date):
                                my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
     else:
         return redirect(url_for('pmg.myday'))
+
+@pmg_bp.route('/focus_room/<int:activity_id>', methods=['GET', 'POST'])
+@login_required
+def focus_room(activity_id):
+    activity = Activity.query.get_or_404(activity_id)
+    goal_id = activity.goal_id  # Hämta goal_id från aktiviteten
+    today = date.today()
+    current_date=today
+
+    tasks = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).order_by(ToDoList.completed.desc()).all()
+
+
+    if request.method == 'POST':
+        if 'save-score' in request.form['action']:
+            score_str = request.form.get('score', '').strip()
+            if score_str:
+                try:
+                    score_check = float(score_str)
+                    if score_check >= 1:
+                        add2db(Score, request, ['gID', 'aID', 'aDate', 'start', 'end', 'score'],
+                               ['Goal', 'Activity', 'Date', 'Start', 'End', 'Time'], current_user)
+                        return redirect(url_for('pmg.myday'))
+                except ValueError:
+                    print(f"Invalid score value: {score_str}")
+            else:
+                print("Score field is empty")
+
+    if request.method == 'POST':
+        task_id = request.json.get('taskId')
+        completed = request.json.get('completed')
+
+        task = ToDoList.query.get_or_404(task_id)
+        task.completed = completed
+        db.session.commit()
+
+        return jsonify({"success": True}), 200
+
+    return render_template('pmg/focus_room.html', activity=activity, goal_id=goal_id, tasks=tasks, current_date=current_date)
+
 # endregion
 
 

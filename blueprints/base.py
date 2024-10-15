@@ -7,10 +7,14 @@ from models import (User, db, Streak, BloggPost, Goals, Mail,
 from datetime import datetime, timedelta,date
 from flask_login import current_user
 import pandas as pd
+import os
+
+file_path = "/home/tylerobri/mysite/tyler_webb/texts/tjänster.csv"
+df = pd.read_csv(file_path)
 
 base_bp = Blueprint('base', __name__, template_folder='templates/base')
 test=[]
-df = pd.read_csv("texts/tjänster.csv")
+df = pd.read_csv(file_path)
 data=df.loc[df['Tjänst']=="Mekanik"]
 def read_info(filename):
     with open(filename, "r", encoding="utf-8") as f:
@@ -18,55 +22,19 @@ def read_info(filename):
 @base_bp.route('/home')
 def home_base():
     sida = "Hem"
-    info = read_info("texts/unikOrg.txt")
+    info = read_info("/home/tylerobri/mysite/tyler_webb/texts/unikOrg.txt")
     unik = info.split("*")
     content_header = [unik[i] for i in range(len(unik)) if i % 2 == 0]
     content_text = [unik[i] for i in range(len(unik)) if i % 2 != 0]
     start_info = zip(content_header, content_text)
     return render_template('base/home.html', sida=sida, header="Tyler O'Brien", sideOptions=None, start_info=start_info)
 
-def get_blog_content_for_section(section_name):
-    if section_name:
-        section_name = section_name.lower()
-        content = BusinessBlogg.query.filter_by(topic=section_name).all()
-    else:
-        content = BusinessBlogg.query.all()
-    return content
-@base_bp.route('/blogg')
-def blogg():
-    sida = 'Blogg'
-    section_name = request.args.get('section_name')
-    if section_name:
-        sida=section_name
-        section_name = section_name.lower()
-    content = get_blog_content_for_section(section_name)
 
-    topics = BusinessBlogg.query.with_entities(BusinessBlogg.topic).distinct().all()
-    topic_names = [topic[0].title() for topic in topics]
 
-    sub_topics = BusinessBlogg.query.filter_by(topic=section_name).with_entities(BusinessBlogg.sub_topic).distinct().all()
-    sub_topic_names = [sub_topic[0].title() for sub_topic in sub_topics]
-
-    return render_template('base/blog.html', posts=content, topics=topic_names,
-                           sub_topics=sub_topic_names, section_name=section_name, sida=sida, header=sida)
-
-@base_bp.route('/blogg/<section_name>')
-def blog_content(section_name):
-    sida = section_name
-    content = get_blog_content_for_section(section_name)
-
-    topics = BusinessBlogg.query.with_entities(BusinessBlogg.topic).distinct().all()
-    topic_names = [topic[0].title() for topic in topics]
-
-    sub_topics = BusinessBlogg.query.filter_by(topic=section_name).with_entities(BusinessBlogg.sub_topic).distinct().all()
-    sub_topic_names = [sub_topic[0].title() for sub_topic in sub_topics]
-
-    return render_template('base/blog.html', posts=content, topics=topic_names,
-                           sub_topics=sub_topic_names,section_name=section_name, sida=sida, header=sida)
 @base_bp.route('/om-oss')
 def omOss():
     sida = 'Om oss'
-    vision = read_info("texts/om_oss.txt")
+    vision = read_info("/home/tylerobri/mysite/tyler_webb/texts/om_oss.txt")
     vision = vision.split("*")
     om_header = [vision[i] for i in range(len(vision)) if i % 2 == 0]
     om_text = [vision[i] for i in range(len(vision)) if i % 2 != 0]

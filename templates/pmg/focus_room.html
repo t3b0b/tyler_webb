@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
+    <style>
+    .container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        align-items: center; /* Centrera elementen horisontellt */
+        justify-content: center; /* Centrera elementen vertikalt */
+    }
+    </style>
+
+{% endblock head %}
+{% block body %}
+<div class="container">
+    <div class="todo-list" id="todo-list-{{ activity.id }}">
+        <h4>{{ activity.name }} To-Do</h4>
+        <ul>
+        {% for task in tasks %}
+            <li class="{% if task.completed %}completed-task{% endif %}">
+                {{ task.task }}
+                <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
+                    <input type="hidden" name="origin" value="todo_list">
+                    <input type="checkbox" class="task-checkbox" name="completed"
+                        onchange="this.form.submit()"  {% if task.completed %} checked {% endif %}>
+                </form>
+            </li>
+        {% endfor %}
+        </ul>
+        <form class="form-container" method="POST">
+            <input type="hidden" name="actId" value="{{ activity.id }}">
+            <input type="hidden" name="origin" value="focus">
+            <input type="text" name="task_name" placeholder="Enter new task" required>
+            <button type="submit" name="action" value="addTodo">Add Task</button>
+        </form>
+    </div>
+    <form method="POST">
+        <div id="completed-form" class="form-container" style="display:none;">
+            <input type="text" id="aID" name="aID" >
+            <input type="text" id="aDate" name="aDate" value="{{ current_date }}">
+            <input type="text" id="start" name="start">
+            <input type="text" id="end" name="end">
+            <input type="text" id="score" name="score">
+            <div class="button-center" id="complete-form" style="display:none;">
+                <button type="submit" name="action" id="save-btn" class="button-style" value="save-score">Save</button>
+            </div>
+        </div>
+    </form>
+    <div class="button-center" style="width:10%">
+        <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
+        <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='common_functions.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    if (localStorage.getItem('active') === 'true') {
+        console.log("En aktivitet är redan aktiv.");
+        return;  // Avsluta om en aktivitet redan pågår
+    }
+
+    // Lägg till event listeners för uppgifter
+    document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const taskId = this.dataset.taskId;
+            const isCompleted = this.checked;
+            updateTaskStatus(taskId, isCompleted);
+        });
+    });
+});
+</script>
+{% endblock body %}
