@@ -23,6 +23,14 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f'{self.username}, {self.email}, {self.password}'
 
+class FriendGoal(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
+    is_owner = db.Column(db.Boolean, default=False)
+    user = db.relationship('User', backref=db.backref('user_goals', cascade='all, delete-orphan'))
+    goal = db.relationship('Goals', backref=db.backref('user_goals', cascade='all, delete-orphan'))
+
 class Friendship(db.Model):
     __tablename__ = 'friendship'
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
@@ -38,6 +46,8 @@ class Message(db.Model):
 
     sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
     recipient = db.relationship('User', foreign_keys=[recipient_id], backref='received_messages')
+# endregion
+
 
 class Settings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -142,38 +152,14 @@ class Score(db.Model):
 
 # region Friends
 
-
-
-class FriendGoal(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
-    is_owner = db.Column(db.Boolean, default=False)
-    user = db.relationship('User', backref=db.backref('user_goals', cascade='all, delete-orphan'))
-    goal = db.relationship('Goals', backref=db.backref('user_goals', cascade='all, delete-orphan'))
-
-# endregion
-
 # region Calendar
 
-import enum
-
-class ViewType(enum.Enum):
-    myWeek = "myWeek"
-    myMonth = "myMonth"
-    myDay = "myDay"
-
-class CalendarBullet(db.Model):
+class TopFive(db.Model):
     __tablename__ = 'calendar_bullets'
     id = db.Column(db.Integer, primary_key=True)
-    week_num = db.Column(db.Integer, nullable=True)
-    month = db.Column(db.Integer, nullable=True)
     date = db.Column(db.Date, nullable=True)
-    to_do = db.Column(db.String(1000), nullable=True)
-    to_think = db.Column(db.String(1000), nullable=True)
-    remember = db.Column(db.String(1000), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    view_type = db.Column(db.Enum('myDay', 'myWeek', 'myMonth'), nullable=False)
+    title = db.Column(db.String(800), nullable=False)
 
     def __repr__(self):
         return f"<CalendarBullet {self.date} ({self.view_type})>"
@@ -205,55 +191,16 @@ class Dagar(db.Model):
     def __repr__(self):
         return f'{self.user_id}, {self.date}, {self.total_streaks}, {self.completed_streaks}, {self.completed_streaks_names}, {self.total_points}'
 
-class Month(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    month = db.Column(db.String(80), nullable=False)
-    viktigt = db.Column(db.String(255), nullable=True)
-    tankar = db.Column(db.String(255), nullable=True)
-    remember = db.Column(db.Text, nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    def __repr__(self):
-        return f'{self.month}, {self.viktigt}, {self.tankar}, {self.remember}'
-
-class Week(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    week = db.Column(db.Integer, nullable=False)
-    viktigt = db.Column(db.String(255), nullable=True)
-    tankar = db.Column(db.String(255), nullable=True)
-    remember = db.Column(db.Text, nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    def __repr__(self):
-        return f'{self.week}, {self.viktigt}, {self.tankar}, {self.remember}'
-
-class Idag(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.String(10), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    viktigt = db.Column(db.String(255), nullable=True)
-    tankar = db.Column(db.String(255), nullable=True)
-
-    def __repr__(self):
-        return f'{self.date}, {self.viktigt}, {self.tankar}, {self.remember}'
-
 # endregion
 
 #region Text
+
 class Bullet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     author = db.Column(db.String(50), nullable=False)
     theme = db.Column(db.String(50), nullable=False)
     content = db.Column(db.Text, unique=False, nullable=False)
     date = db.Column(db.Date, unique=False, nullable=False, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-
-class WhyGoals(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    author=db.Column(db.String(50), nullable=False)
-    goal = db.Column(db.String(50))
-    title = db.Column(db.String(50), nullable=False)
-    text = db.Column(db.Text, unique=False, nullable=False)
-    date = db.Column(db.DateTime, unique=False, nullable=False, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 
@@ -264,6 +211,7 @@ class Notes(db.Model):
     content = db.Column(db.Text, unique=False, nullable=False)
     author = db.Column(db.String(50), nullable=True)
     type = db.Column(db.Integer, nullable=False)
+    
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     goal_id = db.Column(db.Integer, db.ForeignKey('goal.id'), nullable=True)
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)

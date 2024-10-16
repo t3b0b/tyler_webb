@@ -2,15 +2,14 @@ import os
 
 from flask import (Blueprint, render_template, redirect, url_for,
                    request, flash, session)
-from flask_login import (login_user, logout_user, login_manager,
-                         current_user, login_required)
+from flask_login import (login_user, logout_user, current_user, login_required)
 from werkzeug.utils import secure_filename
 
 from pmg_func import (common_route,getInfo,filter_mod,add2db,readWords)
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Streak, Goals, Activity, Settings, MyWords
-from flask_mail import Mail, Message
+from flask_mail import Message
 
 from datetime import datetime, timedelta
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
@@ -19,16 +18,13 @@ from sqlalchemy.orm import scoped_session
 auth_bp = Blueprint('auth', __name__, template_folder='auth/templates')
 
 s = URLSafeTimedSerializer("K6SM4x14")
-
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     sida = 'P.M.G'
     if request.method == 'POST':
-        session = scoped_session(db.session)
-        with session.begin():
-            username = request.form.get('username')
-            password = request.form.get('password')
-            user = User.query.filter_by(username=username).first()
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.query.filter_by(username=username).first()
 
         if user and check_password_hash(user.password, password):
             if not user.verified:
@@ -46,8 +42,8 @@ def login():
                     streaks_to_reset.append(streak)
 
             if streaks_to_reset:
-                session['streaks_to_reset'] = [streak.id for streak in streaks_to_reset]
-                return redirect(url_for('auth.confirm_reset'))
+                # Skicka med streaks_to_reset som en parameter i URL:en
+                return redirect(url_for('auth.confirm_reset', streak_ids=[streak.id for streak in streaks_to_reset]))
 
             return redirect(url_for('pmg.myday'))
         else:
@@ -60,36 +56,28 @@ def login():
 @login_required
 def confirm_reset():
     sida = 'Nollställning'
-    today_date = datetime.now()
-
-    # Hämta streak-IDs som behöver nollställas från session
-    streak_ids = session.get('streaks_to_reset', [])
+    streak_ids = request.args.getlist('streak_ids')  # Hämtar streak_ids från URL:en
     streaks_to_reset = Streak.query.filter(Streak.id.in_(streak_ids)).all()
 
     if request.method == 'POST':
-        # Hämta alla kryssade streaks från formuläret
-        checked_streaks = request.form.getlist('streak')  # List of streak IDs that were checked
+        # Hämta alla kryssade streaks
+        checked_streaks = request.form.getlist('streak')
 
         for streak in streaks_to_reset:
-            if str(streak.id) in checked_streaks:  # Om streaken är i listan av kryssade streaks
-                # Nollställ streaken
+            if str(streak.id) in checked_streaks:
+                # Nollställ streaken om den är kryssad
                 streak.count = 0
                 streak.active = False
-                streak.lastReg = datetime.now()  # Uppdatera lastReg till dagens datum
+                streak.lastReg = datetime.now()  # Uppdatera lastReg till nu
             else:
-                # Om streaken inte är kryssad, uppdatera streak.count utan att nollställa
+                # Om streak inte nollställs, uppdatera streak.count
                 last_reg = streak.lastReg
                 yesterday = datetime.now() - timedelta(days=1)
                 delta_days = (yesterday - last_reg).days
                 streak.count += delta_days
                 streak.lastReg = yesterday
-        try:
-            # Spara ändringar till databasen
-            db.session.commit()
-        except Exception:
-            db.session.rollback()  # Lägg till detta för att säkerställa rollback på fel
-        # Töm sessionens streaks att nollställa efter nollställning
-        session.pop('streaks_to_reset', None)
+
+        db.session.commit()
         flash('Streaks har uppdaterats.', 'success')
         return redirect(url_for('pmg.myday'))
 

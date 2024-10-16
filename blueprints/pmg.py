@@ -1,5 +1,5 @@
 from random import choice
-from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
+from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, session
 from models import (User, db, Streak,Goals,
                     Activity, Score, Dagar, ToDoList)
 
@@ -18,9 +18,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import scoped_session
 
-session = scoped_session(db.session)
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
-
 
 #region Streak
 @pmg_bp.route('/streak',methods=['GET', 'POST'])
@@ -212,6 +210,7 @@ def update_task(activity_id, task_id):
 @pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
 def delete_goal(goal_id):
     # Här kan du implementera logiken för att ta bort målet från databasen
+    session = scoped_session(db.session)
     with session.begin():
         goal = Goals.query.get(goal_id)
         if goal:
@@ -335,7 +334,7 @@ def myday():
 @login_required
 def myday_date(date):
     selected_date = datetime.strptime(date, '%Y-%m-%d').date()
-
+    session = scoped_session(db.session)
     today = datetime.now().date()
     completed_streakNames = completed_streaks(selected_date.strftime('%Y-%m-%d'),Dagar)
     for name in completed_streakNames:

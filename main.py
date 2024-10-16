@@ -2,7 +2,7 @@
 import logging
 from logging.handlers import RotatingFileHandler
 from flask import (Flask, render_template, flash,
-                   request, redirect, url_for)
+                   request, redirect, url_for, session)
 from flask_login import LoginManager, current_user
 from blueprints.friends import friends_bp
 from blueprints.base import base_bp,read_info

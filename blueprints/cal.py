@@ -2,8 +2,8 @@ from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 
 from models import (User, db, Streak, Goals,
-                    Activity, Score, Dagar,
-                    Idag,Event,CalendarBullet,ViewType)
+                    Activity, Score,
+                    Event,TopFive,Dagar)
 
 from datetime import datetime, timedelta
 
@@ -21,11 +21,11 @@ cal_bp = Blueprint('cal', __name__, template_folder='templates/cal')
 @login_required
 def save_calendar_bullet(date, view_type):
     # Hämta användarens CalendarBullet för det aktuella datumet
-    calendar_bullet = CalendarBullet.query.filter_by(user_id=current_user.id, date=date).first()
+    calendar_bullet = TopFive.query.filter_by(user_id=current_user.id, date=date).first()
 
     # Om det inte finns någon bullet för det datumet, skapa en ny
     if not calendar_bullet:
-        calendar_bullet = CalendarBullet(user_id=current_user.id, date=date)
+        calendar_bullet = TopFive(user_id=current_user.id, date=date)
 
     # Hämta data från formuläret
     calendar_bullet.to_do = request.form.get('to_do')
@@ -33,7 +33,6 @@ def save_calendar_bullet(date, view_type):
     calendar_bullet.remember = request.form.get('remember')
 
     # Ställ in view_type från URL-parametern
-    calendar_bullet.view_type = ViewType[view_type]
 
     # Lägg till eller uppdatera i databasen
     db.session.add(calendar_bullet)
@@ -137,11 +136,11 @@ def week():
         week_scores[day_str].append(score)
         print(f"Added score: {score.activity_name} to {score.Date} from {score.Start} to {score.End}")
 
-    bullet = CalendarBullet.query.filter_by(user_id=current_user.id, week_num=week_num, view_type="myWeek").first()
+    bullet = TopFive.query.filter_by(user_id=current_user.id, week_num=week_num, view_type="myWeek").first()
 
     # Om det inte finns något, skapa ett nytt objekt
     if not bullet:
-        bullet = CalendarBullet(user_id=current_user.id, week_num=week_num, view_type="myWeek")
+        bullet = TopFive(user_id=current_user.id, week_num=week_num, view_type="myWeek")
         db.session.add(bullet)
 
     # Om POST-förfrågan skickas, uppdatera listorna
@@ -184,11 +183,11 @@ def timebox():
     start_date = today.replace(hour=0, minute=0, second=0, microsecond=0)
     end_date = today.replace(hour=23, minute=59, second=59, microsecond=999999)
 
-    bullet = CalendarBullet.query.filter_by(user_id=current_user.id, date=today.date(), view_type='myDay').first()
+    bullet = TopFive.query.filter_by(user_id=current_user.id, date=today.date(), view_type='myDay').first()
 
     # Om ingen CalendarBullet finns för idag, skapa en ny
     if not bullet:
-        bullet = CalendarBullet(user_id=current_user.id, date=today.date(), view_type='myDay')
+        bullet = TopFive(user_id=current_user.id, date=today.date(), view_type='myDay')
         db.session.add(bullet)
 
     # Hämta aktiviteter (scores) för användaren för den aktuella dagen

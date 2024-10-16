@@ -1,7 +1,7 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from models import (User, db, Notes, Goals, Bullet,
-                    Activity, Score, MyWords, Settings, Dagar, WhyGoals)
+                    Activity, Score, MyWords, Settings, Dagar)
 
 from pmg_func import (section_content,common_route,getInfo,
                       getWord, add2db, update_dagar)
@@ -78,13 +78,13 @@ def journal_section(act_id, sida, sub_menu, my_posts):
         ordet = current_date
     elif sida == 'Mina Mål':
         goals = Goals.query.filter_by(user_id=current_user.id).with_entities(Goals.name).all()
-        used_goals = WhyGoals.query.filter_by(user_id=current_user.id).with_entities(WhyGoals.goal).all()
+#        used_goals = WhyGoals.query.filter_by(user_id=current_user.id).with_entities(WhyGoals.goal).all()
         goal_list = [goal[0] for goal in goals]
-        used_goal_list = [used_goal[0] for used_goal in used_goals]
+#        used_goal_list = [used_goal[0] for used_goal in used_goals]
         for goal in goal_list:
-            if not goal in used_goal_list:
-                ordet = f'Varför är detta mål viktigt för dig? ({goal})'
-                why_G = goal
+#            if not goal in used_goal_list:
+            ordet = f'Varför är detta mål viktigt för dig? ({goal})'
+#           why_G = goal
             break
     elif sida == "Bullet":
         ordet = ['Tacksam för', 'Inför imorgon', "Personer som betyder",
@@ -129,8 +129,8 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                     newBullet = Bullet(theme=theme, author=f'{user.firstName} {user.lastName}', content=bullet_list, date=current_date, user_id=current_user.id)
                     db.session.add(newBullet)
                     db.session.commit()
-                elif sida == 'Mina Mål':
-                    add2db(WhyGoals,request,['post-ord','blogg-content','goal'],['title','text','goal'],user)
+#                elif sida == 'Mina Mål':
+#                    add2db(WhyGoals,request,['post-ord','blogg-content','goal'],['title','text','goal'],user)
             elif option == "write-on-time":
                 add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], user)
                 if sida == 'Dagbok':
