@@ -74,10 +74,16 @@ def add_friend(friend_id):
 @login_required
 def friends():
     sida,sub_menu=common_route('Friends',['/friends/friends','/friends/all_messages','/friends/users'],['Friends','Messages','Users'])
+
     pending_requests = Friendship.query.filter_by(friend_id=current_user.id, status='pending').all()
     accepted_friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
                        Friendship.query.filter_by(friend_id=current_user.id, status='accepted').all()
-    return render_template('/friends/friends.html', pending_requests=pending_requests, accepted_friends=accepted_friends, sida=sida,header=sida,sub_menu=sub_menu)
+    
+    pending_users = User.query.filter(User.id.in_(pending_requests)).all()
+    accepted_users = User.query.filter(User.id.in_(accepted_friends)).all()
+
+    return render_template('friends.html', pending_users=pending_users, accepted_users=accepted_users, 
+                           pending_requests=pending_requests, accepted_friends=accepted_friends)
 
 @friends_bp.route('/respond_friend_request/<int:request_id>/<response>')
 @login_required
@@ -86,7 +92,6 @@ def respond_friend_request(request_id, response):
     if friendship.friend_id != current_user.id:
         flash('Not authorized.', 'danger')
         return redirect(url_for('pmg.myday'))
-
     if response == 'accept':
         friendship.status = 'accepted'
         db.session.commit()
