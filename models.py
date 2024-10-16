@@ -23,6 +23,12 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f'{self.username}, {self.email}, {self.password}'
 
+class Friendship(db.Model):
+    __tablename__ = 'friendship'
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    friend_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    status = db.Column(db.String(50), nullable=False)  # pending, accepted
+
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -136,11 +142,7 @@ class Score(db.Model):
 
 # region Friends
 
-class Friendship(db.Model):
-    __tablename__ = 'friendship'
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    friend_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    status = db.Column(db.String(50), nullable=False)  # pending, accepted
+
 
 class FriendGoal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -163,7 +165,6 @@ class ViewType(enum.Enum):
 
 class CalendarBullet(db.Model):
     __tablename__ = 'calendar_bullets'
-
     id = db.Column(db.Integer, primary_key=True)
     week_num = db.Column(db.Integer, nullable=True)
     month = db.Column(db.Integer, nullable=True)
@@ -239,12 +240,12 @@ class Idag(db.Model):
 #region Text
 class Bullet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-
     author = db.Column(db.String(50), nullable=False)
     theme = db.Column(db.String(50), nullable=False)
     content = db.Column(db.Text, unique=False, nullable=False)
     date = db.Column(db.Date, unique=False, nullable=False, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
 
 class WhyGoals(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -255,13 +256,18 @@ class WhyGoals(db.Model):
     date = db.Column(db.DateTime, unique=False, nullable=False, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-class BloggPost(db.Model):
+
+class Notes(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    author = db.Column(db.String(50), nullable=False)
+    date = db.Column(db.Date, unique=False, nullable=False)
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, unique=False, nullable=False)
-    date = db.Column(db.Date, unique=False, nullable=False)
+    author = db.Column(db.String(50), nullable=True)
+    type = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goal.id'), nullable=True)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)
+
     def __repr__(self):
         return f"{self.author}, {self.title}, {self.content},{self.date}, {self.user_id}"
 

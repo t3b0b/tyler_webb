@@ -5,7 +5,7 @@ import re
 import nltk
 from nltk.corpus import stopwords
 from flask_login import current_user
-from models import BloggPost
+from models import Notes
 
 # Ladda ner stopwords
 nltk.download('stopwords')
@@ -30,7 +30,7 @@ def get_sentiment(text):
     return np.argmax(probs, axis=1), np.max(probs, axis=1)
 
 # Hämta och förbehandla bloggposter
-blogg_posts = BloggPost.query.filter_by(user_id=current_user.id).all()
+blogg_posts = Notes.query.filter_by(user_id=current_user.id).all()
 texts = [post.content for post in blogg_posts]
 preprocessed_texts = [preprocess_text(text) for text in texts]
 

@@ -1,7 +1,7 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
-from models import (User, db, BloggPost, Goals, Bullet,
-                    Activity, Score, MyWords, Settings, Dagar,WhyGoals)
+from models import (User, db, Notes, Goals, Bullet,
+                    Activity, Score, MyWords, Settings, Dagar, WhyGoals)
 
 from pmg_func import (section_content,common_route,getInfo,
                       getWord, add2db, update_dagar)
@@ -50,13 +50,13 @@ def journal():
     elif section_name == 'blogg':
         sida, sub_menu = common_route("Blogg", [url_for('txt.journal', section_name='skriva'),
                                                 url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
-        my_posts = BloggPost.query.filter_by(user_id=current_user.id).all()
+        my_posts = Notes.query.filter_by(user_id=current_user.id).all()
         return journal_section(None, sida, sub_menu, my_posts)
 
     else:
         sida, sub_menu = common_route(section_name, [url_for('txt.journal', section_name='skriva'),
                                                      url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
-        my_posts = BloggPost.query.filter_by(title=section_name, user_id=current_user.id).all()
+        my_posts = Notes.query.filter_by(title=section_name, user_id=current_user.id).all()
         return journal_section(None, sida, sub_menu, my_posts)
 
 @txt_bp.route('/journal/<section_name>', methods=['GET', 'POST'])
@@ -109,7 +109,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     elif act_id is None:
         myGoals = None
         activities = None
-        titles_list = BloggPost.query.filter_by(user_id=current_user.id).distinct().with_entities(BloggPost.title).all()
+        titles_list = Notes.query.filter_by(user_id=current_user.id).distinct().with_entities(Notes.title).all()
         titles = [item[0] for item in titles_list]
 
     if request.method == 'POST':
@@ -120,9 +120,9 @@ def journal_section(act_id, sida, sub_menu, my_posts):
         if content_check:
             if option == 'timeless':
                 if sida == 'Dagbok':
-                    add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+                    add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Mina Ord':
-                    add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+                    add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Bullet':
                     theme = request.form['post-ord']
                     bullet_list = [request.form['#1'], request.form['#2'], request.form['#3'], request.form['#4'], request.form['#5']]
@@ -134,9 +134,9 @@ def journal_section(act_id, sida, sub_menu, my_posts):
             elif option == "write-on-time":
                 add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], user)
                 if sida == 'Dagbok':
-                    add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+                    add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Mina Ord':
-                    add2db(BloggPost, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+                    add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Bullet':
                     theme = request.form['post-ord']
                     bullet_list = [request.form['#1'], request.form['#2'], request.form['#3'], request.form['#4'],

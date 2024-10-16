@@ -72,7 +72,7 @@ def day_view(date):
 @cal_bp.route('/month/<int:year>/<int:month>')
 @login_required
 def month(year=None, month=None):
-    page_info=getInfo('/home/tylerobri/mysite/tyler_webb/pageInfo.csv', 'myMonth')
+    page_info=getInfo('pageInfo.csv', 'myMonth')
     sida, sub_menu = common_route('Min Månad', ['/cal/month', '/cal/week', '/cal/timebox'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])
 
@@ -105,7 +105,7 @@ def week():
     year, week_num, weekday = current_date.isocalendar()
     start_week = current_date - timedelta(days=current_date.weekday())  # Start of the current week
     end_week = start_week + timedelta(days=6)  # End of the current week
-    page_info = getInfo('/home/tylerobri/mysite/tyler_webb/pageInfo.csv', 'myWeek')
+    page_info = getInfo('pageInfo.csv', 'myWeek')
     user_id = current_user.id
     sida, sub_menu = common_route('Min Vecka', ['/cal/month', '/cal/week', '/cal/timebox'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])
@@ -174,7 +174,7 @@ def week():
 @cal_bp.route('/timebox', methods=['GET', 'POST'])
 @login_required
 def timebox():
-    page_info = getInfo('/home/tylerobri/mysite/tyler_webb/pageInfo.csv', 'myDay')
+    page_info = getInfo('pageInfo.csv', 'myDay')
     today = datetime.now()
     current_date = today.date()
 

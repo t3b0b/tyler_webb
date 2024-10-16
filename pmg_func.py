@@ -1,6 +1,6 @@
-from models import (User, db, Streak, BloggPost, Goals, Friendship, Bullet,
-                    Activity, Score, MyWords, Settings, Dagar, Message,ToDoList,
-                    Idag, Week, Month, WhyGoals,Event,CalendarBullet,ViewType)
+from models import (User, db, Streak, Notes, Goals, Friendship, Bullet,
+                    Activity, Score, MyWords, Settings, Dagar, Message, ToDoList,
+                    Idag, Week, Month, WhyGoals, Event, CalendarBullet, ViewType)
 from datetime import datetime, timedelta, date
 import pandas as pd
 from pytz import timezone

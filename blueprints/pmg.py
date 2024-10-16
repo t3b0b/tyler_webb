@@ -134,14 +134,15 @@ def goals():
 @pmg_bp.route('/goal/<int:goal_id>/activities', methods=['GET', 'POST'])
 def goal_activities(goal_id):
     goal = Goals.query.get_or_404(goal_id)
+    user = current_user.id
+
     if request.method == 'POST':
         # Hantera POST-begäran för att lägga till en aktivitet
-        userId=current_user.id
         goalId = goal_id
         activity_name = request.form.get('activity-name')
         measurement = request.form.get('activity-measurement')
         if activity_name and measurement:
-            new_activity = Activity(name=activity_name, goal_id=goalId, user_id=userId)
+            new_activity = Activity(name=activity_name, goal_id=goalId, user_id=user)
             db.session.add(new_activity)
             db.session.commit()
             flash('Activity added successfully', 'success')
@@ -246,16 +247,15 @@ def milestones(goal_id):
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 @login_required
 def myday():
-    pageInfo = getInfo('/home/tylerobri/mysite/tyler_webb/pageInfo.csv', 'Start')
+    pageInfo = getInfo('pageInfo.csv', 'Start')
     sida, sub_menu = common_route("Min Grind", ['/pmg/timebox', '/pmg/streak', '/pmg/goals'],
                                   ['My Day', 'Streaks', 'Goals'])
     date_now = date.today()
     # Använd konsekvent my_goals istället för både my_goals och myGoals
-    with session.begin():
-        myActs = filter_mod(Activity, user_id=current_user.id)
-        my_Goals = filter_mod(Goals, user_id=current_user.id)
-        myStreaks = filter_mod(Streak, user_id=current_user.id)
-        myScore, total = myDayScore(date_now, current_user.id)
+    myActs = filter_mod(Activity, user_id=current_user.id)
+    my_Goals = filter_mod(Goals, user_id=current_user.id)
+    myStreaks = filter_mod(Streak, user_id=current_user.id)
+    myScore, total = myDayScore(date_now, current_user.id)
     print(total)
     aggregated_scores = {}
     # Bygg den aggregerade poänglistan och koppla till to-dos
@@ -341,7 +341,7 @@ def myday_date(date):
     for name in completed_streakNames:
         print(name)
     with session.begin():
-        myGoals = query(Goals, 'user_id', current_user.id)
+        myGoals = filter_mod(Goals, user_id = current_user.id)
         myStreaks = Streak.query.filter(Streak.user_id == current_user.id, Streak.lastReg != today).all()
         myScore, total = myDayScore(selected_date, current_user.id)
 

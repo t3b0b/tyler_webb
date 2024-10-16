@@ -2,14 +2,14 @@ from random import choice
 
 from flask_mail import Mail, Message
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
-from models import (User, db, Streak, BloggPost, Goals, Mail,
+from models import (User, db, Streak, Notes, Goals, Mail,
                     Activity, Score, MyWords, Settings, Dagar)
 from datetime import datetime, timedelta,date
 from flask_login import current_user
 import pandas as pd
 import os
 
-file_path = "/home/tylerobri/mysite/tyler_webb/texts/tjänster.csv"
+file_path = "texts/tjänster.csv"
 df = pd.read_csv(file_path)
 
 base_bp = Blueprint('base', __name__, template_folder='templates/base')
@@ -22,7 +22,7 @@ def read_info(filename):
 @base_bp.route('/home')
 def home_base():
     sida = "Hem"
-    info = read_info("/home/tylerobri/mysite/tyler_webb/texts/unikOrg.txt")
+    info = read_info("texts/unikOrg.txt")
     unik = info.split("*")
     content_header = [unik[i] for i in range(len(unik)) if i % 2 == 0]
     content_text = [unik[i] for i in range(len(unik)) if i % 2 != 0]
@@ -34,7 +34,7 @@ def home_base():
 @base_bp.route('/om-oss')
 def omOss():
     sida = 'Om oss'
-    vision = read_info("/home/tylerobri/mysite/tyler_webb/texts/om_oss.txt")
+    vision = read_info("texts/om_oss.txt")
     vision = vision.split("*")
     om_header = [vision[i] for i in range(len(vision)) if i % 2 == 0]
     om_text = [vision[i] for i in range(len(vision)) if i % 2 != 0]

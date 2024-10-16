@@ -6,7 +6,7 @@ from flask import (Flask, render_template, flash,
 from flask_login import LoginManager, current_user
 from blueprints.friends import friends_bp
 from blueprints.base import base_bp,read_info
-from models import db, User, BloggPost, Streak, Goals, MyWords
+from models import db, User, Notes, Streak, Goals, MyWords
 from blueprints.auth import auth_bp
 from blueprints.pmg import pmg_bp
 from blueprints.cal import cal_bp

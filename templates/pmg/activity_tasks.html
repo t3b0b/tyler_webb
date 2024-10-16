@@ -13,7 +13,7 @@
         {% if tasks %}
             {% for task in tasks %}
                 <div class="list-item">{{ task.task }}
-                    <form method="POST" action="{{ url_for('pmg.update_task', activity_id=act.id, task_id=task.id) }}">
+                    <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
                         <input type="hidden" name="origin" value="todo">
                         <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
                     </form>

@@ -361,7 +361,7 @@ body {
 .list-container {
     width: 60%; /* Anpassar sig till skärmens bredd */
     height:80%;
-    max-width: 800px;
+    max-height: 500px;
     border: 2px solid #333;
     padding: 10px;
     box-sizing: border-box;

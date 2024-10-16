@@ -1,10 +1,10 @@
 var active = false;
+var active = false;
 var activity = 0;
 var goal = 0;
 var openTime;
 var closeTime;
 //
-
 function startActivity() {
     openTime = new Date(); // Spara starttiden
     localStorage.setItem('openTime', openTime.toISOString()); // Spara starttiden i localStorage om sidan laddas om

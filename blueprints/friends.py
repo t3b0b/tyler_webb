@@ -46,8 +46,10 @@ def all_messages():
 @friends_bp.route('/users')
 @login_required
 def users():
+
     sida,sub_menu = common_route('Add Friends',['/friends/friends','/friends/all_messages','/friends/users'],['Friends','Messages','Users'])
     all_users = User.query.filter(User.id != current_user.id).all()  # Exkludera den inloggade användaren
+
     return render_template('/friends/users.html', users=all_users,sida=sida,header=sida,sub_menu=sub_menu)
 @friends_bp.route('/add_friend/<int:friend_id>', methods=['POST'])
 @login_required
