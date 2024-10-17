@@ -2,6 +2,7 @@
 <html lang="sv">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css')}}">
 
     <title> {{ sida }} </title>
@@ -111,8 +112,24 @@
     </div>
         </footer>
     <script>
-            document.addEventListener('DOMContentLoaded', function () {
+ document.addEventListener('DOMContentLoaded', function () {
     const sideMenu = document.querySelector('.side-menu');
+
+    // Hämta CSRF-token från <meta> taggen
+    var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    // Lägg till CSRF-token till alla POST-formulär
+    var forms = document.querySelectorAll('form');
+    forms.forEach(function(form) {
+        if (form.method.toLowerCase() === 'post') {
+            // Skapa en dold input för CSRF-token
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'csrf_token';  // Flask söker efter 'csrf_token'
+            input.value = csrfToken;
+            form.appendChild(input);
+        }
+    });
 
     document.addEventListener('mousemove', function (event) {
         if (event.clientX < 20) { // Om muspekaren är nära vänsterkanten
