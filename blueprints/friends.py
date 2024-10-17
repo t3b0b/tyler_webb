@@ -1,5 +1,6 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 from flask_login import current_user, login_required
+from datetime import datetime, timedelta, date
 from models import User, Friendship, Message, db
 
 friends_bp = Blueprint('friends', __name__)
@@ -73,23 +74,28 @@ def add_friend(friend_id):
 @friends_bp.route('/friends')
 @login_required
 def friends():
-    sida,sub_menu=common_route('Friends',['/friends/friends','/friends/all_messages','/friends/users'],['Friends','Messages','Users'])
-
+    sida, sub_menu = common_route('Friends', ['/friends/friends', '/friends/all_messages', '/friends/users'], ['Friends', 'Messages', 'Users'])
+    
     pending_requests = Friendship.query.filter_by(friend_id=current_user.id, status='pending').all()
     accepted_friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
                        Friendship.query.filter_by(friend_id=current_user.id, status='accepted').all()
-    
-    pending_users = User.query.filter(User.id.in_(pending_requests)).all()
-    accepted_users = User.query.filter(User.id.in_(accepted_friends)).all()
 
-    return render_template('friends.html', pending_users=pending_users, accepted_users=accepted_users, 
-                           pending_requests=pending_requests, accepted_friends=accepted_friends)
+    # Extrahera id från pending_requests och accepted_friends
+    pending_user_ids = [request.user_id for request in pending_requests]
+    accepted_user_ids = [friend.user_id if friend.user_id != current_user.id else friend.friend_id for friend in accepted_friends]
 
-@friends_bp.route('/respond_friend_request/<int:request_id>/<response>')
+    # Hämta användarna baserat på id-listorna
+    pending_users = User.query.filter(User.id.in_(pending_user_ids)).all()
+    friends = User.query.filter(User.id.in_(accepted_user_ids)).all()
+    users = User.query.filter(User.id != current_user.id).all()
+
+    return render_template('/friends/friends.html', sida=sida, sub_menu=sub_menu, pending_users=pending_users, friends=friends, users=users)
+
+@friends_bp.route('/respond_friend_request/<int:request_id>/<response>', methods=['POST'])
 @login_required
 def respond_friend_request(request_id, response):
-    friendship = Friendship.query.get_or_404(request_id)
-    if friendship.friend_id != current_user.id:
+    friendship = Friendship.query.filter_by(user_id=request_id, friend_id=current_user.id).first_or_404()
+    if friendship.friend_id != current_user.id: 
         flash('Not authorized.', 'danger')
         return redirect(url_for('pmg.myday'))
     if response == 'accept':
@@ -103,24 +109,33 @@ def respond_friend_request(request_id, response):
 
     return redirect(url_for('friends.friends'))
 
+
 @friends_bp.route('/send_message/<int:recipient_id>', methods=['GET', 'POST'])
 @login_required
 def send_message(recipient_id):
     recipient = User.query.get_or_404(recipient_id)
+    
     if request.method == 'POST':
         content = request.form.get('content')
         if content:
-            # Kontrollera att användarna är vänner
-            if recipient in current_user.friends:
-                message = Message(sender_id=current_user.id, recipient_id=recipient.id, content=content)
-                db.session.add(message)
-                db.session.commit()
-                flash('Meddelande skickat!', 'success')
-                return redirect(url_for('messaging.view_messages', user_id=recipient.id))
-            else:
-                flash('Ni är inte vänner och kan därför inte skicka meddelanden.', 'danger')
-                return redirect(url_for('main.index'))
-    return render_template('/friends/sendMsg.html', recipient=recipient)
+            message = Message(
+                sender_id=current_user.id,
+                receiver_id=recipient_id,  # Korrigerat stavfel här
+                content=content,
+                timestamp=datetime.now()
+            )
+            db.session.add(message)
+            db.session.commit()
+            flash('Message sent successfully.', 'success')
+            return redirect(url_for('friends.send_message', recipient_id=recipient_id))
+    
+    # Hämta alla meddelanden mellan användare i båda riktningarna (som en konversation)
+    messages = Message.query.filter(
+        (Message.sender_id == current_user.id) & (Message.receiver_id == recipient_id) |
+        (Message.sender_id == recipient_id) & (Message.receiver_id == current_user.id)
+    ).order_by(Message.timestamp).all()
+
+    return render_template('friends/sendMsg.html', recipient=recipient, messages=messages)
 
 @friends_bp.route('/messages/<int:user_id>')
 @login_required

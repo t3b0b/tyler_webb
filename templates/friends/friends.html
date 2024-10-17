@@ -7,36 +7,39 @@
 {% block body %}
 <div class="list-container">
     <div class="list-header">
-        <h3>Pending Friend Requests</h3>
+        <h3>Friend Requests</h3>
     </div>
     <div class="list-content">
-        {% if pending_requests %}
-            {% for user in pending_requests %}
+        {% if pending_users %}
             {% for user in pending_users %}
             <li class="list-item">
-                {{ user.name }} - {{ user.email }}
+                {{ user.username }}
                 <form method="POST" action="{{ url_for('friends.respond_friend_request', request_id=user.id, response='accept') }}">
-                    <button type="submit">Acceptera</button>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit">Accept</button>
                 </form>
                 <form method="POST" action="{{ url_for('friends.respond_friend_request', request_id=user.id, response='decline') }}">
-                    <button type="submit">Neka</button>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit">Ignore</button>
                 </form>
             </li>
             {% endfor %}
-            {{ endfor }}
         {% else %}
             <p>No friend requests found.</p>
         {% endif %}
     </div>
 </div>
-    <h2>Friends</h2>
-    <ul>
-        {% for friendship in accepted_friends %}
-        {% for user in accepted_users %}
-            <li>
-                    {{ user.username }}
-                <a href="{{ url_for('friends.send_message', recipient_id=(friendship.friend_id if friendship.user_id == current_user.id else friendship.user_id)) }}">Skicka Meddelande</a>
+<div class="list-container">
+    <div class="list-header">
+        <h3>Friends</h3>
+    </div>
+    <div class="list-content">
+        {% for friend in friends %}
+            <li class="list-item">
+                    {{ friend.username }}
+                <a href="{{ url_for('friends.send_message', recipient_id=(friend.id if friend.id == current_user.id else friend.id)) }}">Message</a>
             </li>
         {% endfor %}
-    </ul>
+    </div>
+</div>
 {% endblock body %}

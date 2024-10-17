@@ -3,14 +3,80 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <title>Skicka Meddelande</title>
+    <style>
+        .chat-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .chat-box {
+            max-height: 400px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .sent {
+            background-color: #e0ffe0;
+            text-align: right;
+        }
+        .received {
+            background-color: #f0f0f0;
+        }
+        .timestamp {
+            font-size: 0.8em;
+            color: #888;
+        }
+        .message-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
 {% endblock head %}
 
 {% block body %}
-    <h1>Skicka meddelande till {{ recipient.username }}</h1>
-    <form method="POST">
-        <textarea name="content" placeholder="Skriv ditt meddelande här..."></textarea>
-        <button type="submit">Skicka</button>
-    </form>
+<div class="chat-container">
+    <h3>{{ recipient.username }}</h3>
+    
+    <div class="chat-box">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="chat-message {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}">
+                    <p><strong>{{ message.sender.username }}</strong>: {{ message.content }}</p>
+                    <span class="timestamp">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="message-form">
+        <form method="POST" action="{{ url_for('friends.send_message', recipient_id=recipient.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <textarea name="content" rows="3" placeholder="Write your message..." required></textarea>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+</div>
+
 {% endblock body %}
 
 
