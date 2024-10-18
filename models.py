@@ -60,10 +60,21 @@ class Goals(db.Model):
     activities = db.relationship('Activity', backref='goal', lazy=True)
     milestones = db.relationship('Milestones', backref='goal', lazy=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    friend_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     def __repr__(self):
         return f"{self.name}, {self.user_id}"
 
+class SharedGoal(db.Model):
+    __tablename__ = 'shared_goals'
+    id = db.Column(db.Integer, primary_key=True)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    confirmed = db.Column(db.Boolean, default=False)  # Bekräftelse från vän
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class SharedGoalUser(db.Model):
+    __tablename__ = 'shared_goal_user'
+    goal_id = db.Column(db.Integer, db.ForeignKey('shared_goal.id'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
 
 class Activity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -85,7 +96,10 @@ class ToDoList(db.Model):
     completed = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'))
-
+    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # Tilldelad användare
+    marked_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)    # Den som markerade uppgiften som klar
+    confirmed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # Bekräftad av den andra användaren
+    confirmed_date = db.Column(db.DateTime, nullable=True)
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -125,6 +139,20 @@ class Streak(db.Model):
     level = db.Column(db.Integer, nullable=True, default=1)
     def __repr__(self):
         return f"{self.name}, {self.interval}, {self.count}, {self.goal}, {self.best}, {self.condition}, {self.lastReg}, {self.dayOne}, {self.user_id}"
+
+class SharedStreak(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    frequency = db.Column(db.String(50), nullable=False)  # daily, weekly etc.
+    current_turn_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    users = db.relationship('User', secondary='shared_streak_user', back_populates='shared_streaks')
+
+class SharedStreakUser(db.Model):
+    __tablename__ = 'shared_streak_user'
+    streak_id = db.Column(db.Integer, db.ForeignKey('shared_streak.id'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    last_checkin_date = db.Column(db.DateTime, nullable=True)
 
 class Score(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -1,16 +1,13 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, session
-from models import (User, db, Streak,Goals,Friendship,
+from models import (User, db, Streak,Goals,Friendship,SharedGoal,
                     Activity, Score, Dagar, ToDoList)
 import matplotlib.pyplot as plt
 import io
 import base64
 from datetime import datetime, timedelta, date
 
-from pmg_func import (get_activities_for_user, getWord, getInfo,
-                      organize_activities_by_time, parse_date,
-                      process_weekly_scores, readWords,
-                      common_route, add2db, unique,
+from pmg_func import (getInfo, common_route, add2db, unique,
                       section_content, update_dagar, completed_streaks,
                       update_streak_details, myDayScore,
                       generate_calendar_weeks, filter_mod)
@@ -154,6 +151,17 @@ def delete_streak(streak_id):
     return jsonify({'success': True})
 # endregion
 
+@pmg_bp.route('/goals', methods=['GET'])
+@login_required
+def view_goals():
+    # Hämta individuella mål
+    personal_goals = Goals.query.filter_by(user_id=current_user.id).all()
+
+    # Hämta gemensamma mål (som användaren delar med någon annan)
+    shared_goals = SharedGoal.query.filter(SharedGoal.user_id.contains(current_user.id)).all()
+
+    return render_template('pmg/goals.html', personal_goals=personal_goals, shared_goals=shared_goals)
+
 # region Goals
 @pmg_bp.route('/goals', methods=['GET', 'POST'])
 @login_required
@@ -162,18 +170,17 @@ def goals():
                                   ['Streaks', 'Goals', 'Milestones'])
     if request.method == 'POST':
         if 'addGoal' in request.form['action']:
+            goal_name = request.form.get('goal_name')
             friend_id = request.form.get('friend_id')
-            if friend_id is None:
-                add2db(Goals, request, ['goalName', ], ['name'], current_user)
-            else:
-                add2db(Goals, request, ['goalName', 'friend_id'], ['name','friend_id'], current_user)
-            return redirect(url_for('pmg.goals'))
 
-        elif 'addActivity' in request.form['action']:
-            add2db(Activity, request, ['goalId', 'activity-name', 'activity-measurement'],
-                   ['goal_id', 'name', 'measurement'], current_user)
-            # Omdirigera efter att ha lagt till en ny aktivitet
-            return redirect(url_for('pmg.goals'))
+            add2db(Goals, request, ['goalName', ], ['name'], current_user)
+        
+            shared_goal_user = SharedGoal(goal_id=new_goal.id, user_id=current_user.id, confirmed=True)
+            shared_goal_friend = SharedGoal(goal_id=new_goal.id, user_id=friend_id, confirmed=False)
+        
+            db.session.add(shared_goal_user)
+            db.session.add(shared_goal_friend)
+            db.session.commit()
 
         elif 'addTodo' in request.form['action']:
             goal_id = request.form.get('goalId')
@@ -186,12 +193,16 @@ def goals():
             return redirect(url_for('pmg.goals'))
 
     # Hämta mål på nytt varje gång sidan laddas för att säkerställa att listan är uppdaterad
-    my_Goals = filter_mod(Goals, user_id=current_user.id)
+    personal_goals = filter_mod(Goals, user_id=current_user.id)
 
-    friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
+    accepted_friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
+                       Friendship.query.filter_by(friend_id=current_user.id, status='accepted').all()
 
+    accepted_user_ids = [friend.user_id if friend.user_id != current_user.id else friend.friend_id for friend in accepted_friends]
 
-    return render_template('pmg/goals.html', sida=sida, header=sida, goals=my_Goals, sub_menu=sub_menu,friends=friends)
+    friends = User.query.filter(User.id.in_(accepted_user_ids)).all()
+
+    return render_template('pmg/goals.html', sida=sida, header=sida, goals=personal_goals, sub_menu=sub_menu,friends=friends)
 
 @pmg_bp.route('/goal/<int:goal_id>/activities', methods=['GET', 'POST'])
 def goal_activities(goal_id):
