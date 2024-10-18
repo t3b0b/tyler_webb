@@ -19,7 +19,7 @@
         {% for goal in personal_goals %}
             <div class="list-item" data-goal-id="{{ goal.id }}" onclick="window.location.href = '/pmg/goal/{{ goal.id }}/activities';">
                 {{ goal.name }}
-                <button class="tgl-btn" onclick="event.stopPropagation(); deleteGoal({{ goal.id }})">&#10060;</button>
+                <button class="tgl-btn" onclick="event.stopPropagation(); deleteGoal( goal.id )">&#10060;</button>
             </div>
         {% endfor %}
         </div>
@@ -50,6 +50,7 @@
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
 function toggleGoals() {
+    
         var personalGoals = document.getElementById('personal-goals');
         var sharedGoals = document.getElementById('shared-goals');
         var toggleButton = document.getElementById('toggle-goals');
@@ -59,22 +60,23 @@ function toggleGoals() {
             personalGoals.style.display = 'block';
             sharedGoals.style.display = 'none';
             toggleButton.textContent = 'Visa Gemensamma Mål';
+
         } else {
             personalGoals.style.display = 'none';
             sharedGoals.style.display = 'block';
             toggleButton.textContent = 'Visa Individuella Mål';
         }
-    };
+    }
 
     function expandNewGoalForm() {
         document.getElementById('new-goal-button').style.display = 'none';
         document.getElementById('new-goal-form').style.display = 'flex';
-    };
+    }
 
     function cancelNewGoalForm() {
         document.getElementById('new-goal-form').style.display = 'none';
         document.getElementById('new-goal-button').style.display = 'block';
-    };
+    }
 
     function deleteGoal(goalId) {
     if (confirm('Är du säker på att du vill radera detta mål?')) {
@@ -96,7 +98,7 @@ function toggleGoals() {
         .catch(error => {
             console.error('Fel vid radering:', error);
             alert('Ett oväntat fel inträffade.');
-        });
+        })
     }
 }
 
