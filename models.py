@@ -23,14 +23,6 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f'{self.username}, {self.email}, {self.password}'
 
-class FriendGoal(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
-    is_owner = db.Column(db.Boolean, default=False)
-    user = db.relationship('User', backref=db.backref('user_goals', cascade='all, delete-orphan'))
-    goal = db.relationship('Goals', backref=db.backref('user_goals', cascade='all, delete-orphan'))
-
 class Friendship(db.Model):
     __tablename__ = 'friendship'
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
@@ -68,7 +60,7 @@ class Goals(db.Model):
     activities = db.relationship('Activity', backref='goal', lazy=True)
     milestones = db.relationship('Milestones', backref='goal', lazy=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
+    friend_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     def __repr__(self):
         return f"{self.name}, {self.user_id}"
 
@@ -155,14 +147,14 @@ class Score(db.Model):
 # region Calendar
 
 class TopFive(db.Model):
-    __tablename__ = 'calendar_bullets'
+    __tablename__ = 'top_five'
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=True)
+    content = db.Column(db.String(1200), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    title = db.Column(db.String(800), nullable=False)
-
+    title = db.Column(db.String(100), nullable=False)
     def __repr__(self):
-        return f"<CalendarBullet {self.date} ({self.view_type})>"
+        return f"<CalendarBullet {self.date}>"
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -199,7 +191,7 @@ class Bullet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     author = db.Column(db.String(50), nullable=False)
     theme = db.Column(db.String(50), nullable=False)
-    content = db.Column(db.Text, unique=False, nullable=False)
+    content = db.Column(db.Text, unique=False, nullable=True)
     date = db.Column(db.Date, unique=False, nullable=False, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 

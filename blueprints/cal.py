@@ -100,7 +100,6 @@ def month(year=None, month=None):
 @login_required
 def week():
     current_date = datetime.now()
-
     year, week_num, weekday = current_date.isocalendar()
     start_week = current_date - timedelta(days=current_date.weekday())  # Start of the current week
     end_week = start_week + timedelta(days=6)  # End of the current week
@@ -136,35 +135,58 @@ def week():
         week_scores[day_str].append(score)
         print(f"Added score: {score.activity_name} to {score.Date} from {score.Start} to {score.End}")
 
-    bullet = TopFive.query.filter_by(user_id=current_user.id, week_num=week_num, view_type="myWeek").first()
+    bullet = TopFive.query.filter_by(user_id=current_user.id).first()
 
     # Om det inte finns något, skapa ett nytt objekt
     if not bullet:
-        bullet = TopFive(user_id=current_user.id, week_num=week_num, view_type="myWeek")
+        bullet = TopFive(user_id=current_user.id)
         db.session.add(bullet)
 
     # Om POST-förfrågan skickas, uppdatera listorna
+    today = current_date.date()
     if request.method == 'POST':
+        # Spara To-Do listan
         if 'save_todo' in request.form:
             todo_list = [request.form.get(f'todo_{i}') for i in range(1, 6) if request.form.get(f'todo_{i}')]
-            bullet.to_do = ','.join(todo_list)
-
+            # Skapa en ny post med titel "To-Do" och spara listan som innehåll
+            todo_bullet = TopFive(title='To-Do', content=','.join(todo_list), user_id=current_user.id,
+                                  date=today)
+            db.session.add(todo_bullet)
+            db.session.commit()
+        # Spara Think listan
         if 'save_think' in request.form:
             think_list = [request.form.get(f'think_{i}') for i in range(1, 6) if request.form.get(f'think_{i}')]
-            bullet.to_think = ','.join(think_list)
-
+            think_bullet = TopFive(title='Think', content=','.join(think_list), user_id=current_user.id,
+                                   date=today)
+            db.session.add(think_bullet)
+            db.session.commit()
+        # Spara Remember listan
         if 'save_remember' in request.form:
-            remember_list = [request.form.get(f'remember_{i}') for i in range(1, 6) if request.form.get(f'remember_{i}')]
-            bullet.remember = ','.join(remember_list)
-
-        db.session.commit()  # Spara ändringarna i databasen
+            remember_list = [request.form.get(f'remember_{i}') for i in range(1, 6) if
+                             request.form.get(f'remember_{i}')]
+            remember_bullet = TopFive(title='Remember', content=','.join(remember_list), user_id=current_user.id,
+                                      date=today)
+            db.session.add(remember_bullet)
+            db.session.commit()
+          # Spara ändringarna i databasen
         flash('Listor sparade!', 'success')
 
     # Hämta listor för att visa på sidan
-    to_do_list = bullet.to_do.split(',') if bullet.to_do else []
-    to_think_list = bullet.to_think.split(',') if bullet.to_think else []
-    remember_list = bullet.remember.split(',') if bullet.remember else []
-
+    priorities = TopFive.query.filter_by(user_id=current_user.id, title="To-Do").first()
+    if priorities:
+        to_do_list = priorities.content.split(',')
+    else:
+        to_do_list = []
+    to_think_list = TopFive.query.filter_by(user_id=current_user.id, title="Think").first()
+    if to_think_list:
+        to_think_list = to_think_list.content.split(',')
+    else:
+        to_think_list = []
+    remember_list = TopFive.query.filter_by(user_id=current_user.id, title="Remember").first()
+    if remember_list:
+        remember_list = remember_list.content.split(',')
+    else:
+        remember_list = []
     return render_template('cal/myWeek.html', sida='Veckoplanering', week_scores=week_scores, header='Veckoplanering',
                            total_score=0, sub_menu=sub_menu, page_info=page_info, bullet=bullet, timedelta=timedelta,
                            week=week_num, week_dates=week_dates, to_do_list=to_do_list, to_think_list=to_think_list,
@@ -182,13 +204,6 @@ def timebox():
 
     start_date = today.replace(hour=0, minute=0, second=0, microsecond=0)
     end_date = today.replace(hour=23, minute=59, second=59, microsecond=999999)
-
-    bullet = TopFive.query.filter_by(user_id=current_user.id, date=today.date(), view_type='myDay').first()
-
-    # Om ingen CalendarBullet finns för idag, skapa en ny
-    if not bullet:
-        bullet = TopFive(user_id=current_user.id, date=today.date(), view_type='myDay')
-        db.session.add(bullet)
 
     # Hämta aktiviteter (scores) för användaren för den aktuella dagen
     scores = db.session.query(
@@ -208,29 +223,48 @@ def timebox():
     ).all()
 
     if request.method == 'POST':
-        viktig_list = []
-        tankar_list = []
+        # Spara To-Do listan
+        if 'save_todo' in request.form:
+            todo_list = [request.form.get(f'todo_{i}') for i in range(1, 6) if request.form.get(f'todo_{i}')]
+            # Skapa en ny post med titel "To-Do" och spara listan som innehåll
+            todo_bullet = TopFive(title='To-Do', content=','.join(todo_list), user_id=current_user.id,
+                                  date=today)
+            db.session.add(todo_bullet)
+            db.session.commit()
+        # Spara Think listan
+        if 'save_think' in request.form:
+            think_list = [request.form.get(f'think_{i}') for i in range(1, 6) if request.form.get(f'think_{i}')]
+            think_bullet = TopFive(title='Think', content=','.join(think_list), user_id=current_user.id,
+                                   date=today)
+            db.session.add(think_bullet)
+            db.session.commit()
+        # Spara Remember listan
+        if 'save_remember' in request.form:
+            remember_list = [request.form.get(f'remember_{i}') for i in range(1, 6) if
+                             request.form.get(f'remember_{i}')]
+            remember_bullet = TopFive(title='Remember', content=','.join(remember_list), user_id=current_user.id,
+                                      date=today)
+            db.session.add(remember_bullet)
+            db.session.commit()
+          # Spara ändringarna i databasen
+        flash('Listor sparade!', 'success')
 
-        for i in range(1, 6):
-            viktig = request.form.get(f'viktig_{i}')
-            tanke = request.form.get(f'tankar_{i}')
-
-            if viktig:
-                viktig_list.append(viktig)
-            if tanke:
-                tankar_list.append(tanke)
-
-        # Spara till CalendarBullet
-        bullet.to_do = ','.join(viktig_list)
-        bullet.to_think = ','.join(tankar_list)
-        db.session.commit()
-
-        return redirect(url_for('cal.timebox'))
-
-        # Hämta sparade CalendarBullet-data
-    to_do_list = bullet.to_do.split(',') if bullet.to_do else []
-    to_think_list = bullet.to_think.split(',') if bullet.to_think else []
-    remember_list = bullet.remember.split(',') if bullet.remember else []
+    # Hämta listor för att visa på sidan
+    priorities = TopFive.query.filter_by(user_id=current_user.id, title="To-Do").first()
+    if priorities:
+        to_do_list = priorities.content.split(',')
+    else:
+        to_do_list = []
+    to_think_list = TopFive.query.filter_by(user_id=current_user.id, title="Think").first()
+    if to_think_list:
+        to_think_list = to_think_list.content.split(',')
+    else:
+        to_think_list = []
+    remember_list = TopFive.query.filter_by(user_id=current_user.id, title="Remember").first()
+    if remember_list:
+        remember_list = remember_list.content.split(',')
+    else:
+        remember_list = []
 
     return render_template('cal/timebox.html', current_date=today, sida=sida,today=current_date,
                            header=sida, sub_menu=sub_menu, scores=scores,

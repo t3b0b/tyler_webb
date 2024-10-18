@@ -25,32 +25,30 @@
 
 {% block body %}
 <div class="two-grid-container">
-        <div class="notes">
-            <div class="list-header" onclick="toggleList(this)">Att-göra</div>
+            <div class="notes">
+            <div class="list-header" onclick="toggleList(this)">Priorities</div>
             <div class="list-content" style="display:none;">
                 <form method="POST">
                     {% for num in range(1, 6) %}
-                        <input type="text" name="todo_{{ num }}" placeholder="Att-göra {{ num }}" value="{{ to_do_list[num-1] if to_do_list|length >= num else '' }}">
+                        <input type="text" name="todo_{{ num }}" placeholder="{{ num }}Priority" value="{{ to_do_list[num-1] if to_do_list|length >= num else '' }}">
                     {% endfor %}
-                    <button type="submit" name="save_todo">Spara Att-göra</button>
+                    <button type="submit" name="save_todo">Spara</button>
                 </form>
             </div>
-
-            <div class="list-header" onclick="toggleList(this)">Att tänka på</div>
+            <div class="list-header" onclick="toggleList(this)">Keep in mind</div>
             <div class="list-content" style="display:none;">
                 <form method="POST">
                     {% for num in range(1, 6) %}
-                        <input type="text" name="think_{{ num }}" placeholder="Att tänka på {{ num }}" value="{{ to_think_list[num-1] if to_think_list|length >= num else '' }}">
+                        <input type="text" name="think_{{ num }}" placeholder="Keep in mind {{ num }}" value="{{ to_think_list[num-1] if to_think_list|length >= num else '' }}">
                     {% endfor %}
                     <button type="submit" name="save_think">Spara Att tänka på</button>
                 </form>
             </div>
-
-            <div class="list-header" onclick="toggleList(this)">Kom-ihåg</div>
+            <div class="list-header" onclick="toggleList(this)">Remember</div>
             <div class="list-content" style="display:none;">
                 <form method="POST">
                     {% for num in range(1, 6) %}
-                        <input type="text" name="remember_{{ num }}" placeholder="Kom-ihåg {{ num }}" value="{{ remember_list[num-1] if remember_list|length >= num else '' }}">
+                        <input type="text" name="remember_{{ num }}" placeholder="Remember {{ num }}" value="{{ remember_list[num-1] if remember_list|length >= num else '' }}">
                     {% endfor %}
                     <button type="submit" name="save_remember">Spara Kom-ihåg</button>
                 </form>

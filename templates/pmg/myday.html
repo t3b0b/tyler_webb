@@ -17,13 +17,14 @@
 
 {% block body %}
 <div id="day-section" class="grid-container">
-
     <div id="goal-section" class="list-container" style="width:100%;">
         <div class="list-header">
             <h3>Goals</h3>
         </div>
+        <img style="width: 500px; height:350px;" src="data:image/png;base64,{{ plot_url }}" alt="Aktivitetsgraf"/>
         {% if sum_scores %}
         <div class="list-content">
+
             {% for activity, score in sum_scores.items() %}
             <li class="list-item">
                 {% if score.Goal %}

@@ -61,7 +61,7 @@ def journal():
 
 @txt_bp.route('/journal/<section_name>', methods=['GET', 'POST'])
 def journal_section(act_id, sida, sub_menu, my_posts):
-    page_info = getInfo('/home/tylerobri/mysite/tyler_webb/pageInfo.csv', sida)
+    page_info = ""
     current_date = date.today()
     why_G = ""
     page_url = 'txt.journal'

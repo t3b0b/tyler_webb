@@ -1,8 +1,10 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, session
-from models import (User, db, Streak,Goals,
+from models import (User, db, Streak,Goals,Friendship,
                     Activity, Score, Dagar, ToDoList)
-
+import matplotlib.pyplot as plt
+import io
+import base64
 from datetime import datetime, timedelta, date
 
 from pmg_func import (get_activities_for_user, getWord, getInfo,
@@ -19,6 +21,62 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import scoped_session
 
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
+
+def get_today_score(user_id):
+    """Hämta dagens score för en specifik användare."""
+    today = datetime.now().date()
+    today_score = db.session.query(db.func.sum(Score.Time)).filter(
+        Score.user_id == user_id,
+        db.func.date(Score.Date) == today
+    ).scalar() or 0
+    return today_score
+
+def get_yesterday_score(user_id):
+    """Hämta gårdagens score för en specifik användare."""
+    yesterday = datetime.now().date() - timedelta(days=1)
+    yesterday_score = db.session.query(db.func.sum(Score.Time)).filter(
+        Score.user_id == user_id,
+        db.func.date(Score.Date) == yesterday
+    ).scalar() or 0
+    return yesterday_score
+
+def get_week_activity_times(user_id):
+    """Hämta total tid per aktivitet under aktuell vecka för en specifik användare."""
+    today = datetime.now().date()
+    start_of_week = today - timedelta(days=today.weekday())  # Måndag i denna vecka
+    end_of_week = start_of_week + timedelta(days=6)  # Söndag i denna vecka
+
+    activity_times = db.session.query(
+        Activity.name,
+        db.func.sum(Score.Time).label('total_time')
+    ).join(Score).filter(
+        Score.user_id == user_id,
+        Score.Date.between(start_of_week, end_of_week)
+    ).group_by(Activity.name).all()
+
+    return activity_times
+
+
+def create_activity_plot(activity_times):
+    """Generera en stående stapelgraf med unika färger för varje mål."""
+    activity_names = [activity[0] for activity in activity_times]
+    total_times = [activity[1] for activity in activity_times]
+
+    # Färger för varje stapel, genereras automatiskt för att vara unika
+    colors = plt.cm.get_cmap('tab20', len(activity_names))(range(len(activity_names)))
+    plt.figure(figsize=(10, 6),facecolor='none', edgecolor='k',)
+    plt.bar(activity_names, total_times, color=colors)  # Stående staplar
+    plt.ylabel('Total Tid (min)',fontsize=14)
+    plt.xlabel('Aktivitet', fontsize=14)
+    plt.xticks(rotation=0, ha='center',fontsize=18)
+    plt.yticks(rotation=0, ha='right',fontsize=18)
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    # Konvertera bilden till base64 för att inkludera den i HTML
+    plot_url = base64.b64encode(img.getvalue()).decode('utf8')
+    plt.close()
+    return plot_url
 
 #region Streak
 @pmg_bp.route('/streak',methods=['GET', 'POST'])
@@ -104,8 +162,11 @@ def goals():
                                   ['Streaks', 'Goals', 'Milestones'])
     if request.method == 'POST':
         if 'addGoal' in request.form['action']:
-            add2db(Goals, request, ['goalName'], ['name'], current_user)
-            # Omdirigera efter att ha lagt till ett nytt mål för att förhindra dubbla POST-förfrågningar
+            friend_id = request.form.get('friend_id')
+            if friend_id is None:
+                add2db(Goals, request, ['goalName', ], ['name'], current_user)
+            else:
+                add2db(Goals, request, ['goalName', 'friend_id'], ['name','friend_id'], current_user)
             return redirect(url_for('pmg.goals'))
 
         elif 'addActivity' in request.form['action']:
@@ -127,7 +188,10 @@ def goals():
     # Hämta mål på nytt varje gång sidan laddas för att säkerställa att listan är uppdaterad
     my_Goals = filter_mod(Goals, user_id=current_user.id)
 
-    return render_template('pmg/goals.html', sida=sida, header=sida, goals=my_Goals, sub_menu=sub_menu)
+    friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
+
+
+    return render_template('pmg/goals.html', sida=sida, header=sida, goals=my_Goals, sub_menu=sub_menu,friends=friends)
 
 @pmg_bp.route('/goal/<int:goal_id>/activities', methods=['GET', 'POST'])
 def goal_activities(goal_id):
@@ -255,6 +319,10 @@ def myday():
     my_Goals = filter_mod(Goals, user_id=current_user.id)
     myStreaks = filter_mod(Streak, user_id=current_user.id)
     myScore, total = myDayScore(date_now, current_user.id)
+    today_score = get_today_score(current_user.id)
+    yesterday_score = get_yesterday_score(current_user.id)
+    act_times = get_week_activity_times(current_user.id)
+    plot_url = create_activity_plot(act_times)
     print(total)
     aggregated_scores = {}
     # Bygg den aggregerade poänglistan och koppla till to-dos
@@ -328,7 +396,7 @@ def myday():
             db.session.commit()
 
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now, acts=myActs,
-                           my_goals=my_Goals, my_streaks=valid_streaks, my_score=myScore, total_score=total,
+                           my_goals=my_Goals, my_streaks=valid_streaks, my_score=myScore, total_score=total, plot_url=plot_url,
                            sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo, current_goal=current_goal)
 @pmg_bp.route('/myday/<date>')
 @login_required
