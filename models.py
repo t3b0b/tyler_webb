@@ -15,6 +15,9 @@ class User(db.Model, UserMixin):
     lastName = db.Column(db.String(50), nullable=False)
     verified = db.Column(db.Boolean, default=False)
 
+    shared_goals = db.relationship('SharedGoal', secondary='shared_goal_user', back_populates='users')
+    shared_streaks = db.relationship('SharedStreak', secondary='shared_streak_user', back_populates='users')
+
     friends = db.relationship('User',
                                secondary='friendship',
                                primaryjoin='User.id==Friendship.user_id',
@@ -63,18 +66,11 @@ class Goals(db.Model):
     def __repr__(self):
         return f"{self.name}, {self.user_id}"
 
-class SharedGoal(db.Model):
-    __tablename__ = 'shared_goals'
-    id = db.Column(db.Integer, primary_key=True)
-    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    confirmed = db.Column(db.Boolean, default=False)  # Bekräftelse från vän
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
 class SharedGoalUser(db.Model):
     __tablename__ = 'shared_goal_user'
     goal_id = db.Column(db.Integer, db.ForeignKey('shared_goal.id'), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+
 
 class Activity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -140,6 +136,13 @@ class Streak(db.Model):
     def __repr__(self):
         return f"{self.name}, {self.interval}, {self.count}, {self.goal}, {self.best}, {self.condition}, {self.lastReg}, {self.dayOne}, {self.user_id}"
 
+class SharedGoal(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    confirmed = db.Column(db.Boolean)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    users = db.relationship('User', secondary='shared_goal_user', back_populates='shared_goals')
+
 class SharedStreak(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
@@ -147,7 +150,6 @@ class SharedStreak(db.Model):
     frequency = db.Column(db.String(50), nullable=False)  # daily, weekly etc.
     current_turn_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     users = db.relationship('User', secondary='shared_streak_user', back_populates='shared_streaks')
-
 class SharedStreakUser(db.Model):
     __tablename__ = 'shared_streak_user'
     streak_id = db.Column(db.Integer, db.ForeignKey('shared_streak.id'), primary_key=True)

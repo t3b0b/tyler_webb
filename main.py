@@ -13,6 +13,7 @@ from blueprints.cal import cal_bp
 from blueprints.txt import txt_bp
 from flask_mail import Mail, Message
 from flask_wtf import CSRFProtect
+from flask_migrate import Migrate
 import sshtunnel
 import os
 from dotenv import load_dotenv
@@ -40,6 +41,7 @@ app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = "pmg.automatic.services@gmail.com"
 app.config['MAIL_PASSWORD'] = "gygfvycgvmjybgse"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+migrate = Migrate(app, db)
 
 csrf = CSRFProtect(app)
 handler = RotatingFileHandler('error.log', maxBytes=10000, backupCount=1)

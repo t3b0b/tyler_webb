@@ -8,64 +8,70 @@
 
 {% block body %}
 
-<div class="list-container">
-    <button id="toggle-goals" onclick="toggleGoals()">Visa Gemensamma Mål</button>
-    <div class="list-header">
-        <h3>Goals</h3>
-        <button class="new-button" id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
-    </div>
-    {% if personal_goals %}
-        <div id="personal-goals" class="list-content">
-        {% for goal in personal_goals %}
-            <div class="list-item" data-goal-id="{{ goal.id }}" onclick="window.location.href = '/pmg/goal/{{ goal.id }}/activities';">
-                {{ goal.name }}
-                <button class="tgl-btn" onclick="event.stopPropagation(); deleteGoal( goal.id )">&#10060;</button>
+<div style="display: flex; flex-direction: row; width: 100%; height: 70%">
+    <div class="list-container" id="personal-goals">
+        <div class="list-header">
+            <h3>My Goals</h3>
+            <div class="view-toggle" style="justify-content: center; align-items: center; top: 0; background-color:white">
+                <button style="font-size: 14px" id="team-goals" class="page-toggle-btn" onclick="getteamGoals()">Shared Goals</button>
+                <button style="font-size: 14px" id="my-goals" class="page-toggle-btn" onclick="getMyGoals()">My Goals</button>
             </div>
-        {% endfor %}
+            <button class="new-button" id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
         </div>
-    {% endif %}
+        {% if personal_goals %}
+            <div class="list-content">
+            {% for goal in personal_goals %}
+                <div class="list-item" data-goal-id="{{ goal.id }}" onclick="window.location.href = '/pmg/goal/{{ goal.id }}/activities';">
+                    {{ goal.name }}
+                    <button class="tgl-btn" onclick="event.stopPropagation(); deleteGoal( goal.id )">&#10060;</button>
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
     </div>
     <div class="list-container" id="shared-goals" style="display: none;">
-        <h3>Gemensamma Mål</h3>
-        <div class="list-content">
-            {% for goal in shared_goals %}
-                <li class="list-item">{{ goal.name }}</li>
-            {% endfor %}
+            <div class="list-header">
+                <h3>Team Goals</h3>
+                <div class="view-toggle" style="justify-content: center; align-items: center; top: 0; background-color:white">
+                    <button style="font-size: 14px" id="team-goals" class="page-toggle-btn" onclick="getteamGoals()">Shared Goals</button>
+                    <button style="font-size: 14px" id="my-goals" class="page-toggle-btn" onclick="getMyGoals()">My Goals</button>
+                </div>
+                <button class="new-button" id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
+            </div>
+            <div class="list-content">
+                {% for goal in shared_goals %}
+                    <div class="list-item">{{ goal.name }}</div>
+                {% endfor %}
+            </div>
         </div>
     </div>
-</div>
-<div class="form-box" id="new-goal-form" style="display: none;">
-    <form method="POST">
-        <input type="text" placeholder="Goal Name" name="goalName">
-        <select id="friend_id" name="friend_id" required>
-            <option value="none">None</option>
-            {% for friend in friends %}
-            <option value="{{ friend.id }}">{{ friend.username }}</option>
-            {% endfor %}
-        </select>
-        <button class="button-style" type="button" style="background-color: firebrick;" onclick="cancelNewGoalForm()">Cancel</button>
-        <button class="button-style" type="submit" name="action" value="addGoal" style="background-color: cornflowerblue;">Save</button>
-    </form>
+    <div class="form-box" id="new-goal-form" style="display: none;">
+        <form method="POST">
+            <input type="text" placeholder="Goal Name" name="goalName">
+            <select id="friend_id" name="friend_id" required>
+                <option value="none">None</option>
+                {% for friend in friends %}
+                <option value="{{ friend.id }}">{{ friend.username }}</option>
+                {% endfor %}
+            </select>
+            <button class="button-style" type="button" style="background-color: firebrick;" onclick="cancelNewGoalForm()">Cancel</button>
+            <button class="button-style" type="submit" name="action" value="addGoal" style="background-color: cornflowerblue;">Save</button>
+        </form>
+    </div>
 </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
-function toggleGoals() {
-    
+function getMyGoals() {
         var personalGoals = document.getElementById('personal-goals');
         var sharedGoals = document.getElementById('shared-goals');
-        var toggleButton = document.getElementById('toggle-goals');
-
-        // Växla mellan att visa individuella och gemensamma mål
-        if (personalGoals.style.display === 'none') {
-            personalGoals.style.display = 'block';
-            sharedGoals.style.display = 'none';
-            toggleButton.textContent = 'Visa Gemensamma Mål';
-
-        } else {
-            personalGoals.style.display = 'none';
-            sharedGoals.style.display = 'block';
-            toggleButton.textContent = 'Visa Individuella Mål';
-        }
+        personalGoals.style.display = 'block';
+        sharedGoals.style.display = 'none';
+    }
+    function getteamGoals() {
+        var personalGoals = document.getElementById('personal-goals');
+        var sharedGoals = document.getElementById('shared-goals');
+        personalGoals.style.display = 'none';
+        sharedGoals.style.display = 'block';
     }
 
     function expandNewGoalForm() {
@@ -101,6 +107,22 @@ function toggleGoals() {
         })
     }
 }
+document.addEventListener('DOMContentLoaded', function() {
 
+    let my_g = document.getElementById('my-goals');
+    if (my_g) {
+        my_g.addEventListener('click', getMyGoals);
+        my_g.className="active-view"
+    } else {
+        console.error('startaAktivitet button not found');
+    }
+        let team_g = document.getElementById('team_goals');
+    if (team_g) {
+        team_g.addEventListener('click', getteamGoals);
+        team_g.className="page-toggle-btn"
+    } else {
+        console.error('stopButton not found');
+    }
+});
 </script>
 {% endblock body %}

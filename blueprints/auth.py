@@ -57,7 +57,8 @@ def login():
 def confirm_reset():
     sida = 'Nollställning'
     streak_ids = request.args.getlist('streak_ids')  # Hämtar streak_ids från URL:en
-    streaks_to_reset = Streak.query.filter(Streak.id.in_(streak_ids)).all()
+    user_streaks=Streak.query.filter_by(user_id=current_user.id)
+    streaks_to_reset = user_streaks.query.filter(Streak.id.in_(streak_ids)).all()
 
     if request.method == 'POST':
         # Hämta alla kryssade streaks

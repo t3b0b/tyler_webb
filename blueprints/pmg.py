@@ -1,7 +1,7 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, session
-from models import (User, db, Streak,Goals,Friendship,SharedGoal,
-                    Activity, Score, Dagar, ToDoList)
+from models import (User, db, Streak, Goals, Friendship, SharedGoal,
+                    Activity, Score, Dagar, ToDoList, SharedGoalUser)
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -151,14 +151,14 @@ def delete_streak(streak_id):
     return jsonify({'success': True})
 # endregion
 
-@pmg_bp.route('/goals', methods=['GET'])
+@pmg_bp.route('/goals/<section_name>', methods=['GET'])
 @login_required
 def view_goals():
     # Hämta individuella mål
     personal_goals = Goals.query.filter_by(user_id=current_user.id).all()
 
     # Hämta gemensamma mål (som användaren delar med någon annan)
-    shared_goals = SharedGoal.query.filter(SharedGoal.user_id.contains(current_user.id)).all()
+
 
     return render_template('pmg/goals.html', personal_goals=personal_goals, shared_goals=shared_goals)
 
@@ -170,17 +170,19 @@ def goals():
                                   ['Streaks', 'Goals', 'Milestones'])
     if request.method == 'POST':
         if 'addGoal' in request.form['action']:
-            goal_name = request.form.get('goal_name')
-            friend_id = request.form.get('friend_id')
-
-            add2db(Goals, request, ['goalName', ], ['name'], current_user)
-        
-            shared_goal_user = SharedGoal(goal_id=new_goal.id, user_id=current_user.id, confirmed=True)
-            shared_goal_friend = SharedGoal(goal_id=new_goal.id, user_id=friend_id, confirmed=False)
-        
-            db.session.add(shared_goal_user)
-            db.session.add(shared_goal_friend)
-            db.session.commit()
+            goal_name = request.form.get('goalName')
+            friend_id = request.form.get('friend_id')  # Det här är vännens id som du vill dela målet med
+            if not friend_id:
+            # Skapa ett nytt mål för den inloggade användaren
+                new_goal = Goals(name=goal_name, user_id=current_user.id)
+                db.session.add(new_goal)
+                db.session.commit()  # Spara målet först så vi kan referera till dess id
+            else:
+                shared_goal_user = SharedGoal(title=goal_name, user_id=current_user.id, confirmed=True)
+                shared_goal_friend = SharedGoal(title=goal_name, user_id=friend_id, confirmed=True)
+                db.session.add(shared_goal_user)
+                db.session.add(shared_goal_friend)
+                db.session.commit()
 
         elif 'addTodo' in request.form['action']:
             goal_id = request.form.get('goalId')
@@ -189,12 +191,11 @@ def goals():
                 new_task = ToDoList(task=task_content, goal_id=goal_id, user_id=current_user.id)
                 db.session.add(new_task)
                 db.session.commit()
-            # Omdirigera efter att ha lagt till en ny todo-uppgift
             return redirect(url_for('pmg.goals'))
 
     # Hämta mål på nytt varje gång sidan laddas för att säkerställa att listan är uppdaterad
-    personal_goals = filter_mod(Goals, user_id=current_user.id)
-
+    personal_goals = Goals.query.filter_by(user_id=current_user.id)
+    shared_goals = SharedGoal.query.filter(SharedGoal.users.contains(current_user)).all()
     accepted_friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
                        Friendship.query.filter_by(friend_id=current_user.id, status='accepted').all()
 
@@ -202,7 +203,7 @@ def goals():
 
     friends = User.query.filter(User.id.in_(accepted_user_ids)).all()
 
-    return render_template('pmg/goals.html', sida=sida, header=sida, goals=personal_goals, sub_menu=sub_menu,friends=friends)
+    return render_template('pmg/goals.html', sida=sida, header=sida, personal_goals=personal_goals, sub_menu=sub_menu,friends=friends, shared_goals=shared_goals)
 
 @pmg_bp.route('/goal/<int:goal_id>/activities', methods=['GET', 'POST'])
 def goal_activities(goal_id):
