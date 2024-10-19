@@ -96,6 +96,28 @@ def create_activity_plot(activity_times):
     return plot_url
 
 #region Streak
+
+@pmg_bp.route('/create_notebook/<int:activity_id>', methods=['POST'])
+@login_required
+def create_notebook(activity_id):
+    title = request.form.get('title')
+    description = request.form.get('description')
+
+
+    new_note = Notes(
+        title=title,
+        content=description or '',
+        user_id=current_user.id,
+        activity_id=activity_id,
+        date=datetime.now().strftime('%Y-%m-%d')
+    )
+    db.session.add(new_note)
+    db.session.commit()
+
+    flash('Notebook created successfully!', 'success')
+    return redirect(url_for('pmg.focus_room'))  # Omdirigera till mål-sidan eller var du vill
+
+
 @pmg_bp.route('/streak',methods=['GET', 'POST'])
 @login_required
 def streak():
@@ -124,6 +146,26 @@ def streak_details(streak_id):
     streak = Streak.query.get_or_404(streak_id)
     streakdetail = Streak.query.filter_by(user_id=current_user.id, id = streak_id).first()
     return render_template('pmg/details.html', streak=streak, detail=streakdetail)
+
+
+@pmg_bp.route('/update_note/<int:note_id>', methods=['POST'])
+@login_required
+def update_note(note_id):
+    note = Notes.query.get_or_404(note_id)
+
+    # Kontrollera om användaren äger anteckningen
+    if note.user_id != current_user.id:
+        flash('You are not authorized to edit this note.', 'danger')
+        return redirect(url_for('pmg.goals'))  # Omdirigera om användaren inte äger anteckningen
+
+    # Uppdatera innehållet från formuläret
+    note.content = request.form.get('content')
+
+    db.session.commit()
+    flash('Note updated successfully!', 'success')
+
+    return redirect(url_for('pmg.myday'))  # Omdirigera till lämplig sida efter uppdatering
+
 
 @pmg_bp.route('/update_streak/<int:streak_id>/<action>', methods=['POST'])
 def update_streak(streak_id, action):

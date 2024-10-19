@@ -56,19 +56,36 @@
 </div>
 
 <div class="activity-notes" style="display:flex; flex-direction: column; width:20%; justify-content:center;align-items: flex-end; text-align: left">
-{% if notes %}
+ {% if notes %}
     <div class="right-container">
         <h3>Activity notes</h3>
         {% for note in notes %}
-        <div class="collapsed-notes"> {% note.title %}
+        <div class="collapsed-notes">
+            <form method="POST" action="{{ url_for('pmg.update_note', note_id=note.id) }}">
                 <div>
-                    <p>{% note.content %}</p>
+                    <h5>{{ note.title }}</h5>
+                    <textarea name="content" rows="3">{{ note.content }}</textarea>
                 </div>
+                <button type="submit" class="button-style">Save</button>
+            </form>
         </div>
         {% endfor %}
     </div>
-{% endif %}
-    <button> Add Notebook </button>
+    {% endif %}
+    <div class="new-notebook-form">
+        <h4>Create a New Notebook</h4>
+        <form method="POST" action="{{ url_for('pmg.create_notebook', activity_id=activity.id) }}">
+            <div>
+                <label for="notebook-title">Notebook Title:</label>
+                <input type="text" id="notebook-title" name="title" required>
+            </div>
+            <div>
+                <label for="notebook-description">Description:</label>
+                <textarea id="notebook-description" name="description" rows="3"></textarea>
+            </div>
+            <button type="submit" class="button-style">Create Notebook</button>
+        </form>
+    </div>
 </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
@@ -113,6 +130,16 @@ function updateTaskStatus(taskId, isCompleted) {
         console.error('Network error:', error);
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('textarea').forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            // Visa spara-knappen när texten ändras
+            const saveButton = this.closest('form').querySelector('button[type="submit"]');
+            saveButton.style.display = 'inline-block';  // Visa knappen
+        });
+    });
+});
 
 function turnOff() {
 localStorage.setItem(active,false);
