@@ -71,7 +71,6 @@ def day_view(date):
 @cal_bp.route('/month/<int:year>/<int:month>')
 @login_required
 def month(year=None, month=None):
-    page_info=getInfo('pageInfo.csv', 'myMonth')
     sida, sub_menu = common_route('Min Månad', ['/cal/month', '/cal/week', '/cal/timebox'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])
 
@@ -94,7 +93,7 @@ def month(year=None, month=None):
     dag_data = {entry.date.strftime('%Y-%m-%d'): entry for entry in dag_entries}
 
     return render_template('cal/month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida,
-                           sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data,page_info=page_info)
+                           sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data)
 
 @cal_bp.route('/week', methods=['GET', 'POST'])
 @login_required
@@ -103,7 +102,6 @@ def week():
     year, week_num, weekday = current_date.isocalendar()
     start_week = current_date - timedelta(days=current_date.weekday())  # Start of the current week
     end_week = start_week + timedelta(days=6)  # End of the current week
-    page_info = getInfo('pageInfo.csv', 'myWeek')
     user_id = current_user.id
     sida, sub_menu = common_route('Min Vecka', ['/cal/month', '/cal/week', '/cal/timebox'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])
@@ -188,14 +186,13 @@ def week():
     else:
         remember_list = []
     return render_template('cal/myWeek.html', sida='Veckoplanering', week_scores=week_scores, header='Veckoplanering',
-                           total_score=0, sub_menu=sub_menu, page_info=page_info, bullet=bullet, timedelta=timedelta,
+                           total_score=0, sub_menu=sub_menu, bullet=bullet, timedelta=timedelta,
                            week=week_num, week_dates=week_dates, to_do_list=to_do_list, to_think_list=to_think_list,
                            remember_list=remember_list, current_date=current_date)
 
 @cal_bp.route('/timebox', methods=['GET', 'POST'])
 @login_required
 def timebox():
-    page_info = getInfo('pageInfo.csv', 'myDay')
     today = datetime.now()
     current_date = today.date()
 
@@ -268,7 +265,6 @@ def timebox():
 
     return render_template('cal/timebox.html', current_date=today, sida=sida,today=current_date,
                            header=sida, sub_menu=sub_menu, scores=scores,
-                           to_do_list=to_do_list, to_think_list=to_think_list, remember_list=remember_list,
-                           page_info=page_info)
+                           to_do_list=to_do_list, to_think_list=to_think_list, remember_list=remember_list)
 
 # endregion

@@ -374,7 +374,6 @@ def milestones(goal_id):
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 @login_required
 def myday():
-    pageInfo = getInfo('pageInfo.csv', 'Start')
     sida, sub_menu = common_route("Min Grind", ['/pmg/timebox', '/pmg/streak', '/pmg/goals'],
                                   ['My Day', 'Streaks', 'Goals'])
     date_now = date.today()
@@ -495,7 +494,7 @@ def myday():
 
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now, acts=myActs,
                            my_goals=my_Goals, my_streaks=valid_streaks, my_score=myScore, total_score=total, plot_url=plot_url,
-                           sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo, current_goal=current_goal,
+                           sub_menu=sub_menu, sum_scores=aggregated_scores, current_goal=current_goal,
                            remember_list=remember_list,to_think_list=to_think_list,to_do_list=to_do_list)
 @pmg_bp.route('/myday/<date>')
 @login_required
