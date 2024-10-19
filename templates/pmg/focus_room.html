@@ -65,7 +65,9 @@
                     <p>{% note.content %}</p>
                 </div>
         </div>
+        {% endfor %}
     </div>
+{% endif %}
     <button> Add Notebook </button>
 </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>

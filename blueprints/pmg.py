@@ -117,7 +117,7 @@ def streak():
         return redirect(url_for('pmg.streak'))
     return render_template('pmg/streak.html',sida=sida,header=sida,
                            todayDate=current_date,streaks=myStreaks,sub_menu=sub_menu,
-                           goals=myGoals)
+                       goals=myGoals)
 
 @pmg_bp.route('/streak/<int:streak_id>/details', methods=['GET'])
 def streak_details(streak_id):

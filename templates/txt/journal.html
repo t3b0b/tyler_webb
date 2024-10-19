@@ -25,8 +25,13 @@
         {% if act_id %}
         <div class="blogg-container">
                 <form method="POST">
+                    <div class="view-toggle" style="background-color: white">
+                        <button class="active-view" onclick="window.location.href='txt/journal?section_name=Mina+Ord'">Journal</button>
+                        <button class="page-toggle-btn" onclick="window.location.href='/cal/timebox'">Blog</button>
+                    </div>
                     {% if sida == "Mina Ord" or sida == "Dagbok" or sida == "Mina Mål" %}
                         <div class="ordet">
+
                             <button name="option" style="width: 60px" onclick="fetchNewWord()">New</button>
                             <label id="ordet-label" name="post-ord">{{ ordet }}</label>
                             <input type="hidden" name="goal" value="{{ why_G }}">
@@ -68,6 +73,10 @@
         {% if not act_id %}
             {% if myPosts %}
                 <div class="blogg-post">
+                    <div class="view-toggle" style="background-color: white">
+                        <button class="page-toggle-btn" onclick="window.location.href='txt/journal?section_name=Mina+Ord'">Journal</button>
+                        <button class="active-view" onclick="window.location.href='/cal/timebox'">Blog</button>
+                    </div>
                     {% for post in myPosts %}
                         <h3 class="post-title">{{ post.title }}</h3>
                         <p class="post-content">{{ post.content }}</p>

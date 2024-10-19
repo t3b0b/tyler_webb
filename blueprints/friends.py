@@ -52,6 +52,15 @@ def users():
     all_users = User.query.filter(User.id != current_user.id).all()  # Exkludera den inloggade användaren
 
     return render_template('/friends/users.html', users=all_users,sida=sida,header=sida,sub_menu=sub_menu)
+
+@friends_bp.route('/friend_profile/<int:user_id>', methods=['POST'])
+@login_required
+def get_profile(user_id):
+    user = User.query.get_or_404(user_id)
+    sida, sub_menu = common_route(f'{user.firstName} {user.lastName}',
+                                  ['/pmg/streak', '/pmg/goals', '/pmg/milestones'], ['Streaks', 'Goals', 'Milestones'])
+    return render_template('/friends/friend_profile.html',user=user,sida=sida,header=sida)
+
 @friends_bp.route('/add_friend/<int:friend_id>', methods=['POST'])
 @login_required
 def add_friend(friend_id):

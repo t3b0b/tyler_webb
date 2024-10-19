@@ -57,9 +57,9 @@ def login():
 def confirm_reset():
     sida = 'Nollställning'
     streak_ids = request.args.getlist('streak_ids')  # Hämtar streak_ids från URL:en
+    user_streaks=Streak.query.filter_by(user_id=current_user.id)
+    streaks_to_reset = user_streaks.query.filter(Streak.id.in_(streak_ids)).all()
 
-    streaks_to_reset = Streak.query.filter(Streak.id.in_(streak_ids))
-    user_streaks = streaks_to_reset.filter(user_id=current_user.id)
     if request.method == 'POST':
         # Hämta alla kryssade streaks
         checked_streaks = request.form.getlist('streak')
@@ -82,7 +82,7 @@ def confirm_reset():
         flash('Streaks har uppdaterats.', 'success')
         return redirect(url_for('pmg.myday'))
 
-    return render_template('auth/reset.html', sida=sida, header=sida, streaks=user_streaks)
+    return render_template('auth/reset.html', sida=sida, header=sida, streaks=streaks_to_reset)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
