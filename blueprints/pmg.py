@@ -1,7 +1,7 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, session
-from models import (User, db, Streak, Goals, Friendship, SharedGoal,
-                    Activity, Score, Dagar, ToDoList, SharedGoalUser)
+from models import (User, db, Streak, Goals, Friendship, SharedGoal,Notes,
+                    Activity, Score, Dagar, ToDoList, SharedGoalUser,TopFive)
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -19,6 +19,26 @@ from sqlalchemy.orm import scoped_session
 
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
+
+def get_daily_scores(user_id):
+    today = datetime.now().date()
+    yesterday = today - timedelta(days=1)
+
+    # Hämta poäng för idag och igår
+    today_score = Score.query.filter_by(user_id=user_id, date=today).first()
+    yesterday_score = Score.query.filter_by(user_id=user_id, date=yesterday).first()
+
+    if today_score and yesterday_score:
+        if today_score > yesterday_score:
+            message = "Bra jobbat! Du har överträffat din poäng från igår."
+        else:
+            message = "Försök få en högre poäng imorgon!"
+    elif today_score:
+        message = "Bra start idag!"
+    else:
+        message = "Inga poäng registrerade för idag ännu."
+
+    return today_score, yesterday_score, message
 def get_today_score(user_id):
     """Hämta dagens score för en specifik användare."""
     today = datetime.now().date()
@@ -151,16 +171,6 @@ def delete_streak(streak_id):
     return jsonify({'success': True})
 # endregion
 
-@pmg_bp.route('/goals/<section_name>', methods=['GET'])
-@login_required
-def view_goals():
-    # Hämta individuella mål
-    personal_goals = Goals.query.filter_by(user_id=current_user.id).all()
-
-    # Hämta gemensamma mål (som användaren delar med någon annan)
-
-
-    return render_template('pmg/goals.html', personal_goals=personal_goals, shared_goals=shared_goals)
 
 # region Goals
 @pmg_bp.route('/goals', methods=['GET', 'POST'])
@@ -242,7 +252,7 @@ def activity_tasks(activity_id):
     sida=f"{activity.name} ToDos"
     return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos, sida=sida, header=sida)
 
-@pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST'])
+@pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST','GET'])
 def add_task(activity_id):
     activity = Activity.query.get_or_404(activity_id)
     task_name = request.form.get('task_name')
@@ -399,17 +409,52 @@ def myday():
             else:
                 print("Score field is empty")
 
-        elif 'addTodo' in request.form['action']:
-            task_name = request.form.get('task_name')
-            activity_id = request.form.get('aID')
+    elif 'save_todo' in request.form:
+        todo_list = [request.form.get(f'todo_{i}') for i in range(1, 6) if request.form.get(f'todo_{i}')]
+        # Skapa en ny post med titel "To-Do" och spara listan som innehåll
+        todo_bullet = TopFive(title='To-Do', content=','.join(todo_list), user_id=current_user.id,
+                              date=today)
+        db.session.add(todo_bullet)
+        db.session.commit()
+    # Spara Think listan
+    elif 'save_think' in request.form:
+        think_list = [request.form.get(f'think_{i}') for i in range(1, 6) if request.form.get(f'think_{i}')]
+        think_bullet = TopFive(title='Think', content=','.join(think_list), user_id=current_user.id,
+                               date=today)
+        db.session.add(think_bullet)
+        db.session.commit()
+    # Spara Remember listan
+    elif 'save_remember' in request.form:
+        remember_list = [request.form.get(f'remember_{i}') for i in range(1, 6) if
+                         request.form.get(f'remember_{i}')]
+        remember_bullet = TopFive(title='Remember', content=','.join(remember_list), user_id=current_user.id,
+                                  date=today)
+        db.session.add(remember_bullet)
+        db.session.commit()
+    # Spara ändringarna i databasen
+        flash('Listor sparade!', 'success')
 
-            new_task = ToDoList(task=task_name, completed=False, user_id=current_user.id, activity_id=activity_id)
-            db.session.add(new_task)
-            db.session.commit()
+        # Hämta listor för att visa på sidan
+    priorities = TopFive.query.filter_by(user_id=current_user.id, title="To-Do").first()
+    if priorities:
+        to_do_list = priorities.content.split(',')
+    else:
+        to_do_list = []
+    to_think_list = TopFive.query.filter_by(user_id=current_user.id, title="Think").first()
+    if to_think_list:
+        to_think_list = to_think_list.content.split(',')
+    else:
+        to_think_list = []
+    remember_list = TopFive.query.filter_by(user_id=current_user.id, title="Remember").first()
+    if remember_list:
+        remember_list = remember_list.content.split(',')
+    else:
+        remember_list = []
 
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now, acts=myActs,
                            my_goals=my_Goals, my_streaks=valid_streaks, my_score=myScore, total_score=total, plot_url=plot_url,
-                           sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo, current_goal=current_goal)
+                           sub_menu=sub_menu, sum_scores=aggregated_scores, page_info=pageInfo, current_goal=current_goal,
+                           remember_list=remember_list,to_think_list=to_think_list,to_do_list=to_do_list)
 @pmg_bp.route('/myday/<date>')
 @login_required
 def myday_date(date):
@@ -442,9 +487,8 @@ def focus_room(activity_id):
     goal_id = activity.goal_id  # Hämta goal_id från aktiviteten
     today = date.today()
     current_date=today
-
     tasks = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).order_by(ToDoList.completed.desc()).all()
-
+    activity_notes=Notes.query.filter_by(user_id=current_user.id, activity_id=activity_id).all()
 
     if request.method == 'POST':
         if 'save-score' in request.form['action']:
@@ -471,7 +515,7 @@ def focus_room(activity_id):
 
         return jsonify({"success": True}), 200
 
-    return render_template('pmg/focus_room.html', activity=activity, goal_id=goal_id, tasks=tasks, current_date=current_date)
+    return render_template('pmg/focus_room.html',activity_notes=activity_notes, activity=activity, goal_id=goal_id, tasks=tasks, current_date=current_date)
 
 # endregion
 

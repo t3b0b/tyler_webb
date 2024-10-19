@@ -1,10 +1,15 @@
-from flask_sqlalchemy import SQLAlchemy
+
 from flask_login import UserMixin
 from datetime import datetime
+from flask import current_app, Flask
 from sqlalchemy.dialects.postgresql import JSON
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
-#region User
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@tylerobri.mysql.pythonanywhere-services.com/tylerobri$PMG'
+migrate = Migrate(app, db)
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -83,7 +88,6 @@ class Activity(db.Model):
     # Lägg till relation till ToDoList via ForeignKey
     todo_list = db.relationship('ToDoList', backref='activity', lazy=True)
     tasks = db.relationship('Task', back_populates='activity')
-
 
 # Koppling till att-göra-lista och tasks
 class ToDoList(db.Model):
@@ -233,7 +237,7 @@ class Notes(db.Model):
     content = db.Column(db.Text, unique=False, nullable=False)
     author = db.Column(db.String(50), nullable=True)
     type = db.Column(db.Integer, nullable=False)
-    
+
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     goal_id = db.Column(db.Integer, db.ForeignKey('goal.id'), nullable=True)
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)

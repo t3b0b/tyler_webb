@@ -1,5 +1,8 @@
-from main import app
-from models import db, Notes, User
+from flask_migrate import migrate,Migrate
 
-with app.app_context():
-    db.create_all()
+
+def init(app,db):
+
+
+    with app.app_context():
+        db.create_all()

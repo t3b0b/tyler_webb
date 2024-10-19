@@ -30,11 +30,11 @@
             </li>
         {% endfor %}
         </ul>
-        <form class="form-container" method="POST">
+         <form action="{{ url_for('pmg.add_task', activity_id=activity.id) }}" method="POST">
             <input type="hidden" name="actId" value="{{ activity.id }}">
             <input type="hidden" name="origin" value="focus">
             <input type="text" name="task_name" placeholder="Enter new task" required>
-            <button type="submit" name="action" value="addTodo">Add Task</button>
+            <button onclick="" type="submit" name="action" value="addTodo">Add Task</button>
         </form>
     </div>
     <form method="POST">
@@ -43,9 +43,9 @@
             <input type="text" id="aDate" name="aDate" value="{{ current_date }}">
             <input type="text" id="start" name="start">
             <input type="text" id="end" name="end">
-            <input type="text" id="score" name="score">
+            <input type="number" id="score" name="score">
             <div class="button-center" id="complete-form" style="display:none;">
-                <button type="submit" name="action" id="save-btn" class="button-style" value="save-score">Save</button>
+                <button type="submit" onclick="turnOff" name="action" id="save-btn" class="button-style" value="save-score">Save</button>
             </div>
         </div>
     </form>
@@ -53,6 +53,20 @@
         <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
         <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
     </div>
+</div>
+
+<div class="activity-notes" style="display:flex; flex-direction: column; width:20%; justify-content:center;align-items: flex-end; text-align: left">
+{% if notes %}
+    <div class="right-container">
+        <h3>Activity notes</h3>
+        {% for note in notes %}
+        <div class="collapsed-notes"> {% note.title %}
+                <div>
+                    <p>{% note.content %}</p>
+                </div>
+        </div>
+    </div>
+    <button> Add Notebook </button>
 </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
@@ -64,6 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Lägg till event listeners för uppgifter
+document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.task-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             const taskId = this.dataset.taskId;
@@ -72,5 +87,33 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+function updateTaskStatus(taskId, isCompleted) {
+    fetch(`/tasks/${taskId}/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()  // Om du använder CSRF-skydd
+        },
+        body: JSON.stringify({
+            completed: isCompleted
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Task updated successfully');
+        } else {
+            console.error('Error updating task:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Network error:', error);
+    });
+}
+
+function turnOff() {
+localStorage.setItem(active,false);
+}
 </script>
 {% endblock body %}
