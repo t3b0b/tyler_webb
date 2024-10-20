@@ -97,28 +97,6 @@ def create_activity_plot(activity_times):
 
 #region Streak
 
-@pmg_bp.route('/create_notebook/<int:activity_id>', methods=['POST'])
-@login_required
-def create_notebook(activity_id):
-    title = request.form.get('title')
-    description = request.form.get('description')
-    user = User.query.filter_by(id=current_user.id).first()
-
-    new_note = Notes(
-        title=title,
-        content=description or '',
-        user_id=current_user.id,
-        author=user.username,
-        activity_id=activity_id,
-        date=datetime.now().strftime('%Y-%m-%d')
-    )
-    db.session.add(new_note)
-    db.session.commit()
-
-    flash('Notebook created successfully!', 'success')
-    return redirect(url_for('pmg.focus_room'))  # Omdirigera till mål-sidan eller var du vill
-
-
 @pmg_bp.route('/streak',methods=['GET', 'POST'])
 @login_required
 def streak():
@@ -147,26 +125,6 @@ def streak_details(streak_id):
     streak = Streak.query.get_or_404(streak_id)
     streakdetail = Streak.query.filter_by(user_id=current_user.id, id = streak_id).first()
     return render_template('pmg/details.html', streak=streak, detail=streakdetail)
-
-
-@pmg_bp.route('/update_note/<int:note_id>', methods=['POST'])
-@login_required
-def update_note(note_id):
-    note = Notes.query.get_or_404(note_id)
-
-    # Kontrollera om användaren äger anteckningen
-    if note.user_id != current_user.id:
-        flash('You are not authorized to edit this note.', 'danger')
-        return redirect(url_for('pmg.goals'))  # Omdirigera om användaren inte äger anteckningen
-
-    # Uppdatera innehållet från formuläret
-    note.content = request.form.get('content')
-
-    db.session.commit()
-    flash('Note updated successfully!', 'success')
-
-    return redirect(url_for('pmg.myday'))  # Omdirigera till lämplig sida efter uppdatering
-
 
 @pmg_bp.route('/update_streak/<int:streak_id>/<action>', methods=['POST'])
 def update_streak(streak_id, action):
@@ -214,8 +172,7 @@ def delete_streak(streak_id):
     return jsonify({'success': True})
 # endregion
 
-
-# region Goals
+#region Goals
 @pmg_bp.route('/goals', methods=['GET', 'POST'])
 @login_required
 def goals():
@@ -248,26 +205,35 @@ def goals():
 
     # Hämta mål på nytt varje gång sidan laddas för att säkerställa att listan är uppdaterad
     personal_goals = Goals.query.filter_by(user_id=current_user.id)
-    shared_goals = SharedGoal.query.filter(SharedGoal.users.contains(current_user)).all()
+
     accepted_friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
                        Friendship.query.filter_by(friend_id=current_user.id, status='accepted').all()
 
-    all_shared_goals = SharedGoal.query.all()
-    print(all_shared_goals)
-
-    # Hämta alla mål-förfrågningar där du är mottagare och de inte är bekräftade
-    received_requests = SharedGoal.query.filter_by(created_by=current_user.id).all()
-
-    # Hämta alla mål-förfrågningar du har skickat men som inte är bekräftade
-    sent_requests = db.session.query(SharedGoal).join(SharedGoalUser).filter(
-        SharedGoalUser.user_id == current_user.id,
-        SharedGoal.confirmed == False
+    # Hämta alla mål som antingen skapats av användaren eller som användaren har blivit inbjuden till och accepterat
+    shared_goals = db.session.query(Goals).join(SharedGoal).join(SharedGoalUser).filter(
+        (Goals.user_id == current_user.id) |  # Mål som skapats av användaren
+        (SharedGoalUser.user_id == current_user.id)  # Mål som användaren är inbjuden till och accepterat
     ).all()
 
-    accepted_user_ids = [friend.user_id if friend.user_id != current_user.id else friend.friend_id for friend in accepted_friends]
+    # Hämta mottagna förfrågningar (ännu ej accepterade)
+    received_requests = db.session.query(SharedGoal).join(SharedGoalUser).filter(
+        (SharedGoalUser.user_id == current_user.id) |  # Förfrågningar där användaren är mottagaren
+        (SharedGoal.confirmed == False)  # Och inte har bekräftats ännu
+    ).all()
 
+    # Hämta skickade mål-förfrågningar (ännu ej accepterade)
+    sent_requests = db.session.query(SharedGoal).join(SharedGoalUser).filter(
+        (SharedGoalUser.user_id == current_user.id) |  # Skickade förfrågningar från den inloggade användaren
+        (SharedGoal.confirmed == False)  # Och inte har bekräftats ännu
+    ).all()
+
+    # Hämta vänner för att kunna dela mål
+    accepted_friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
+                       Friendship.query.filter_by(friend_id=current_user.id, status='accepted').all()
+
+    accepted_user_ids = [friend.user_id if friend.user_id != current_user.id else friend.friend_id for friend in
+                         accepted_friends]
     friends = User.query.filter(User.id.in_(accepted_user_ids)).all()
-
     return render_template('pmg/goals.html',received_requests=received_requests,sent_requests=sent_requests, sida=sida, header=sida, personal_goals=personal_goals, sub_menu=sub_menu,friends=friends, shared_goals=shared_goals)
 
 @pmg_bp.route('/goal_request/<int:request_id>/<action>', methods=['POST'])
@@ -312,61 +278,6 @@ def goal_activities(goal_id):
     activities = Activity.query.filter_by(goal_id=goal_id).all()
     return render_template('pmg/activities.html', goal=goal, activities=activities)
 
-@pmg_bp.route('/get_activities/<goal_id>')
-def get_activities(goal_id):
-    activities = Activity.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
-    activity_list = [{'id': activity.id, 'name': activity.name} for activity in activities]
-    return jsonify(activity_list)
-
-# region Todos
-@pmg_bp.route('/activity/<int:activity_id>/tasks', methods=['GET'])
-def activity_tasks(activity_id):
-    activity = Activity.query.get_or_404(activity_id)
-    todos = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).order_by(ToDoList.completed.desc()).all()
-    sida=f"{activity.name} ToDos"
-    return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos, sida=sida, header=sida)
-
-@pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST','GET'])
-def add_task(activity_id):
-    activity = Activity.query.get_or_404(activity_id)
-    task_name = request.form.get('task_name')
-    origin = request.form.get('origin')
-
-    sida="PMG"
-
-    new_task = ToDoList(task=task_name, completed=False, user_id=current_user.id, activity_id=activity.id)
-    db.session.add(new_task)
-    db.session.commit()
-
-    if origin == 'todo':
-        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
-    elif origin == 'focus':
-        return redirect(url_for('pmg.focus_room', activity_id=activity_id))
-
-    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id),sida=sida, header=sida)
-
-
-@pmg_bp.route('/activity/<int:activity_id>/update_task/<int:task_id>', methods=['POST'])
-def update_task(activity_id, task_id):
-    task = ToDoList.query.get_or_404(task_id)
-
-    # Hämta den nya statusen från formuläret
-    completed = 'completed' in request.form  # Checkbox skickar bara värde om den är markerad
-    origin = request.form.get('origin')  # Hämta ursprungssidan
-
-    # Uppdatera task status
-    task.completed = completed
-    db.session.commit()
-
-    # Omdirigera till rätt sida baserat på ursprungssidan
-    if origin == 'todo':
-        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
-    elif origin == 'focus':
-        return redirect(url_for('pmg.focus_room', activity_id=activity_id))
-
-    # Om ingen origin skickas med, omdirigera till standard-sidan
-    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
-
 @pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
 def delete_goal(goal_id):
     # Här kan du implementera logiken för att ta bort målet från databasen
@@ -383,17 +294,18 @@ def delete_goal(goal_id):
         else:
             return jsonify({'success': False, 'error': 'Goal not found'}), 404
 
-@pmg_bp.route('/delete-activity/<int:activity_id>', methods=['POST'])
-def delete_activity(activity_id):
-    activity = Activity.query.get(activity_id)
-    if activity:
-        try:
-            db.session.delete(activity)
-            db.session.commit()
-        except Exception:
-            db.session.rollback()  # Rollback om något går fel
-        return jsonify(success=True), 200
-    return jsonify(success=False), 404
+@pmg_bp.route('pmg/goal_requests', methods=['GET'])
+@login_required
+def goal_requests():
+    # Hämta alla mål-förfrågningar där du är mottagare och de inte är bekräftade
+    received_requests = SharedGoal.query.filter_by(user_id=current_user.id, confirmed=False).all()
+
+    # Hämta alla mål-förfrågningar du har skickat men som inte är bekräftade
+    sent_requests = SharedGoal.query.filter(SharedGoal.created_by == current_user.id, SharedGoal.confirmed == False).all()
+
+    return render_template('goal_requests.html', received_requests=received_requests, sent_requests=sent_requests)
+
+# endregion
 
 #region Milestones
 @pmg_bp.route('milestones/<int:goal_id>')
@@ -403,6 +315,7 @@ def milestones(goal_id):
 
 # endregion
 
+# region Start
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 @login_required
 def myday():
@@ -552,17 +465,9 @@ def myday_date(date):
                                my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
     else:
         return redirect(url_for('pmg.myday'))
-@pmg_bp.route('pmg/goal_requests', methods=['GET'])
-@login_required
-def goal_requests():
-    # Hämta alla mål-förfrågningar där du är mottagare och de inte är bekräftade
-    received_requests = SharedGoal.query.filter_by(user_id=current_user.id, confirmed=False).all()
+# endregion
 
-    # Hämta alla mål-förfrågningar du har skickat men som inte är bekräftade
-    sent_requests = SharedGoal.query.filter(SharedGoal.created_by == current_user.id, SharedGoal.confirmed == False).all()
-
-    return render_template('goal_requests.html', received_requests=received_requests, sent_requests=sent_requests)
-
+#region Activity
 @pmg_bp.route('/focus_room/<int:activity_id>', methods=['GET', 'POST'])
 @login_required
 def focus_room(activity_id):
@@ -599,9 +504,114 @@ def focus_room(activity_id):
 
     return render_template('pmg/focus_room.html',activity_notes=activity_notes, activity=activity, tasks=tasks, current_date=current_date)
 
+@pmg_bp.route('/activity/<int:activity_id>/update_task/<int:task_id>', methods=['POST'])
+def update_task(activity_id, task_id):
+    task = ToDoList.query.get_or_404(task_id)
+
+    # Hämta den nya statusen från formuläret
+    completed = 'completed' in request.form  # Checkbox skickar bara värde om den är markerad
+    origin = request.form.get('origin')  # Hämta ursprungssidan
+
+    # Uppdatera task status
+    task.completed = completed
+    db.session.commit()
+
+    # Omdirigera till rätt sida baserat på ursprungssidan
+    if origin == 'todo':
+        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+    elif origin == 'focus':
+        return redirect(url_for('pmg.focus_room', activity_id=activity_id))
+
+    # Om ingen origin skickas med, omdirigera till standard-sidan
+    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+
+@pmg_bp.route('/delete-activity/<int:activity_id>', methods=['POST'])
+def delete_activity(activity_id):
+    activity = Activity.query.get(activity_id)
+    if activity:
+        try:
+            db.session.delete(activity)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()  # Rollback om något går fel
+        return jsonify(success=True), 200
+    return jsonify(success=False), 404
+
+@pmg_bp.route('/get_activities/<goal_id>')
+def get_activities(goal_id):
+    activities = Activity.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
+    activity_list = [{'id': activity.id, 'name': activity.name} for activity in activities]
+    return jsonify(activity_list)
+
+@pmg_bp.route('/update_note/<int:note_id>', methods=['POST'])
+@login_required
+def update_note(note_id):
+    note = Notes.query.get_or_404(note_id)
+
+    # Kontrollera om användaren äger anteckningen
+    if note.user_id != current_user.id:
+        flash('You are not authorized to edit this note.', 'danger')
+        return redirect(url_for('pmg.goals'))  # Omdirigera om användaren inte äger anteckningen
+
+    # Uppdatera innehållet från formuläret
+    note.content = request.form.get('content')
+
+    db.session.commit()
+    flash('Note updated successfully!', 'success')
+
+    return redirect(url_for('pmg.myday'))  # Omdirigera till lämplig sida efter uppdatering
+
+@pmg_bp.route('/create_notebook/<int:activity_id>', methods=['POST'])
+@login_required
+def create_notebook(activity_id):
+    title = request.form.get('title')
+    description = request.form.get('description')
+    user = User.query.filter_by(id=current_user.id).first()
+
+    new_note = Notes(
+        title=title,
+        content=description or '',
+        user_id=current_user.id,
+        author=user.username,
+        activity_id=activity_id,
+        date=datetime.now().strftime('%Y-%m-%d')
+    )
+    db.session.add(new_note)
+    db.session.commit()
+
+    flash('Notebook created successfully!', 'success')
+    return redirect(url_for('pmg.focus_room',activity_id=activity_id))  # Omdirigera till mål-sidan eller var du vill
+
 # endregion
 
+# region Todos
+@pmg_bp.route('/activity/<int:activity_id>/tasks', methods=['GET'])
+def activity_tasks(activity_id):
+    activity = Activity.query.get_or_404(activity_id)
+    todos = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).order_by(ToDoList.completed.desc()).all()
+    sida=f"{activity.name} ToDos"
+    return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos, sida=sida, header=sida)
 
+@pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST','GET'])
+def add_task(activity_id):
+    activity = Activity.query.get_or_404(activity_id)
+    task_name = request.form.get('task_name')
+    origin = request.form.get('origin')
+
+    sida="PMG"
+
+    new_task = ToDoList(task=task_name, completed=False, user_id=current_user.id, activity_id=activity.id)
+    db.session.add(new_task)
+    db.session.commit()
+
+    if origin == 'todo':
+        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+    elif origin == 'focus':
+        return redirect(url_for('pmg.focus_room', activity_id=activity_id))
+
+    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id),sida=sida, header=sida)
+
+# endregion
 
 
 

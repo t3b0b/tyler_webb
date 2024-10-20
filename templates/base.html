@@ -25,7 +25,11 @@
                 <span class="icon-label">Streak</span>
             </a>
         </div>
-        <span>{{ header }}</span>
+        {% if total_score %}
+            <span>{{ total_score }}</span>
+        {% else %}
+            <span>{{ header }}</span>
+        {% endif %}
         <div class="right-icons">
             <a href="/txt/journal" class="icon-text">
                 <img src="{{ url_for('static', filename='images/Texts.png') }}" alt="Journal">
@@ -101,7 +105,7 @@
         {% if total_score %}
             <span>{{ total_score }}</span>
         {% else %}
-            <span>{{ 0 }}</span>
+            <span>{{ header }}</span>
         {% endif %}
         <div class="right-icons">
             <a href="/txt/journal" class="icon-text">

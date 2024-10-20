@@ -68,6 +68,7 @@ class Goals(db.Model):
     activities = db.relationship('Activity', backref='goal', lazy=True)
     milestones = db.relationship('Milestones', backref='goal', lazy=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    shared_goals = db.relationship('SharedGoal', backref='goal', lazy=True)
     def __repr__(self):
         return f"{self.name}, {self.user_id}"
 
@@ -141,6 +142,7 @@ class Streak(db.Model):
 
 class SharedGoal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
     title = db.Column(db.String(255), nullable=False)
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     confirmed = db.Column(db.Boolean, default=False)

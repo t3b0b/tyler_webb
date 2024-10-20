@@ -5,18 +5,18 @@
     <style>
     .container {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         width: 100%;
-        height: 100%;
+        height: 100vh;
         align-items: center; /* Centrera elementen horisontellt */
         justify-content: center; /* Centrera elementen vertikalt */
     }
     </style>
-
 {% endblock head %}
+
 {% block body %}
 <div class="container">
-    <div class="todo-list" id="todo-list-{{ activity.id }}">
+    <div class="todo-list" id="todo-list-{{ activity.id }}" style="justify-content: center; align-items: center;">
         <h4>{{ activity.name }} To-Do</h4>
         <ul>
         {% for task in tasks %}
@@ -30,12 +30,16 @@
             </li>
         {% endfor %}
         </ul>
-         <form action="{{ url_for('pmg.add_task', activity_id=activity.id) }}" method="POST">
+        <form action="{{ url_for('pmg.add_task', activity_id=activity.id) }}" method="POST">
             <input type="hidden" name="actId" value="{{ activity.id }}">
             <input type="hidden" name="origin" value="focus">
             <input type="text" name="task_name" placeholder="Enter new task" required>
             <button onclick="" type="submit" name="action" value="addTodo">Add Task</button>
         </form>
+        <div class="button-center">
+            <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
+            <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
+        </div>
     </div>
     <form method="POST">
         <div id="completed-form" class="form-container" style="display:none;">
@@ -49,30 +53,21 @@
             </div>
         </div>
     </form>
-    <div class="button-center" style="width:10%">
-        <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
-        <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
-    </div>
-</div>
-
-<div class="activity-notes" style="display:flex; flex-direction: column; width:20%; justify-content:center;align-items: flex-end; text-align: left">
+<div class="activity-notes" style="display:flex; flex-direction: column; width:20%; max-height: 80%; justify-content:center;align-items: center; text-align: left;">
  {% if activity_notes %}
     <div class="right-container">
-        <h3>Activity notes</h3>
         {% for note in activity_notes %}
         <div class="collapsed-notes">
-            <form method="POST" action="{{ url_for('pmg.update_note', note_id=note.id) }}">
+            <h5 class="note-title" onclick="toggleList(this)" style="cursor: pointer;" data-note-id="{{ note.id }}">{{ note.title }}</h5>
+            <form method="POST" action="{{ url_for('pmg.update_note', note_id=note.id) }}" class="note-form" style="display:inline;">
                 <div>
-                    <h5>{{ note.title }}</h5>
-                    <textarea name="content" rows="3">{{ note.content }}</textarea>
+                    <textarea name="content" style="height:300px; max-height: 60%">{{ note.content }}</textarea>
                 </div>
                 <button type="submit" class="button-style">Save</button>
             </form>
         </div>
         {% endfor %}
-    </div>
-    {% endif %}
-    <div class="new-notebook-form">
+        <div class="new-notebook-form">
         <h4>Create a New Notebook</h4>
         <form method="POST" action="{{ url_for('pmg.create_notebook', activity_id=activity.id) }}">
             <div>
@@ -83,25 +78,59 @@
         </form>
     </div>
 </div>
+    {% endif %}
+</div>
+</div>
+
+
+
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
+    function toggleList(element) {
+        const content = element.nextElementSibling;
+        content.style.display = content.style.display === 'none' || content.style.display === '' ? 'block' : 'none';
+    }
 document.addEventListener('DOMContentLoaded', function() {
 
     if (localStorage.getItem('active') === 'true') {
         console.log("En aktivitet är redan aktiv.");
         return;  // Avsluta om en aktivitet redan pågår
     }
+    // Hämta alla note-titlar och lägg till en event listener för klick
+    document.querySelectorAll('.note-title').forEach(title => {
+        title.addEventListener('click', function() {
+            const noteForm = this.nextElementSibling; // Formen som ligger direkt efter titeln
+
+            // Kontrollera om formen är dold eller inte, växla visning
+            if (noteForm.style.display === 'none' || noteForm.style.display === '') {
+                noteForm.style.display = 'block';
+            } else {
+                noteForm.style.display = 'none';
+            }
+        });
+    });
+
+    // Visa spara-knappen när texten ändras
+    document.querySelectorAll('textarea').forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            const saveButton = this.closest('form').querySelector('button[type="submit"]');
+            saveButton.style.display = 'inline-block';  // Visa spara-knappen när text ändras
+        });
+    });
 
     // Lägg till event listeners för uppgifter
-document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.task-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
+        checkbox.addEventListener('change', function () {
             const taskId = this.dataset.taskId;
             const isCompleted = this.checked;
             updateTaskStatus(taskId, isCompleted);
         });
     });
 });
+
+function turnOff() {
+    localStorage.setItem(active, false);
+}
 
 function updateTaskStatus(taskId, isCompleted) {
     fetch(`/tasks/${taskId}/update`, {
@@ -113,7 +142,7 @@ function updateTaskStatus(taskId, isCompleted) {
         body: JSON.stringify({
             completed: isCompleted
         }),
-    })
+    }
     .then(response => response.json())
     .then(data => {
         if (data.success) {
@@ -121,24 +150,7 @@ function updateTaskStatus(taskId, isCompleted) {
         } else {
             console.error('Error updating task:', data.error);
         }
-    })
-    .catch(error => {
-        console.error('Network error:', error);
-    });
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('textarea').forEach(textarea => {
-        textarea.addEventListener('input', function() {
-            // Visa spara-knappen när texten ändras
-            const saveButton = this.closest('form').querySelector('button[type="submit"]');
-            saveButton.style.display = 'inline-block';  // Visa knappen
-        });
-    });
-});
-
-function turnOff() {
-    localStorage.setItem(active, false);
+    }))
 }
 </script>
 {% endblock body %}

@@ -11,17 +11,15 @@
         align-items: center; /* Centrera elementen horisontellt */
         justify-content: center; /* Centrera elementen vertikalt */
     }
-    .box-container {
+    .wrap-container {
         display: flex;
         flex-wrap: wrap;
-        justify-content: space-around; /* För att jämnt fördela korten */
+        justify-content: space-evenly; /* För att jämnt fördela korten */
         align-items: center;
         width: 100%;
         height: 100vh; /* För att täcka hela höjden av sidan */
-        column-gap: 10%;
-        row-gap: 10%;
     }
-    .list-container .list-content {
+    .card-container {
         width: 30%; /* Använd 30% för att passa tre kort på rad */
         height: 200px; /* Exempel på höjd för korten */
         margin: 10px; /* Mellanrum mellan korten */
@@ -58,41 +56,40 @@
 
 {% block body %}
 <div class="box-container">
-            <div class="list-header" onclick="toggleList(this)">Priorities</div>
-            <div class="list-content" style="display:none;">
-                <form method="POST">
-                    {% for num in range(1, 6) %}
-                    <ul id="sortable-list">
-                        <li class="draggable-item" draggable="true" contenteditable="true">Task 1</li>
-                        <li class="draggable-item" draggable="true" contenteditable="true">Task 2</li>
-                        <li class="draggable-item" draggable="true" contenteditable="true">Task 3</li>
-                        <li class="draggable-item" draggable="true" contenteditable="true">Task 4</li>
-                        <li class="draggable-item" draggable="true" contenteditable="true">Task 5</li>
-                    </ul>
-                        <input type="text" name="todo_{{ num }}" placeholder="{{ num }}Priority" value="{{ to_do_list[num-1] if to_do_list|length >= num else '' }}">
-                    {% endfor %}
-                    <button type="submit" name="save_todo">Spara</button>
-                </form>
-            </div>
-            <div class="list-header" onclick="toggleList(this)">Keep in mind</div>
-            <div class="list-content" style="display:none;">
-                <form method="POST">
-                    {% for num in range(1, 6) %}
-                        <input type="text" name="think_{{ num }}" placeholder="Keep in mind {{ num }}" value="{{ to_think_list[num-1] if to_think_list|length >= num else '' }}">
-                    {% endfor %}
-                    <button type="submit" name="save_think">Spara Att tänka på</button>
-                </form>
-            </div>
-            <div class="list-header" onclick="toggleList(this)">Remember</div>
-            <div class="list-content" style="display:none;">
-                <form method="POST">
-                    {% for num in range(1, 6) %}
-                        <input type="text" name="remember_{{ num }}" placeholder="Remember {{ num }}" value="{{ remember_list[num-1] if remember_list|length >= num else '' }}">
-                    {% endfor %}
-                    <button type="submit" name="save_remember">Spara Kom-ihåg</button>
-                </form>
-            </div>
-    <div id="goal-section" class="list-container" style="max-width: 300px;">
+    <div class="list-container">
+        <div class="list-header" onclick="toggleList(this)">Priorities</div>
+        <div class="list-content" style="display:none;">
+            <form method="POST">
+                {% for num in range(1, 6) %}
+                    <input type="text" name="todo_{{ num }}" placeholder="{{ num }}Priority" value="{{ to_do_list[num-1] if to_do_list|length >= num else '' }}">
+                {% endfor %}
+                <button type="submit" name="save_todo">Spara</button>
+            </form>
+        </div>
+    </div>
+    <div class="list-container">
+        <div class="list-header" onclick="toggleList(this)">Keep in mind</div>
+        <div class="list-content" style="display:none;">
+            <form method="POST">
+                {% for num in range(1, 6) %}
+                    <input type="text" name="think_{{ num }}" placeholder="Keep in mind {{ num }}" value="{{ to_think_list[num-1] if to_think_list|length >= num else '' }}">
+                {% endfor %}
+                <button type="submit" name="save_think">Spara Att tänka på</button>
+            </form>
+        </div>
+    </div>
+    <div class="list-container">
+        <div class="list-header" onclick="toggleList(this)">Remember</div>
+        <div class="list-content" style="display:none;">
+            <form method="POST">
+                {% for num in range(1, 6) %}
+                    <input type="text" name="remember_{{ num }}" placeholder="Remember {{ num }}" value="{{ remember_list[num-1] if remember_list|length >= num else '' }}">
+                {% endfor %}
+                <button type="submit" name="save_remember">Spara Kom-ihåg</button>
+            </form>
+        </div>
+    </div>
+    <div id="goal-section" class="list-container">
         <div class="list-header">
             <h3>Goals</h3>
         </div>
@@ -117,32 +114,31 @@
         </div>
         {% endif %}
     </div>
-    <div id="streak-section" class="list-container" style="width:25%;">
-        <div class="list-header">
-            <h3>Streaks</h3>
-        </div>
-        {% if my_streaks %}
-            <div class="list-content">
-            {% for streak in my_streaks %}
-                <div class="list-item">
-                    <label>{{ streak.name }}</label>
-                    <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post" style="display: flex; justify-content: center; align-items: center;">
-                        {% if streak.type == "number" %}
-                            <input type="number" name="amount" style="background: #f0f0f0; height: 20px; width: 40px; text-align: center; margin-right: 40px;">
-                        {% endif %}
-                            <button class="streak-icon" type="submit" style="border: none; background: none; margin-right: 10px;">
-                                <svg id="checkbox-{{ streak.id }}" class="checkbox" xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 242 216">
-                                    <ellipse id="background-{{ streak.id }}" class="background" cx="121" cy="108" rx="121" ry="108" fill="green"/>
-                                    <path id="check" d="M38.5133 122.529L65.1039 95.7875L107.94 135.826L215.29 52.7692L101.124 171.413L38.5133 122.529Z" fill="white"/>
-                                </svg>
-                            </button>
-                    </form>
-                </div>
-            {% endfor %}
+        <div id="streak-section" class="list-container">
+            <div class="list-header">
+                <h3>Streaks</h3>
             </div>
-        {% endif %}
-    </div>
-
+            {% if my_streaks %}
+                <div class="list-content">
+                {% for streak in my_streaks %}
+                    <div class="list-item">
+                        <label>{{ streak.name }}</label>
+                        <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post" style="display: flex; justify-content: center; align-items: center;">
+                            {% if streak.type == "number" %}
+                                <input type="number" name="amount" style="background: #f0f0f0; height: 20px; width: 40px; text-align: center; margin-right: 40px;">
+                            {% endif %}
+                                <button class="streak-icon" type="submit" style="border: none; background: none; margin-right: 10px;">
+                                    <svg id="checkbox-{{ streak.id }}" class="checkbox" xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 242 216">
+                                        <ellipse id="background-{{ streak.id }}" class="background" cx="121" cy="108" rx="121" ry="108" fill="green"/>
+                                        <path id="check" d="M38.5133 122.529L65.1039 95.7875L107.94 135.826L215.29 52.7692L101.124 171.413L38.5133 122.529Z" fill="white"/>
+                                    </svg>
+                                </button>
+                        </form>
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        </div>
     <form method="POST">
         <div id="completed-form" class="form-container">
             <input type="hidden" id="gID" name="gID" style="display: none;">
