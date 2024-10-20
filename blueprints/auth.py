@@ -33,7 +33,7 @@ def login():
             login_user(user)
             today = datetime.now()
             streaks_to_reset = []
-            streaks = Streak.query.all()
+            streaks = Streak.query.filter_by(user_id=current_user.id).all()
             for streak in streaks:
                 last_reg = streak.lastReg
                 reset_date = last_reg + timedelta(days=streak.interval, hours=23, minutes=59, seconds=59)
@@ -58,7 +58,7 @@ def confirm_reset():
     sida = 'Nollställning'
     streak_ids = request.args.getlist('streak_ids')  # Hämtar streak_ids från URL:en
     user_streaks=Streak.query.filter_by(user_id=current_user.id)
-    streaks_to_reset = user_streaks.query.filter(Streak.id.in_(streak_ids)).all()
+    streaks_to_reset = user_streaks.filter(Streak.id.in_(streak_ids)).all()
 
     if request.method == 'POST':
         # Hämta alla kryssade streaks

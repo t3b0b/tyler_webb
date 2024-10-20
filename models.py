@@ -76,7 +76,6 @@ class SharedGoalUser(db.Model):
     goal_id = db.Column(db.Integer, db.ForeignKey('shared_goal.id'), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
 
-
 class Activity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -143,8 +142,8 @@ class Streak(db.Model):
 class SharedGoal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
-    confirmed = db.Column(db.Boolean)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    confirmed = db.Column(db.Boolean, default=False)
     users = db.relationship('User', secondary='shared_goal_user', back_populates='shared_goals')
 
 class SharedStreak(db.Model):
@@ -237,9 +236,7 @@ class Notes(db.Model):
     content = db.Column(db.Text, unique=False, nullable=False)
     author = db.Column(db.String(50), nullable=True)
     type = db.Column(db.Integer, nullable=False)
-
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    goal_id = db.Column(db.Integer, db.ForeignKey('goal.id'), nullable=True)
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)
 
     def __repr__(self):

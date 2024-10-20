@@ -56,10 +56,10 @@
 </div>
 
 <div class="activity-notes" style="display:flex; flex-direction: column; width:20%; justify-content:center;align-items: flex-end; text-align: left">
- {% if notes %}
+ {% if activity_notes %}
     <div class="right-container">
         <h3>Activity notes</h3>
-        {% for note in notes %}
+        {% for note in activity_notes %}
         <div class="collapsed-notes">
             <form method="POST" action="{{ url_for('pmg.update_note', note_id=note.id) }}">
                 <div>
@@ -78,10 +78,6 @@
             <div>
                 <label for="notebook-title">Notebook Title:</label>
                 <input type="text" id="notebook-title" name="title" required>
-            </div>
-            <div>
-                <label for="notebook-description">Description:</label>
-                <textarea id="notebook-description" name="description" rows="3"></textarea>
             </div>
             <button type="submit" class="button-style">Create Notebook</button>
         </form>
@@ -142,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function turnOff() {
-localStorage.setItem(active,false);
+    localStorage.setItem(active, false);
 }
 </script>
 {% endblock body %}

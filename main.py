@@ -40,7 +40,8 @@ app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = "pmg.automatic.services@gmail.com"
 app.config['MAIL_PASSWORD'] = "gygfvycgvmjybgse"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config[('SQLALCHEMY_TRACK_MODIFICATI.- '
+            'ONS')] = False
 
 csrf = CSRFProtect(app)
 handler = RotatingFileHandler('error.log', maxBytes=10000, backupCount=1)
@@ -65,8 +66,6 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
-
-
 #endregion
 @login_manager.user_loader
 def load_user(user_id):

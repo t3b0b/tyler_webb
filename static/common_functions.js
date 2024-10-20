@@ -39,7 +39,7 @@ function saveActivity(elapsedTime) {
     document.getElementById('score').value = elapsedTime;
     document.getElementById("start").value = new Date(openTime).toISOString().slice(0, 19).replace('T', ' ');
     document.getElementById("end").value = new Date(closeTime).toISOString().slice(0, 19).replace('T', ' ');
-
+    localStorage.setItem('active', false)
 }
 
 function applyActivityLayout() {

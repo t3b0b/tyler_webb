@@ -102,12 +102,13 @@ def create_activity_plot(activity_times):
 def create_notebook(activity_id):
     title = request.form.get('title')
     description = request.form.get('description')
-
+    user = User.query.filter_by(id=current_user.id).first()
 
     new_note = Notes(
         title=title,
         content=description or '',
         user_id=current_user.id,
+        author=user.username,
         activity_id=activity_id,
         date=datetime.now().strftime('%Y-%m-%d')
     )
@@ -230,8 +231,8 @@ def goals():
                 db.session.add(new_goal)
                 db.session.commit()  # Spara målet först så vi kan referera till dess id
             else:
-                shared_goal_user = SharedGoal(title=goal_name, user_id=current_user.id, confirmed=True)
-                shared_goal_friend = SharedGoal(title=goal_name, user_id=friend_id, confirmed=True)
+                shared_goal_user = SharedGoal(title=goal_name, created_by=current_user.id, confirmed=True)
+                shared_goal_friend = SharedGoal(title=goal_name, created_by=friend_id, confirmed=True)
                 db.session.add(shared_goal_user)
                 db.session.add(shared_goal_friend)
                 db.session.commit()
@@ -251,11 +252,42 @@ def goals():
     accepted_friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
                        Friendship.query.filter_by(friend_id=current_user.id, status='accepted').all()
 
+    all_shared_goals = SharedGoal.query.all()
+    print(all_shared_goals)
+
+    # Hämta alla mål-förfrågningar där du är mottagare och de inte är bekräftade
+    received_requests = SharedGoal.query.filter_by(created_by=current_user.id).all()
+
+    # Hämta alla mål-förfrågningar du har skickat men som inte är bekräftade
+    sent_requests = db.session.query(SharedGoal).join(SharedGoalUser).filter(
+        SharedGoalUser.user_id == current_user.id,
+        SharedGoal.confirmed == False
+    ).all()
+
     accepted_user_ids = [friend.user_id if friend.user_id != current_user.id else friend.friend_id for friend in accepted_friends]
 
     friends = User.query.filter(User.id.in_(accepted_user_ids)).all()
 
-    return render_template('pmg/goals.html', sida=sida, header=sida, personal_goals=personal_goals, sub_menu=sub_menu,friends=friends, shared_goals=shared_goals)
+    return render_template('pmg/goals.html',received_requests=received_requests,sent_requests=sent_requests, sida=sida, header=sida, personal_goals=personal_goals, sub_menu=sub_menu,friends=friends, shared_goals=shared_goals)
+
+@pmg_bp.route('/goal_request/<int:request_id>/<action>', methods=['POST'])
+@login_required
+def handle_goal_request(request_id, action):
+    shared_goal = SharedGoal.query.get_or_404(request_id)
+
+    if shared_goal.user_id != current_user.id:
+        flash("Du har inte behörighet att hantera denna förfrågan.", 'danger')
+        return redirect(url_for('pmg.goals'))
+
+    if action == 'accept':
+        shared_goal.confirmed = True
+        flash("Målet har accepterats!", 'success')
+    elif action == 'decline':
+        db.session.delete(shared_goal)
+        flash("Mål-förfrågan har avböjts.", 'info')
+
+    db.session.commit()
+    return redirect(url_for('pmg.goals'))
 
 @pmg_bp.route('/goal/<int:goal_id>/activities', methods=['GET', 'POST'])
 def goal_activities(goal_id):
@@ -520,6 +552,16 @@ def myday_date(date):
                                my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
     else:
         return redirect(url_for('pmg.myday'))
+@pmg_bp.route('pmg/goal_requests', methods=['GET'])
+@login_required
+def goal_requests():
+    # Hämta alla mål-förfrågningar där du är mottagare och de inte är bekräftade
+    received_requests = SharedGoal.query.filter_by(user_id=current_user.id, confirmed=False).all()
+
+    # Hämta alla mål-förfrågningar du har skickat men som inte är bekräftade
+    sent_requests = SharedGoal.query.filter(SharedGoal.created_by == current_user.id, SharedGoal.confirmed == False).all()
+
+    return render_template('goal_requests.html', received_requests=received_requests, sent_requests=sent_requests)
 
 @pmg_bp.route('/focus_room/<int:activity_id>', methods=['GET', 'POST'])
 @login_required
@@ -529,8 +571,7 @@ def focus_room(activity_id):
     today = date.today()
     current_date=today
     tasks = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).order_by(ToDoList.completed.desc()).all()
-    activity_notes=Notes.query.filter_by(user_id=current_user.id, activity_id=activity_id).all()
-
+    activity_notes = Notes.query.filter_by(user_id=current_user.id, activity_id=activity_id).all()
     if request.method == 'POST':
         if 'save-score' in request.form['action']:
             score_str = request.form.get('score', '').strip()
@@ -556,7 +597,7 @@ def focus_room(activity_id):
 
         return jsonify({"success": True}), 200
 
-    return render_template('pmg/focus_room.html',activity_notes=activity_notes, activity=activity, goal_id=goal_id, tasks=tasks, current_date=current_date)
+    return render_template('pmg/focus_room.html',activity_notes=activity_notes, activity=activity, tasks=tasks, current_date=current_date)
 
 # endregion
 
