@@ -19,6 +19,7 @@
         width: 100%;
         height: 100vh; /* För att täcka hela höjden av sidan */
     }
+
     .card-container {
         width: 30%; /* Använd 30% för att passa tre kort på rad */
         height: 200px; /* Exempel på höjd för korten */
@@ -42,11 +43,15 @@
     .draggable-item:focus {
         outline: 2px solid #007bff;
     }
-
-    .top-five{
+    .top5-container {
+        max-height: 50px;
+        max-width: 200px;
+        top: 5px;
+    }
+    .top-five {
         display:flex;
-        flex-direction:
-        row; height:120px;
+        flex-direction: row;
+        height:30px;
         justify-content: space-evenly;
         align-items: center
     }
@@ -55,8 +60,8 @@
 {% endblock head %}
 
 {% block body %}
-<div class="box-container">
-    <div class="list-container">
+<div class="top-five">
+    <div class="top5-container">
         <div class="list-header" onclick="toggleList(this)">Priorities</div>
         <div class="list-content" style="display:none;">
             <form method="POST">
@@ -67,7 +72,7 @@
             </form>
         </div>
     </div>
-    <div class="list-container">
+    <div class="top5-container">
         <div class="list-header" onclick="toggleList(this)">Keep in mind</div>
         <div class="list-content" style="display:none;">
             <form method="POST">
@@ -78,7 +83,7 @@
             </form>
         </div>
     </div>
-    <div class="list-container">
+    <div class="top5-container">
         <div class="list-header" onclick="toggleList(this)">Remember</div>
         <div class="list-content" style="display:none;">
             <form method="POST">
@@ -89,40 +94,55 @@
             </form>
         </div>
     </div>
+</div>
+<div id="day-section" class="grid-container">
     <div id="goal-section" class="list-container">
         <div class="list-header">
-            <h3>Goals</h3>
+            <h3 onclick="window.location.href = '/pmg/goals';">Goals</h3>
         </div>
-        <img style="width:100%;" src="data:image/png;base64,{{ plot_url }}" alt="Aktivitetsgraf"/>
         {% if sum_scores %}
         <div class="list-content">
 
             {% for activity, score in sum_scores.items() %}
             <li class="list-item">
                 {% if score.Goal %}
-                    <strong>Mål: </strong> {{ score.Goal }}
+                    <strong>{{ score.Goal }}</strong>
                 {% endif %}
                 {% if score.Activity %}
-                    <strong>Aktivitet: </strong> {{ score.Activity }}
+                    <strong>{{ score.Activity }}</strong>
                 {% endif %}
                 {% if score.Streak %}
-                    <strong>Streak: </strong> {{ score.Streak }}
+                    <strong>{{ score.Streak }}</strong>
                 {% endif %}
-                <strong>Poäng: </strong> {{ score.total_time }}
+                <strong>{{ score.total_time }}</strong>
             </li>
             {% endfor %}
         </div>
         {% endif %}
     </div>
-        <div id="streak-section" class="list-container">
+    <div id="score-section">
+        <img style="width:100%; height: 100%" src="data:image/png;base64,{{ plot_url }}" alt="Aktivitetsgraf"/>
+    </div>
+    <div id="streak-section" class="list-container">
             <div class="list-header">
-                <h3>Streaks</h3>
+                <h3 onclick="window.location.href = '/pmg/streak';">Streaks</h3>
             </div>
-            {% if my_streaks %}
-                <div class="list-content">
-                {% for streak in my_streaks %}
+            <div class="list-content">
+            {% if activeStreaks %}
+                {% for aStreak in activeStreaks %}
+                    <div class="list-item">
+                        <label>{{ aStreak.name }}</label>
+                        <label>{{ aStreak.count }}</label>
+                        <label>{{ aStreak.best }}</label>
+                    <div>
+                {% endfor %}
+            {% endif %}
+
+            {% if activeStreaks %}
+                {% for streak in inactiveStreaks %}
                     <div class="list-item">
                         <label>{{ streak.name }}</label>
+                        <label>{{ streak.count }}</label>
                         <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post" style="display: flex; justify-content: center; align-items: center;">
                             {% if streak.type == "number" %}
                                 <input type="number" name="amount" style="background: #f0f0f0; height: 20px; width: 40px; text-align: center; margin-right: 40px;">
@@ -136,10 +156,9 @@
                         </form>
                     </div>
                 {% endfor %}
-                </div>
             {% endif %}
         </div>
-    <form method="POST">
+        <form method="POST">
         <div id="completed-form" class="form-container">
             <input type="hidden" id="gID" name="gID" style="display: none;">
             <input type="hidden" id="aID" name="aID" style="display: none;">

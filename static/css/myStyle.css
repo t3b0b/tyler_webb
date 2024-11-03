@@ -350,7 +350,7 @@ body {
     display: grid;
     width: 90%;
     grid-template-columns: 2fr 1fr 2fr;  /* Tre kolumner */
-    height:100%;
+    height:60%;
     gap: 20px;
     margin-left:5%;
     margin-right:5%;
@@ -359,8 +359,8 @@ body {
 }
 
 .list-container {
-    max-width: 100%; /* Anpassar sig till skärmens bredd */
-    width: 40%;
+    max-width: 800px; /* Anpassar sig till skärmens bredd */
+    width: 60%;
     max-height: 700px;
     border: 2px solid #333;
     padding: 10px;

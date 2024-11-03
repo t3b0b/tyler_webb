@@ -19,7 +19,6 @@ from sqlalchemy.orm import scoped_session
 
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
-
 def get_daily_scores(user_id):
     today = datetime.now().date()
     yesterday = today - timedelta(days=1)
@@ -47,7 +46,6 @@ def get_today_score(user_id):
         db.func.date(Score.Date) == today
     ).scalar() or 0
     return today_score
-
 def get_yesterday_score(user_id):
     """Hämta gårdagens score för en specifik användare."""
     yesterday = datetime.now().date() - timedelta(days=1)
@@ -56,7 +54,6 @@ def get_yesterday_score(user_id):
         db.func.date(Score.Date) == yesterday
     ).scalar() or 0
     return yesterday_score
-
 def get_week_activity_times(user_id):
     """Hämta total tid per aktivitet under aktuell vecka för en specifik användare."""
     today = datetime.now().date()
@@ -72,8 +69,6 @@ def get_week_activity_times(user_id):
     ).group_by(Activity.name).all()
 
     return activity_times
-
-
 def create_activity_plot(activity_times):
     """Generera en stående stapelgraf med unika färger för varje mål."""
     activity_names = [activity[0] for activity in activity_times]
@@ -124,16 +119,18 @@ def streak():
 def streak_details(streak_id):
     streak = Streak.query.get_or_404(streak_id)
     streakdetail = Streak.query.filter_by(user_id=current_user.id, id = streak_id).first()
+
     return render_template('pmg/details.html', streak=streak, detail=streakdetail)
 
 @pmg_bp.route('/update_streak/<int:streak_id>/<action>', methods=['POST'])
 def update_streak(streak_id, action):
     streak = Streak.query.get_or_404(streak_id)
     today = date.today()
+    midnight_today = datetime.combine(today, datetime.min.time())  # Sätter tiden till 00:00:00
     current_date = today.strftime('%Y-%m-%d')
 
     if action == 'check':
-        score, goal_id = update_streak_details(streak, today)
+        score, goal_id = update_streak_details(streak, midnight_today)
         flash(f"Score: {score}, Goal ID: {goal_id}")  # Lägg till denna rad för felsökning
 
         # Kontrollera att goal_id och score har giltiga värden
@@ -156,9 +153,7 @@ def update_streak(streak_id, action):
         print("Streak reset")  # Lägg till denna rad för felsökning
 
     update_dagar(current_user.id, Dagar)
-    return redirect(url_for('pmg.myday'))
 
-    update_dagar(current_user.id, Dagar)
     return redirect(url_for('pmg.myday'))
 
 @pmg_bp.route('/delete-streak/<int:streak_id>', methods=['POST'])
@@ -182,7 +177,8 @@ def goals():
         if 'addGoal' in request.form['action']:
             goal_name = request.form.get('goalName')
             friend_id = request.form.get('friend_id')  # Det här är vännens id som du vill dela målet med
-            if not friend_id:
+            print(friend_id)
+            if friend_id == "none":
             # Skapa ett nytt mål för den inloggade användaren
                 new_goal = Goals(name=goal_name, user_id=current_user.id)
                 db.session.add(new_goal)
@@ -348,7 +344,8 @@ def myday():
             }
 
     today = datetime.now()
-    valid_streaks = []
+    inactiveStreaks = []
+    activeStreaks = []
 
     goal_id = request.args.get('goalSel')  # Om du skickar goal_id som en parameter
     if goal_id:
@@ -362,11 +359,16 @@ def myday():
             try:
                 last_reg_date = streak.lastReg
                 streak_interval = last_reg_date + interval_days
+
+                if last_reg_date.date() == today.date():
+                    activeStreaks.append(streak)
+                    continue
+
                 if streak.count == 0:
-                    valid_streaks.append(streak)
+                    inactiveStreaks.append(streak)
                 elif streak.count >= 1:
                     if today.date() == streak_interval.date():
-                        valid_streaks.append(streak)
+                        inactiveStreaks.append(streak)
                     elif streak_interval.date() < today.date():
                         continue
                 elif streak_interval.date() < today.date():
@@ -376,9 +378,9 @@ def myday():
             except (ValueError, TypeError) as e:
                 print(f'Hantera ogiltigt datum: {e}, streak ID: {streak.id}, lastReg: {streak.lastReg}')
         else:
-            valid_streaks.append(streak)
+            inactiveStreaks.append(streak)
     if myScore:
-        sorted_myScore = sorted(myScore, key=lambda score: score[0])
+        sorted_myScore = sorted([score for score in myScore if score[0] is not None], key=lambda score: score[0])
 
     if request.method == 'POST':
         if 'save-score' in request.form['action']:
@@ -438,7 +440,7 @@ def myday():
         remember_list = []
 
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now, acts=myActs,
-                           my_goals=my_Goals, my_streaks=valid_streaks, my_score=myScore, total_score=total, plot_url=plot_url,
+                           my_goals=my_Goals,activeStreaks=activeStreaks, inactiveStreaks=inactiveStreaks, my_score=myScore, total_score=total, plot_url=plot_url,
                            sub_menu=sub_menu, sum_scores=aggregated_scores, current_goal=current_goal,
                            remember_list=remember_list,to_think_list=to_think_list,to_do_list=to_do_list)
 @pmg_bp.route('/myday/<date>')
@@ -525,17 +527,22 @@ def update_task(activity_id, task_id):
     # Om ingen origin skickas med, omdirigera till standard-sidan
     return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
 
-@pmg_bp.route('/delete-activity/<int:activity_id>', methods=['POST'])
+@pmg_bp.route('/delete-activity/<int:activity_id>', methods=['DELETE'])
 def delete_activity(activity_id):
     activity = Activity.query.get(activity_id)
     if activity:
         try:
             db.session.delete(activity)
             db.session.commit()
-        except Exception:
-            db.session.rollback()  # Rollback om något går fel
-        return jsonify(success=True), 200
-    return jsonify(success=False), 404
+            return "Success", 200  # Returnera en enkel sträng istället för JSON
+        except Exception as e:
+            db.session.rollback()
+            return "Internal server error", 500
+    return "Activity not found", 404
+
+
+
+
 
 @pmg_bp.route('/get_activities/<goal_id>')
 def get_activities(goal_id):

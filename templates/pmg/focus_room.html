@@ -23,7 +23,7 @@
             <li class="{% if task.completed %}completed-task{% endif %}">
                 {{ task.task }}
                 <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
-                    <input type="hidden" name="origin" value="todo_list">
+                    <input type="hidden" name="origin" value="focus">
                     <input type="checkbox" class="task-checkbox" name="completed"
                         onchange="this.form.submit()"  {% if task.completed %} checked {% endif %}>
                 </form>

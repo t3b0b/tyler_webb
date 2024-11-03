@@ -9,7 +9,8 @@
 {% block body %}
 
 <div style="display: flex; flex-direction: row; width: 100%; height: 70%">
-    <div class="list-container" id="personal-goals">
+
+    <div class="list-container">
         <div class="list-header">
             <h3>My Goals</h3>
             <div class="view-toggle" style="justify-content: center; align-items: center; top: 0; background-color:white">
@@ -19,7 +20,7 @@
             <button class="new-button" id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
         </div>
         {% if personal_goals %}
-            <div class="list-content">
+            <div class="list-content" id="personal-goals">
             {% for goal in personal_goals %}
                 <div class="list-item" data-goal-id="{{ goal.id }}" onclick="window.location.href = '/pmg/goal/{{ goal.id }}/activities';">
                     {{ goal.name }}
@@ -28,55 +29,53 @@
             {% endfor %}
             </div>
         {% endif %}
-    </div>
-    <div class="list-container" id="shared-goals" style="display: none;">
-            <div class="list-header">
-                <h3>Team Goals</h3>
-                <div class="view-toggle" style="justify-content: center; align-items: center; top: 0; background-color:white">
-                    <button style="font-size: 14px" id="team-goals" class="page-toggle-btn" onclick="getteamGoals()">Shared Goals</button>
-                    <button style="font-size: 14px" id="my-goals" class="page-toggle-btn" onclick="getMyGoals()">My Goals</button>
-                </div>
-                <button class="new-button" id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
-            </div>
-            <div class="list-content">
+
+        {% if shared_goals %}
+            <div class="list-content" id="shared-goals">
                 {% for goal in shared_goals %}
-                    <div class="list-item">{{ goal.name }}</div>
+                <div class="list-item" data-goal-id="{{ goal.id }}" onclick="window.location.href = '/pmg/goal/{{ goal.id }}/activities';">
+                    {{ goal.name }}
+                    <button class="tgl-btn" onclick="event.stopPropagation(); deleteGoal( goal.id )">&#10060;</button>
+                </div>
                 {% endfor %}
             </div>
-        </div>
+        {% endif %}
     </div>
-<div class="list-container">
-    <h2>Mottagna mål-förfrågningar</h2>
-    <ul>
-    {% for request in received_requests %}
-        <li>
-            Mål: {{ request.goal.title }} <br>
-            Skickat av: {{ request.goal.created_by }} <br>
-            <form method="POST" action="{{ url_for('pmg.handle_goal_request', request_id=request.id, action='accept') }}">
-                <button type="submit">Acceptera</button>
-            </form>
-            <form method="POST" action="{{ url_for('pmg.handle_goal_request', request_id=request.id, action='decline') }}">
-                <button type="submit">Avböj</button>
-            </form>
-        </li>
-    {% else %}
-        <li>Inga mottagna förfrågningar.</li>
-    {% endfor %}
-    </ul>
 
-    <h2>Skickade mål-förfrågningar</h2>
-    <ul>
-    {% for request in sent_requests %}
-        <li>
-            Mål: {{ request.goal.title }} <br>
-            Till: {{ request.user.username }} <br>
-            Status: Väntar på bekräftelse
-        </li>
-    {% else %}
-        <li>Inga skickade förfrågningar.</li>
-    {% endfor %}
-    </ul>
-</div>
+{% if received_requests %}
+    <div class="list-container">
+        <h2>Mottagna mål-förfrågningar</h2>
+        <ul>
+        {% for request in received_requests %}
+            <li>
+                Mål: {{ request.goal.title }} <br>
+                Skickat av: {{ request.goal.created_by }} <br>
+                <form method="POST" action="{{ url_for('pmg.handle_goal_request', request_id=request.id, action='accept') }}">
+                    <button type="submit">Acceptera</button>
+                </form>
+                <form method="POST" action="{{ url_for('pmg.handle_goal_request', request_id=request.id, action='decline') }}">
+                    <button type="submit">Avböj</button>
+                </form>
+            </li>
+        {% else %}
+            <li>Inga mottagna förfrågningar.</li>
+        {% endfor %}
+        </ul>
+
+        <h2>Skickade mål-förfrågningar</h2>
+        <ul>
+        {% for request in sent_requests %}
+            <li>
+                Mål: {{ request.goal.title }} <br>
+                Till: {{ request.user.username }} <br>
+                Status: Väntar på bekräftelse
+            </li>
+        {% else %}
+            <li>Inga skickade förfrågningar.</li>
+        {% endfor %}
+        </ul>
+    </div>
+{% endif %}
     <div class="form-box" id="new-goal-form" style="display: none;">
         <form method="POST">
             <input type="text" placeholder="Goal Name" name="goalName">

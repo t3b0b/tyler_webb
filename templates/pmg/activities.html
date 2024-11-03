@@ -16,11 +16,10 @@
 
     <div class="list-content">
         {% for activity in activities %}
-            <div class="list-item" data-goal-id="{{ goal.id }}" onclick="window.location.href = '/pmg/activity/{{ activity.id }}/tasks';">
+            <div class="list-item" data-goal-id="{{ activity.id }}" onclick="window.location.href = '/pmg/activity/{{ activity.id }}/tasks';">
                 {{ activity.name }}
-                <button class="tgl-btn" onclick="deleteActivity({{ activity.id }})">&#10060;</button>
+                <button class="tgl-btn" onclick="event.stopPropagation(); deleteActivity('{{activity.id}}');">&#10060;</button>
             </div>
-
         {% endfor %}
     </div>
 </div>
@@ -35,6 +34,7 @@
         <button type="submit" name="action" value="addActivity">Save Activity</button>
     </form>
 </div>
+<script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
 
 function showAddActivityForm(button) {

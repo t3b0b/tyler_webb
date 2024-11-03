@@ -80,18 +80,23 @@ function deleteActivity(activityId) {
         fetch('/pmg/delete-activity/' + activityId, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ activityId: activityId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Aktiviteten har raderats!');
-                location.reload(); // Ladda om sidan för att uppdatera listan
-            } else {
-                alert('Ett fel inträffade. Försök igen.');
+                'Content-Type': 'application/json',
             }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.text();  // Hämta svaret som text
+            } else {
+                throw new Error('Request failed with status ' + response.status);
+            }
+        })
+        .then(text => {
+            alert(text);  // Visa svaret som är antingen "Success", "Activity not found" eller annat
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Network error:', error);
+            alert('Ett nätverksfel inträffade. Försök igen.');
         });
     }
 }
