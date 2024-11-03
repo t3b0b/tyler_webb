@@ -2,6 +2,7 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
+
 <style>
     .container {
         display: flex;
@@ -31,6 +32,7 @@
         border-radius: 10px; /* Rundade hörn */
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
+
     .draggable-item {
         list-style: none;
         padding: 10px;
@@ -39,7 +41,24 @@
         border: 1px solid #ccc;
         cursor: move;
     }
+    .streak-form {
+    display: flex;
+    align-items: center;
+}
 
+.streak-input {
+    background: #f0f0f0;
+    height: 20px;
+    width: 40px;
+    text-align: center;
+    margin-right: 10px;
+}
+
+.streak-icon {
+    border: none;
+    background: none;
+    cursor: pointer;
+}
     .draggable-item:focus {
         outline: 2px solid #007bff;
     }
@@ -50,16 +69,20 @@
     }
     .top-five {
         display:flex;
+        width: 100%;
         flex-direction: row;
         height:30px;
-        justify-content: space-evenly;
-        align-items: center
+        padding: 2% 5% 2% 5%;
+        justify-content: space-around;
+        align-items: center;
+        justify-items: center;
     }
 </style>
 
 {% endblock head %}
 
 {% block body %}
+
 <div class="top-five">
     <div class="top5-container">
         <div class="list-header" onclick="toggleList(this)">Priorities</div>
@@ -95,14 +118,14 @@
         </div>
     </div>
 </div>
+
 <div id="day-section" class="grid-container">
-    <div id="goal-section" class="list-container">
+    <div id="goal-section" class="list-container" style="width: 65%;">
         <div class="list-header">
             <h3 onclick="window.location.href = '/pmg/goals';">Goals</h3>
         </div>
         {% if sum_scores %}
         <div class="list-content">
-
             {% for activity, score in sum_scores.items() %}
             <li class="list-item">
                 {% if score.Goal %}
@@ -114,7 +137,7 @@
                 {% if score.Streak %}
                     <strong>{{ score.Streak }}</strong>
                 {% endif %}
-                <strong>{{ score.total_time }}</strong>
+                <strong style="text-align: right; padding: 10px">{{ score.total_time }}</strong>
             </li>
             {% endfor %}
         </div>
@@ -123,42 +146,43 @@
     <div id="score-section">
         <img style="width:100%; height: 100%" src="data:image/png;base64,{{ plot_url }}" alt="Aktivitetsgraf"/>
     </div>
-    <div id="streak-section" class="list-container">
+    <div id="streak-section" class="list-container" style=" width: 65%">
             <div class="list-header">
                 <h3 onclick="window.location.href = '/pmg/streak';">Streaks</h3>
             </div>
             <div class="list-content">
             {% if activeStreaks %}
-                {% for aStreak in activeStreaks %}
-                    <div class="list-item">
-                        <label>{{ aStreak.name }}</label>
-                        <label>{{ aStreak.count }}</label>
-                        <label>{{ aStreak.best }}</label>
-                    <div>
-                {% endfor %}
-            {% endif %}
-
-            {% if activeStreaks %}
-                {% for streak in inactiveStreaks %}
-                    <div class="list-item">
+                {% for streak in activeStreaks %}
+                    <div class="list-item" style="width: 96%; justify-content: space-between; background-color: #c1eac1;">
                         <label>{{ streak.name }}</label>
                         <label>{{ streak.count }}</label>
-                        <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post" style="display: flex; justify-content: center; align-items: center;">
-                            {% if streak.type == "number" %}
-                                <input type="number" name="amount" style="background: #f0f0f0; height: 20px; width: 40px; text-align: center; margin-right: 40px;">
-                            {% endif %}
-                                <button class="streak-icon" type="submit" style="border: none; background: none; margin-right: 10px;">
-                                    <svg id="checkbox-{{ streak.id }}" class="checkbox" xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 242 216">
-                                        <ellipse id="background-{{ streak.id }}" class="background" cx="121" cy="108" rx="121" ry="108" fill="green"/>
-                                        <path id="check" d="M38.5133 122.529L65.1039 95.7875L107.94 135.826L215.29 52.7692L101.124 171.413L38.5133 122.529Z" fill="white"/>
-                                    </svg>
-                                </button>
-                        </form>
+                        <label>{{ streak.best }}</label>
                     </div>
                 {% endfor %}
             {% endif %}
+            {% if inactiveStreaks %}
+                {% for streak in inactiveStreaks %}
+                    <div class="list-item" style="width: 96%;">
+                        <label>{{ streak.name }}</label>
+                        <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post" class="streak-form">
+                            {% if streak.type == "number" %}
+                                <input type="number" name="amount" class="streak-input">
+                            {% endif %}
+                            <button class="streak-icon" type="submit">
+                                <svg id="checkbox-{{ streak.id }}" class="checkbox" xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 242 216">
+                                    <ellipse id="background-{{ streak.id }}" class="background" cx="121" cy="108" rx="121" ry="108" fill="green"/>
+                                    <path id="check" d="M38.5133 122.529L65.1039 95.7875L107.94 135.826L215.29 52.7692L101.124 171.413L38.5133 122.529Z" fill="white"/>
+                                </svg></svg>
+                            </button>
+                        </form>
+                    </div> <!-- Korrigerad stängning av div -->
+                {% endfor %}
+                </div>
+            {% endif %}
         </div>
-        <form method="POST">
+
+
+    <form method="POST">
         <div id="completed-form" class="form-container">
             <input type="hidden" id="gID" name="gID" style="display: none;">
             <input type="hidden" id="aID" name="aID" style="display: none;">
@@ -171,7 +195,8 @@
             </div>
         </div>
     </form>
-    <div id="startaAktivitet" class="button-center">
+
+    <div id="startaAktivitet" class="button-center" style="width: 45%">
         <button class="button-style" type="submit">Starta Aktivitet</button>
     </div>
 
@@ -185,44 +210,37 @@
         <select id="activitySelect" class="select-style">
             <!-- Aktiviteter kommer att laddas här -->
         </select>
-<!--        <select id="timeSelect" class="select-style">
-            <option value="5">5 min</option>
-            <option value="10">10 min</option>
-            <option value="15">15 min</option>
-        </select> -->
+
         <button id="start-timer" onclick="startActivity()" class="button-style" style="display:none;">Starta</button>
     </div>
-</div>
-
-<div class="button-center" style="width:30%">
-    <button id="stopButton" class="button-style" style="display: none; background-color: red" onclick="stopActivity()">Stop</button>
-    <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
+    <div class="button-center" style="width:30%">
+        <button id="stopButton" class="button-style" style="display: none; background-color: red" onclick="stopActivity()">Stop</button>
+        <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
+    </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-<script>
-var el = document.getElementById('topFiveTable');
-var sortable = Sortable.create(el, {
-    animation: 150,
-    onEnd: function(evt) {
-        var order = [];
-        document.querySelectorAll('#topFiveTable tr[data-id]').forEach(function(row) {
-            order.push(row.getAttribute('data-id'));
-        });
-        // Skicka sorteringen till servern via AJAX
-        fetch('/update_top_five_order', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token() }}',
-            },
-            body: JSON.stringify({order: order})
-        });
-    }
-});
-</script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
+    var el = document.getElementById('topFiveTable');
+    var sortable = Sortable.create(el, {
+        animation: 150,
+        onEnd: function(evt) {
+            var order = [];
+            document.querySelectorAll('#topFiveTable tr[data-id]').forEach(function(row) {
+                order.push(row.getAttribute('data-id'));
+            });
+            // Skicka sorteringen till servern via AJAX
+            fetch('/update_top_five_order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}',
+                },
+                body: JSON.stringify({order: order})
+            });
+        }
+    });
     var maxScore = 0
     var myScore = 0
     var percentage = 0

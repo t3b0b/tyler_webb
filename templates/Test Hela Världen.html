@@ -1,0 +1,25 @@
+
+{% block head %}
+
+{% endblock head %}
+
+{% block body %}
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let currentIndex = 0;
+        const images = document.querySelectorAll('.slideshow-container img');
+        const totalImages = images.length;
+
+        function showNextImage() {
+            images[currentIndex].classList.remove('active'); // Dölj aktuell bild
+            currentIndex = (currentIndex + 1) % totalImages; // Uppdatera index, starta om vid slutet
+            images[currentIndex].classList.add('active'); // Visa nästa bild
+        }
+
+        // Växla bild var tredje sekund
+        setInterval(showNextImage, 1200);
+    });
+</script>
+{% endblock body %}

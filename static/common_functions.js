@@ -1,47 +1,49 @@
-var active = false;
-var active = false;
-var activity = 0;
-var goal = 0;
+var activityId; // Se till att denna variabel är korrekt inställd
 var openTime;
 var closeTime;
-//
+
+// Starta aktivitet
 function startActivity() {
     openTime = new Date(); // Spara starttiden
-    localStorage.setItem('openTime', openTime.toISOString()); // Spara starttiden i localStorage om sidan laddas om
-    localStorage.setItem('active',true);
-    localStorage.setItem('selectedActivityId', document.getElementById('activitySelect').value);
-    activityId = localStorage.getItem('selectedActivityId')
+    localStorage.setItem('start', openTime.toISOString()); // Spara starttiden i localStorage om sidan laddas om
+    localStorage.setItem('active', true);
+    activityId = document.getElementById('activitySelect').value;
+    localStorage.setItem('selectedActivityId', activityId);
     window.location.href = `/pmg/focus_room/${activityId}`;
 }
 
+// Stoppa aktivitet
 function stopActivity() {
-    localStorage.setItem('active', false);
     closeTime = new Date(); // Spara stopptiden
-    openTime = localStorage.getItem('openTime');
-    localStorage.setItem('closeTime', closeTime.toISOString()); // Spara stopptiden i localStorage om sidan laddas om
-    // Beräkna skillnaden mellan start- och stopptiden
-    let elapsedTime = (closeTime - openTime) / 1000 / 60; // Tidsdifferens i minuter
-    elapsedTime = Math.round(elapsedTime); // Avrunda till närmsta minut
+    localStorage.setItem('active', false);
+    localStorage.setItem('end', closeTime.toISOString()); // Spara stopptiden i localStorage om sidan laddas om
 
-    document.getElementById('stopButton').style.display = 'none';
-    document.getElementById('continueButton').style.display = 'block';
-
-    saveActivity(elapsedTime);
-}
-
-function saveActivity(elapsedTime) {
-    openTime = localStorage.getItem('openTime');
-    closeTime = localStorage.getItem('closeTime');
-    document.getElementById('completed-form').style.display = "block"; // Exempel på form-submission
-    document.getElementById('complete-form').style.display = "block";
+    // Kontrollera att start- och stopptiderna finns i localStorage innan de används
+    const startStored = localStorage.getItem('start');
+    const endStored = localStorage.getItem('end');
+    if (startStored && endStored) {
+        document.getElementById("start").value = new Date(startStored).toISOString().slice(0, 19).replace('T', ' ');
+        document.getElementById("end").value = new Date(endStored).toISOString().slice(0, 19).replace('T', ' ');
+    }
 
     document.getElementById("aID").value = localStorage.getItem('selectedActivityId');
-    document.getElementById('score').value = elapsedTime;
-    document.getElementById("start").value = new Date(openTime).toISOString().slice(0, 19).replace('T', ' ');
-    document.getElementById("end").value = new Date(closeTime).toISOString().slice(0, 19).replace('T', ' ');
-    localStorage.setItem('active', false)
+    document.getElementById('stopButton').style.display = 'none';
+    document.getElementById('continueButton').style.display = 'none';
+
+    // Beräkna och visa förfluten tid
+    const elapsedTimeMs = closeTime - new Date(startStored);
+    const elapsedTimeMin = Math.floor(elapsedTimeMs / 60000);
+    saveActivity(elapsedTimeMin);
 }
 
+// Spara aktivitet
+function saveActivity(time) {
+    document.getElementById('completed-form').style.display = "block";
+    document.getElementById('complete-form').style.display = "block";
+    document.getElementById('elapsedTime').style.display = "block";
+    document.getElementById("elapsedTime").value = time; // Använd rätt element-ID
+    localStorage.setItem('active', false);
+}
 function applyActivityLayout() {
     document.getElementById('day-section').style.display = 'none';
     document.getElementById('stopButton').style.display = 'block';

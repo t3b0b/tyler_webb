@@ -3,23 +3,16 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
     <style>
-    .container {
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        height: 100vh;
-        align-items: center; /* Centrera elementen horisontellt */
-        justify-content: center; /* Centrera elementen vertikalt */
-    }
+
     </style>
 {% endblock head %}
 
 {% block body %}
-<div class="container">
-    <div class="todo-list" id="todo-list-{{ activity.id }}" style="justify-content: center; align-items: center;">
-        <h4>{{ activity.name }} To-Do</h4>
+<div class="todo-list" id="todo-list-container" style="justify-content: center; align-items: center; max-height: 60%; width: 45%;">
+    <h4 class="list-header">{{ activity.name }} To-Do</h4>
+    <div class="list-content">
         <ul>
-        {% for task in tasks %}
+            {% for task in tasks %}
             <li class="{% if task.completed %}completed-task{% endif %}">
                 {{ task.task }}
                 <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
@@ -28,32 +21,37 @@
                         onchange="this.form.submit()"  {% if task.completed %} checked {% endif %}>
                 </form>
             </li>
-        {% endfor %}
+            {% endfor %}
         </ul>
-        <form action="{{ url_for('pmg.add_task', activity_id=activity.id) }}" method="POST">
-            <input type="hidden" name="actId" value="{{ activity.id }}">
-            <input type="hidden" name="origin" value="focus">
+        <form style="display: flex; flex-direction: row; padding: 0 4rem 0 4rem; gap: 1rem; justify-content: space-evenly; width: 60%"
+              action="{{ url_for('pmg.add_task', activity_id=activity.id) }}" method="POST">
+
+            <input type="hidden" name="actId" value="{{ activity.id }}" style="display: none">
+            <input type="hidden" name="origin" value="focus" style="display: none">
             <input type="text" name="task_name" placeholder="Enter new task" required>
-            <button onclick="" type="submit" name="action" value="addTodo">Add Task</button>
+            <button onclick="" type="submit" name="action" style="height: 1.5rem;" value="addTodo">Add</button>
         </form>
-        <div class="button-center">
+    </div>
+</div>
+    <div class="button-center">
             <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
             <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
-        </div>
     </div>
-    <form method="POST">
-        <div id="completed-form" class="form-container" style="display:none;">
-            <input type="text" id="aID" name="aID" >
-            <input type="text" id="aDate" name="aDate" value="{{ current_date }}">
-            <input type="text" id="start" name="start">
-            <input type="text" id="end" name="end">
-            <input type="number" id="score" name="score">
-            <div class="button-center" id="complete-form" style="display:none;">
-                <button type="submit" onclick="turnOff" name="action" id="save-btn" class="button-style" value="save-score">Save</button>
+
+    <form method="POST" class="form-container" id="completed-form">
+        <div>
+            <input type="text" id="aID" name="aID" style="display: none">
+            <input type="text" id="aDate" name="aDate" value="{{ current_date }}" style="display: none">
+            <input type="text" id="start" name="start" style="display: none">
+            <input type="text" id="end" name="end" style="display: none">
+            <input type="number" id="elapsedTime" name="score" style="display: none">
+            <div class="button-center" id="complete-form" style="width:40%; display: none">
+                <button type="submit" onclick="turnOff()" name="action" id="save-btn" class="button-style" value="save-score">Save</button>
             </div>
         </div>
     </form>
-<div class="activity-notes" style="display:flex; flex-direction: column; width:20%; max-height: 80%; justify-content:center;align-items: center; text-align: left;">
+
+<div class="activity-notes" style="margin-left: 0; max-width:30%; max-height: 80%; align-items:center; text-align: left;">
  {% if activity_notes %}
     <div class="right-container">
         {% for note in activity_notes %}
@@ -68,22 +66,18 @@
         </div>
         {% endfor %}
         <div class="new-notebook-form">
-        <h4>Create a New Notebook</h4>
-        <form method="POST" action="{{ url_for('pmg.create_notebook', activity_id=activity.id) }}">
-            <div>
-                <label for="notebook-title">Notebook Title:</label>
-                <input type="text" id="notebook-title" name="title" required>
-            </div>
-            <button type="submit" class="button-style">Create Notebook</button>
-        </form>
+            <h4>Create a New Notebook</h4>
+            <form method="POST" action="{{ url_for('pmg.create_notebook', activity_id=activity.id) }}">
+                <div>
+                    <label for="notebook-title">Notebook Title:</label>
+                    <input type="text" id="notebook-title" name="title" required>
+                </div>
+                <button type="submit" class="button-style">Create Notebook</button>
+            </form>
+        </div>
     </div>
-</div>
     {% endif %}
 </div>
-</div>
-
-
-
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
     function toggleList(element) {
@@ -96,6 +90,11 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("En aktivitet är redan aktiv.");
         return;  // Avsluta om en aktivitet redan pågår
     }
+
+    // Skrolla till botten av
+    const todoListContainer = document.getElementById('todo-list-container');
+    todoListContainer.scrollTop = todoListContainer.scrollHeight;
+
     // Hämta alla note-titlar och lägg till en event listener för klick
     document.querySelectorAll('.note-title').forEach(title => {
         title.addEventListener('click', function() {

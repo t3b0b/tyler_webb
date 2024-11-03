@@ -27,7 +27,7 @@
                 <form method="POST">
                     <div class="view-toggle" style="background-color: white">
                         <button class="active-view" onclick="window.location.href='txt/journal?section_name=Mina+Ord'">Journal</button>
-                        <button class="page-toggle-btn" onclick="window.location.href='/cal/timebox'">Blog</button>
+                        <button class="page-toggle-btn" onclick="window.location.href='txt/journal?section_name=Blogg'">Blog</button>
                     </div>
                     {% if sida == "Mina Ord" or sida == "Dagbok" or sida == "Mina Mål" %}
                         <div class="ordet">
@@ -71,7 +71,7 @@
     </div>
 
         {% if not act_id %}
-            {% if myPosts %}
+<!--            {% if myPosts %}
                 <div class="blogg-post">
                     <div class="view-toggle" style="background-color: white">
                         <button class="page-toggle-btn" onclick="window.location.href='txt/journal?section_name=Mina+Ord'">Journal</button>
@@ -83,7 +83,7 @@
                         <p class="post-author">{{ post.author }} {{ post.date }}</p>
                     {% endfor %}
                 </div>
-            {% endif %}
+            {% endif %} -->
         {% endif %}
 
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>

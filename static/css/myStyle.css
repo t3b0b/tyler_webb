@@ -11,14 +11,10 @@ body {
 
 .main-container {
     flex-grow: 1;
-    display:flex;
     flex-direction: column;
     justify-content: center; /* Innehållet centrerat vertikalt om möjligt */
-}
-
-.main-content {
-    width:100%;
-    transition: all 0.5s ease;
+    align-items: center;
+    justify-items: center;
 }
 
 .top-header {
@@ -270,29 +266,29 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
     flex-direction: column;
     margin-top: 10px;
-    margin-inline: 0 auto; /* Centrerar listans container */
     gap: 10px;
 }
 
 .todo-list ul {
     list-style-type: none;
-    display: flex;
     flex-direction: column;
     align-items: center; /* Ändra från center till flex-start */
-    width: 100%;
+    width: 70%;
 }
 
 .todo-list li {
     display: flex;
-    align-items: center;
     justify-content: space-between; /* Centrera checkbox och text horisontellt */
-    width: 100%;
-    max-width: 500px; /* Gör så att listan inte blir för bred */
+    align-items: center;
+    justify-items: center;
+    width: 90%;
+    max-height: 60%; /* Gör så att listan inte blir för bred */
     text-align: left; /* Centrera texten */
-    gap:30px
+    margin-inline: 0 auto;
+    padding-left: 5%;
+    gap:50px
 }
 
 .completed-task {
@@ -348,9 +344,9 @@ body {
 
 .grid-container {
     display: grid;
-    width: 90%;
-    grid-template-columns: 2fr 1fr 2fr;  /* Tre kolumner */
-    height:60%;
+    width: 100%;
+    grid-template-columns: 2fr 1fr 2fr;
+    height:90%;
     gap: 20px;
     margin-left:5%;
     margin-right:5%;
@@ -359,22 +355,25 @@ body {
 }
 
 .list-container {
-    max-width: 800px; /* Anpassar sig till skärmens bredd */
-    width: 60%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
     max-height: 700px;
     border: 2px solid #333;
     padding: 10px;
     box-sizing: border-box;
     background-color: #f5f5f5;
     border-radius: 8px;
-    margin: 0 auto; /* Centrerar elementet */
+
 }
 
 /* Rubrik och knappsektion */
 .list-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: stretch;
     margin-bottom: 10px;
 }
 
@@ -383,12 +382,13 @@ body {
     margin: 0;
     font-size: 20px;
     font-weight: bold;
+    text-align: left;
 }
 
 /* Stil för "New" knappen */
 
 .button-center {
-    width: 100%;
+    width: 40%;
     display: flex;
     justify-content: center;
     align-items:center;
@@ -398,39 +398,80 @@ body {
 
 /* Innehållssektionen med scrollbar */
 .list-content {
-    max-height: 90%;
+    flex-direction: column;
     align-items: center; /* Centrera text och knapp vertikalt */
+    width: 90%;
+    height: 80%;
+    border-radius: 8px;
     overflow-y: auto; /* Endast vertikal scrollning tillåten */
     overflow-x: hidden; /* Förhindrar horisontell scrollning */
-    padding-bottom: 5px; /* Lägg till tomrum under listan */
-    border: 1px solid #888;
-    background-color: #ffffff;
-    padding: 2px;
+    border: 1px solid #535353;
+    background-color: #ecebdc;
+    padding:  2px;
     box-sizing: border-box;
+}
+.loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.8); /* Lätt transparent bakgrund */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
 }
 
-/* Stil för varje list-item, nu är det en knapp */
-.list-item {
-    display: flex;
-    justify-content: space-between; /* Gör så att innehållet sprids ut */
-    align-items: center; /* Centrera text och knapp vertikalt */
-    width:100%;
-    padding: 0 10px;
-    border-bottom: 1px solid #ddd;
-    cursor: pointer;
-    height: 30px;
-    margin: 5px auto;
-    box-sizing: border-box;
-    background-color: #fff;
-    border-radius: 5px;
-    text-align: left;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    appearance: none;
-    font-size: 20px;
-    font-family: inherit;
-    color: black;
+.loading-container img {
+    width: 100px; /* Anpassa storleken på jordgloben */
+    height: 100px;
 }
+ .slideshow-container {
+        max-width: 100%;
+        position: relative;
+        margin: auto;
+        overflow: hidden;
+        height: 100vh; /* Anpassa höjden efter behov */
+    }
+
+    .slideshow-container img {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        opacity: 0;
+        transition: linear;
+    }
+
+    .slideshow-container img.active {
+        opacity: 1;
+    }
+/* Stil för varje list-item, nu är det en knapp */
+    .list-item {
+        display: flex;
+        justify-content: space-between; /* Gör så att innehållet sprids ut */
+        align-items: stretch; /* Centrera text och knapp vertikalt */
+        justify-items: center;
+        width:96%;
+        border: 1px solid slategray;
+        padding: 5px;
+        border-bottom: 1px solid #ddd;
+        cursor: pointer;
+        height: 30px;
+        background-color: #fff;
+        border-radius: 5px;
+        text-align: left;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        appearance: none;
+        font-size: 20px;
+        font-family: inherit;
+        color: black;
+    }
+    .list-item label {
+        margin-left: 10px;
+        margin-right: 10px;
+    }
 
 input[type="checkbox"] {
     margin-left: auto;
