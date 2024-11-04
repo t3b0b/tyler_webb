@@ -1,12 +1,12 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, session
-from models import (User, db, Streak, Goals, Friendship, SharedGoal,Notes,
-                    Activity, Score, Dagar, ToDoList, SharedGoalUser,TopFive)
+from models import (User, db, Streak, Goals, Friendship, Notes, SharedItem, ActivityTracking,
+                    Activity, Score, Dagar, ToDoList, TopFive)
 import matplotlib.pyplot as plt
 import io
 import base64
 from datetime import datetime, timedelta, date
-
+from sqlalchemy import and_
 from pmg_func import (getInfo, common_route, add2db, unique,
                       section_content, update_dagar, completed_streaks,
                       update_streak_details, myDayScore,
@@ -176,18 +176,27 @@ def goals():
     if request.method == 'POST':
         if 'addGoal' in request.form['action']:
             goal_name = request.form.get('goalName')
-            friend_id = request.form.get('friend_id')  # Det här är vännens id som du vill dela målet med
+            friend_id = request.form.get('friend_id')
             print(friend_id)
+
             if friend_id == "none":
-            # Skapa ett nytt mål för den inloggade användaren
+                # Skapa ett nytt mål för den inloggade användaren
                 new_goal = Goals(name=goal_name, user_id=current_user.id)
                 db.session.add(new_goal)
-                db.session.commit()  # Spara målet först så vi kan referera till dess id
+                db.session.commit()
             else:
-                shared_goal_user = SharedGoal(title=goal_name, created_by=current_user.id, confirmed=True)
-                shared_goal_friend = SharedGoal(title=goal_name, created_by=friend_id, confirmed=True)
-                db.session.add(shared_goal_user)
-                db.session.add(shared_goal_friend)
+                # Skapa SharedItem-poster för den inloggade användaren och vännen
+                new_goal = Goals(name=goal_name, user_id=current_user.id)
+                db.session.add(new_goal)
+                db.session.commit()  # Spara mål först för att få id
+
+                # Skapa SharedItem-poster för både skaparen och vännen
+                shared_goal_user = SharedItem(item_type='goal', item_id=new_goal.id,
+                                              owner_id=current_user.id, shared_with_id=current_user.id,
+                                              status='accepted')
+                shared_goal_friend = SharedItem(item_type='goal', item_id=new_goal.id,
+                                                owner_id=current_user.id, shared_with_id=friend_id, status='pending')
+                db.session.add_all([shared_goal_user, shared_goal_friend])
                 db.session.commit()
 
         elif 'addTodo' in request.form['action']:
@@ -202,52 +211,69 @@ def goals():
     # Hämta mål på nytt varje gång sidan laddas för att säkerställa att listan är uppdaterad
     personal_goals = Goals.query.filter_by(user_id=current_user.id)
 
-    accepted_friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
-                       Friendship.query.filter_by(friend_id=current_user.id, status='accepted').all()
-
     # Hämta alla mål som antingen skapats av användaren eller som användaren har blivit inbjuden till och accepterat
-    shared_goals = db.session.query(Goals).join(SharedGoal).join(SharedGoalUser).filter(
-        (Goals.user_id == current_user.id) |  # Mål som skapats av användaren
-        (SharedGoalUser.user_id == current_user.id)  # Mål som användaren är inbjuden till och accepterat
+    shared_goals = db.session.query(Goals).select_from(Goals).join(
+        SharedItem,
+        and_(
+            SharedItem.item_id == Goals.id,  # Kopplar mål med SharedItem baserat på item_id
+            SharedItem.item_type == 'goal'  # Ser till att det är mål som delas
+        )
+    ).filter(
+        (Goals.user_id == current_user.id) |  # Mål skapade av användaren
+        ((SharedItem.shared_with_id == current_user.id) & (SharedItem.status == 'accepted'))  # Accepterade inbjudningar
     ).all()
 
-    # Hämta mottagna förfrågningar (ännu ej accepterade)
-    received_requests = db.session.query(SharedGoal).join(SharedGoalUser).filter(
-        (SharedGoalUser.user_id == current_user.id) |  # Förfrågningar där användaren är mottagaren
-        (SharedGoal.confirmed == False)  # Och inte har bekräftats ännu
+    # Hämta mottagna mål-förfrågningar som ännu inte accepterats
+    received_requests = db.session.query(SharedItem).filter(
+        (SharedItem.shared_with_id == current_user.id) &  # Förfrågningar till användaren
+        (SharedItem.status == 'pending') &  # Ej accepterade förfrågningar
+        (SharedItem.item_type == 'goal')  # Endast för mål
     ).all()
 
-    # Hämta skickade mål-förfrågningar (ännu ej accepterade)
-    sent_requests = db.session.query(SharedGoal).join(SharedGoalUser).filter(
-        (SharedGoalUser.user_id == current_user.id) |  # Skickade förfrågningar från den inloggade användaren
-        (SharedGoal.confirmed == False)  # Och inte har bekräftats ännu
+    # Hämta skickade mål-förfrågningar som ännu inte accepterats
+    sent_requests = db.session.query(SharedItem).filter(
+        (SharedItem.owner_id == current_user.id) &  # Förfrågningar från den inloggade användaren
+        (SharedItem.status == 'pending') &  # Ej accepterade förfrågningar
+        (SharedItem.item_type == 'goal')  # Endast för mål
     ).all()
 
     # Hämta vänner för att kunna dela mål
     accepted_friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
                        Friendship.query.filter_by(friend_id=current_user.id, status='accepted').all()
-
     accepted_user_ids = [friend.user_id if friend.user_id != current_user.id else friend.friend_id for friend in
                          accepted_friends]
     friends = User.query.filter(User.id.in_(accepted_user_ids)).all()
-    return render_template('pmg/goals.html',received_requests=received_requests,sent_requests=sent_requests, sida=sida, header=sida, personal_goals=personal_goals, sub_menu=sub_menu,friends=friends, shared_goals=shared_goals)
+
+    return render_template('pmg/goals.html', received_requests=received_requests, sent_requests=sent_requests,
+                           sida=sida, header=sida, personal_goals=personal_goals, sub_menu=sub_menu,
+                           friends=friends, shared_goals=shared_goals)
+
 
 @pmg_bp.route('/goal_request/<int:request_id>/<action>', methods=['POST'])
 @login_required
 def handle_goal_request(request_id, action):
-    shared_goal = SharedGoal.query.get_or_404(request_id)
+    # Hämta SharedItem med ID och säkerställ att det är av typen "goal"
+    shared_item = SharedItem.query.get_or_404(request_id)
 
-    if shared_goal.user_id != current_user.id:
+    # Verifiera att det delade objektet är ett mål
+    if shared_item.item_type != 'goal':
+        flash("Ogiltig förfrågan: Objektet är inte ett mål.", 'danger')
+        return redirect(url_for('pmg.goals'))
+
+    # Kontrollera att användaren har behörighet att hantera förfrågan
+    if shared_item.shared_with_id != current_user.id:
         flash("Du har inte behörighet att hantera denna förfrågan.", 'danger')
         return redirect(url_for('pmg.goals'))
 
+    # Hantera olika åtgärder
     if action == 'accept':
-        shared_goal.confirmed = True
+        shared_item.status = 'accepted'
         flash("Målet har accepterats!", 'success')
     elif action == 'decline':
-        db.session.delete(shared_goal)
+        db.session.delete(shared_item)
         flash("Mål-förfrågan har avböjts.", 'info')
 
+    # Spara ändringarna
     db.session.commit()
     return redirect(url_for('pmg.goals'))
 
@@ -294,10 +320,10 @@ def delete_goal(goal_id):
 @login_required
 def goal_requests():
     # Hämta alla mål-förfrågningar där du är mottagare och de inte är bekräftade
-    received_requests = SharedGoal.query.filter_by(user_id=current_user.id, confirmed=False).all()
+    received_requests = SharedItem.query.filter_by(user_id=current_user.id, confirmed=False).all()
 
     # Hämta alla mål-förfrågningar du har skickat men som inte är bekräftade
-    sent_requests = SharedGoal.query.filter(SharedGoal.created_by == current_user.id, SharedGoal.confirmed == False).all()
+    sent_requests = SharedItem.query.filter(SharedItem.created_by == current_user.id, SharedItem.confirmed == False).all()
 
     return render_template('goal_requests.html', received_requests=received_requests, sent_requests=sent_requests)
 

@@ -47,12 +47,6 @@ def journal():
                                                      url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         return journal_section(act_id, sida, sub_menu, None)
 
-    elif section_name == 'blogg':
-        sida, sub_menu = common_route("Blogg", [url_for('txt.journal', section_name='skriva'),
-                                                url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
-        my_posts = Notes.query.filter_by(user_id=current_user.id).all()
-        return journal_section(None, sida, sub_menu, my_posts)
-
     else:
         sida, sub_menu = common_route(section_name, [url_for('txt.journal', section_name='skriva'),
                                                      url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
@@ -63,7 +57,6 @@ def journal():
 def journal_section(act_id, sida, sub_menu, my_posts):
     page_info = ""
     current_date = date.today()
-    why_G = ""
     page_url = 'txt.journal'
     activities = None
     ordet,ord_lista = getWord()
@@ -76,42 +69,30 @@ def journal_section(act_id, sida, sub_menu, my_posts):
 
     if sida == 'Dagbok':
         ordet = current_date
+
     elif sida == 'Mina Mål':
         goals = Goals.query.filter_by(user_id=current_user.id).with_entities(Goals.name).all()
-#        used_goals = WhyGoals.query.filter_by(user_id=current_user.id).with_entities(WhyGoals.goal).all()
         goal_list = [goal[0] for goal in goals]
-#        used_goal_list = [used_goal[0] for used_goal in used_goals]
+
         for goal in goal_list:
-#            if not goal in used_goal_list:
             ordet = f'Varför är detta mål viktigt för dig? ({goal})'
-#           why_G = goal
             break
+
     elif sida == "Bullet":
         ordet = ['Tacksam för', 'Inför imorgon', "Personer som betyder",
                  'Distraherar mig', 'Motiverar mig',
                  'Jag borde...', 'Värt att fundera på', 'Jag ska försöka..']
-
-    timeInt = Settings.query.filter_by(user_id=current_user.id).first()
-    if timeInt and timeInt.stInterval:
-        time = timeInt.stInterval
-    else:
-        time = 15  # Standardvärde om stInterval saknas eller om ingen inställning hittas
 
     titles = []  # Initialisera titles här för att säkerställa att den alltid har ett värde
 
     if act_id is not None:
         print(act_id)
         myGoals = Goals.query.filter_by(name="Skriva", user_id=current_user.id).first()
+
         if myGoals:
             activities = Activity.query.filter_by(goal_id=myGoals.id,user_id=current_user.id).all()
             titles_list = Activity.query.filter_by(goal_id=myGoals.id,user_id=current_user.id).all()
             titles = [item.name for item in titles_list]
-    elif act_id is None:
-        myGoals = None
-        activities = None
-        titles_list = Notes.query.filter_by(user_id=current_user.id).distinct().with_entities(Notes.title).all()
-        titles = [item[0] for item in titles_list]
-
     if request.method == 'POST':
         option = request.form.get('option')
         print(option)
@@ -129,7 +110,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                     newBullet = Bullet(theme=theme, author=f'{user.firstName} {user.lastName}', content=bullet_list, date=current_date, user_id=current_user.id)
                     db.session.add(newBullet)
                     db.session.commit()
-#                elif sida == 'Mina Mål':
+#               elif sida == 'Mina Mål':
 #                    add2db(WhyGoals,request,['post-ord','blogg-content','goal'],['title','text','goal'],user)
             elif option == "write-on-time":
                 add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], user)
@@ -147,10 +128,23 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                     db.session.commit()
 
                 update_dagar(current_user.id,Dagar)
-    return render_template('txt/journal.html', time=time, goal=myGoals, activities=activities, side_options=titles,
+
+    return render_template('txt/journal.html', goal=myGoals, activities=activities, side_options=titles,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
-                           current_date=current_date, page_url=page_url, act_id=act_id, myPosts=my_posts,
-                           page_info=page_info, why_G=why_G)
+                           current_date=current_date, page_url=page_url, act_id=act_id,
+                           page_info=page_info)
+
+@txt_bp.route('/blog/<section>', methods=['GET', 'POST'])
+def blog(section):
+    section = request.args.get('section')
+    sida, sub_menu = common_route("Blog", [url_for('txt.journal', section_name='skriva'),
+                                            url_for('txt.journal', section_name='blog')], ['Skriv', 'Blogg'])
+    my_posts = Notes.query.filter_by(user_id=current_user.id).all()
+
+    titles_list = Notes.query.filter_by(user_id=current_user.id).distinct().with_entities(Notes.title).all()
+    titles = [item[0] for item in titles_list]
+
+    return render_template('txt/blog.html', sida=sida, header=sida, side_options=titles, myPosts=my_posts)
 
 @txt_bp.route('/get-new-word')
 def get_new_word(section_id):

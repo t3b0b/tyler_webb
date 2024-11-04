@@ -22,9 +22,9 @@ def common_route(title,sub_url,sub_text):
 @login_required
 def all_messages():
     sida,sub_menu = common_route('Messages',['/friends/friends','/friends/all_messages','/friends/users'],['Friends','Messages','Users'])
-    friendships = Friendship.query.filter(
-        ((Friendship.user_id == current_user.id) | (Friendship.friend_id == current_user.id))
-        & (Friendship.status == 'accepted')
+    friendships = Friendships.query.filter(
+        ((Friendships.user_id == current_user.id) | (Friendships.friend_id == current_user.id))
+        & (Friendships.status == 'accepted')
     ).all()
 
     all_messages = {}
@@ -69,12 +69,12 @@ def add_friend(friend_id):
         flash('Du kan inte lägga till dig själv som vän.', 'danger')
         return redirect(url_for('friends.users'))
 
-    existing_friendship = Friendship.query.filter_by(user_id=current_user.id, friend_id=friend.id).first()
+    existing_friendship = Friendships.query.filter_by(user_id=current_user.id, friend_id=friend.id).first()
     if existing_friendship:
         flash('Vänförfrågan har redan skickats.', 'warning')
         return redirect(url_for('friends.users'))
 
-    new_friendship = Friendship(user_id=current_user.id, friend_id=friend.id, status='pending')
+    new_friendship = Friendships(user_id=current_user.id, friend_id=friend.id, status='pending')
     db.session.add(new_friendship)
     db.session.commit()
     flash('Vänförfrågan har skickats.', 'success')
@@ -85,9 +85,9 @@ def add_friend(friend_id):
 def friends():
     sida, sub_menu = common_route('Friends', ['/friends/friends', '/friends/all_messages', '/friends/users'], ['Friends', 'Messages', 'Users'])
     
-    pending_requests = Friendship.query.filter_by(friend_id=current_user.id, status='pending').all()
-    accepted_friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
-                       Friendship.query.filter_by(friend_id=current_user.id, status='accepted').all()
+    pending_requests = Friendships.query.filter_by(friend_id=current_user.id, status='pending').all()
+    accepted_friends = Friendships.query.filter_by(user_id=current_user.id, status='accepted').all() + \
+                       Friendships.query.filter_by(friend_id=current_user.id, status='accepted').all()
 
     # Extrahera id från pending_requests och accepted_friends
     pending_user_ids = [request.user_id for request in pending_requests]
@@ -103,7 +103,7 @@ def friends():
 @friends_bp.route('/respond_friend_request/<int:request_id>/<response>', methods=['POST'])
 @login_required
 def respond_friend_request(request_id, response):
-    friendship = Friendship.query.filter_by(user_id=request_id, friend_id=current_user.id).first_or_404()
+    friendship = Friendships.query.filter_by(user_id=request_id, friend_id=current_user.id).first_or_404()
     if friendship.friend_id != current_user.id: 
         flash('Not authorized.', 'danger')
         return redirect(url_for('pmg.myday'))
