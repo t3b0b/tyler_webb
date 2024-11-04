@@ -12,7 +12,6 @@
     <header class="top-header">
         <div class="header-icons">
             <div class="left-icons">
-
                 <a href="/pmg/myday" class="icon-text">
                     <img src="{{ url_for('static', filename='images/Home.png') }}" alt="Hem">
                     <span class="icon-label">Hem</span>
@@ -32,7 +31,6 @@
                     <img src="{{ url_for('static', filename='images/Streak.png') }}" alt="Streak">
                     <span class="icon-label">Streak</span>
                 </a>
-
             </div>
             {% if total_score %}
                 <span>{{ total_score }}</span>
@@ -40,7 +38,7 @@
                 <span>{{ header }}</span>
             {% endif %}
             <div class="right-icons">
-                <a href="/txt/journal" class="icon-text">
+                <a href="/txt/my_words" class="icon-text">
                     <img src="{{ url_for('static', filename='images/Texts.png') }}" alt="Journal">
                     <span class="icon-label">Journal</span>
                 </a>
@@ -57,6 +55,7 @@
             </div>
         </div>
     </header>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <ul class="flashes">

@@ -17,146 +17,71 @@ txt_bp = Blueprint('txt', __name__, template_folder='templates/txt')
 @txt_bp.route('/journal', methods=['GET', 'POST'])
 def journal():
     section_name = request.args.get('section_name')
-    my_act = Activity.query.filter_by(name=section_name, user_id=current_user.id).all()
-    activity_names = [act.name for act in my_act]
+
 
     if not section_name:
-        return redirect(url_for('txt.journal', section_name='Mina Ord'))
-
-    if section_name == 'Mina Ord' or section_name == 'skriva':
+        return redirect(url_for('txt.my_words', section_name='Mina Ord'))
+    
+    elif section_name == "Mina Ord" or section_name == "list":
         act_id = section_content(Activity, section_name)
-        sida, sub_menu = common_route("Mina Ord", [url_for('txt.journal', section_name='skriva'),
-                                                   url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
-        return journal_section(act_id, sida, sub_menu,None)
+        sida = "My Words"
+        return redirect(url_for('txt.my_words', section_name='Mina Ord'))
 
-    if section_name == 'Mina Mål':
+    elif section_name == "Bullet" or section_name == "list":
         act_id = section_content(Activity, section_name)
-        sida, sub_menu = common_route("Mina Mål", [url_for('txt.journal', section_name='skriva'),
-                                                   url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
-        return journal_section(act_id, sida, sub_menu,None)
-
-    elif section_name == "Bullet" or section_name == "Lista":
-        act_id = section_content(Activity, section_name)
-        sida, sub_menu = common_route("Bullet", [url_for('txt.journal', section_name='skriva'),
-                                                 url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
-        return journal_section(act_id, sida, sub_menu, None)
-
-    elif section_name in activity_names:
-        act_id = section_content(Activity, section_name)
-        sida, sub_menu = common_route(section_name, [url_for('txt.journal', section_name='skriva'),
-                                                     url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
-        return journal_section(act_id, sida, sub_menu, None)
-
-    else:
-        sida, sub_menu = common_route(section_name, [url_for('txt.journal', section_name='skriva'),
-                                                     url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
+        sida = "Lists"
+        return redirect(url_for('txt.list', section_name='Bullet'))
+    
+    elif section_name == "Blog":
+        sida = section_name
         my_posts = Notes.query.filter_by(title=section_name, user_id=current_user.id).all()
-        return journal_section(None, sida, sub_menu, my_posts)
-@txt_bp.route('/journal/<section_name>', methods=['GET', 'POST'])
-def journal_section(act_id, sida, sub_menu, my_posts):
-    page_info = ""
-    current_date = date.today()
-    page_url = 'txt.journal'
-    activities = None
-    ordet,ord_lista = getWord()
+        return redirect(url_for('txt.blog', None, sida, sub_menu, my_posts))
 
-    if ordet is None:
-        for ord in ord_lista:
-            ord.used = False
-        db.session.commit()
-        ordet,ord_lista = getWord()
-
-    if sida == 'Dagbok':
-        ordet = current_date
-
-    elif sida == 'Mina Mål':
-        goals = Goals.query.filter_by(user_id=current_user.id).with_entities(Goals.name).all()
-        goal_list = [goal[0] for goal in goals]
-
-        for goal in goal_list:
-            ordet = f'Varför är detta mål viktigt för dig? ({goal})'
-            break
-
-    elif sida == "Bullet":
-        ordet = ['Tacksam för', 'Inför imorgon', "Personer som betyder",
-                 'Distraherar mig', 'Motiverar mig',
-                 'Jag borde...', 'Värt att fundera på', 'Jag ska försöka..']
-
-    titles = []  # Initialisera titles här för att säkerställa att den alltid har ett värde
-
-    if act_id is not None:
-        print(act_id)
-        myGoals = Goals.query.filter_by(name="Skriva", user_id=current_user.id).first()
-
-        if myGoals:
-            activities = Activity.query.filter_by(goal_id=myGoals.id,user_id=current_user.id).all()
-            titles_list = Activity.query.filter_by(goal_id=myGoals.id,user_id=current_user.id).all()
-            titles = [item.name for item in titles_list]
-    if request.method == 'POST':
-        option = request.form.get('option')
-        print(option)
-        user = User.query.filter_by(id=current_user.id).first()
-        content_check = request.form['blogg-content']
-        if content_check:
-            if option == 'timeless':
-                if sida == 'Dagbok':
-                    add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
-                elif sida == 'Mina Ord':
-                    add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
-                elif sida == 'Bullet':
-                    theme = request.form['post-ord']
-                    bullet_list = [request.form['#1'], request.form['#2'], request.form['#3'], request.form['#4'], request.form['#5']]
-                    newBullet = Bullet(theme=theme, author=f'{user.firstName} {user.lastName}', content=bullet_list, date=current_date, user_id=current_user.id)
-                    db.session.add(newBullet)
-                    db.session.commit()
-#               elif sida == 'Mina Mål':
-#                    add2db(WhyGoals,request,['post-ord','blogg-content','goal'],['title','text','goal'],user)
-            elif option == "write-on-time":
-                add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], user)
-                if sida == 'Dagbok':
-                    add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
-                elif sida == 'Mina Ord':
-                    add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
-                elif sida == 'Bullet':
-                    theme = request.form['post-ord']
-                    bullet_list = [request.form['#1'], request.form['#2'], request.form['#3'], request.form['#4'],
-                                   request.form['#5']]
-                    newBullet = Bullet(theme=theme, author=f'{user.firstName} {user.lastName}', content=bullet_list,
-                                       date=current_date, user_id=current_user.id)
-                    db.session.add(newBullet)
-                    db.session.commit()
-
-                update_dagar(current_user.id,Dagar)
-
-    return render_template('txt/journal.html', goal=myGoals, activities=activities, side_options=titles,
-                           ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
-                           current_date=current_date, page_url=page_url, act_id=act_id,
-                           page_info=page_info)
-
-@txt_bp.route('/bullet', methods=['GET', 'POST'])
+@txt_bp.route('/list', methods=['GET', 'POST'])
 @login_required
-def bullet():
-    sida, sub_menu = common_route("Bullet", [url_for('txt.journal', section_name='skriva'),
-                                             url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
+def list():
+    current_date = date.today()
+    act_id = section_content(Activity, 'bullet')
+    sida = "Lists"
     ordet = ['Tacksam för', 'Inför imorgon', "Personer som betyder",
              'Distraherar mig', 'Motiverar mig',
              'Jag borde...', 'Värt att fundera på', 'Jag ska försöka..']
 
     if request.method == 'POST':
-        # Hantera inläggslogik för 'Bullet' här
-        pass
 
-    return render_template('txt/list.html', sida=sida, header=sida, sub_menu=sub_menu, ordet=ordet)
+        option = request.form.get('option')
+        print(option)
+        user = User.query.filter_by(id=current_user.id).first()
+        content_check = request.form['blogg-content']
+
+        if content_check:
+            if option == 'timeless':
+                theme = request.form['post-ord']
+                bullet_list = [request.form['#1'], request.form['#2'], request.form['#3'], request.form['#4'], request.form['#5']]
+                newBullet = Bullet(theme=theme, author=f'{user.firstName} {user.lastName}', content=bullet_list, date=current_date, user_id=current_user.id)
+                db.session.add(newBullet)
+                db.session.commit()
+
+            elif option == "write-on-time":
+                theme = request.form['post-ord']
+                bullet_list = [request.form['#1'], request.form['#2'], request.form['#3'], request.form['#4'],
+                                request.form['#5']]
+                newBullet = Bullet(theme=theme, author=f'{user.firstName} {user.lastName}', content=bullet_list,
+                                    date=current_date, user_id=current_user.id)
+                db.session.add(newBullet)
+                db.session.commit()
+                add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], user)
+
+    return render_template('txt/list.html', sida=sida, header=sida, ordet=ordet)
 
 
 @txt_bp.route('/my_words', methods=['GET', 'POST'])
 @login_required
-def mina_ord():
+def my_words():
+    titles = []
     act_id = section_content(Activity, 'Mina Ord')
-    sida, sub_menu = common_route("Mina Ord", [url_for('txt.journal', section_name='skriva'),
-                                               url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
-    ordet, ord_lista = getWord()
-
+    sida = "My Words"
+    
     if ordet is None:
         for ord in ord_lista:
             ord.used = False
@@ -164,17 +89,29 @@ def mina_ord():
         ordet, ord_lista = getWord()
 
     if request.method == 'POST':
-        # Hantera inläggslogik för 'Mina Ord' här
-        pass
+        
+        ordet, ord_lista = getWord()
+        option = request.form.get('option')
+        print(option)
+        user = User.query.filter_by(id=current_user.id).first()
+        content_check = request.form['blogg-content']
 
+        if content_check:
+            if option == 'timeless':
+                add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+
+        elif option == "write-on-time":
+                add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+                add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], user)
     return render_template('txt/my_words.html', sida=sida, header=sida, sub_menu=sub_menu,
                            ordet=ordet, ord_lista=ord_lista)
+
 
 @txt_bp.route('/blog', methods=['GET', 'POST'])
 @login_required
 def blog():
-    sida, sub_menu = common_route("Blog", [url_for('txt.journal', section_name='skriva'),
-                                            url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
+    sida = "Blog"
+    titles = []
     my_posts = Notes.query.filter_by(user_id=current_user.id).all()
     titles_list = Notes.query.filter_by(user_id=current_user.id).distinct().with_entities(Notes.title).all()
     titles = [item[0] for item in titles_list]

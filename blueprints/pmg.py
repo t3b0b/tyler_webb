@@ -567,9 +567,6 @@ def delete_activity(activity_id):
     return "Activity not found", 404
 
 
-
-
-
 @pmg_bp.route('/get_activities/<goal_id>')
 def get_activities(goal_id):
     activities = Activity.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()

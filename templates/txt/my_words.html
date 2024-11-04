@@ -1,19 +1,68 @@
-{% extends 'base.html' %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
+    <style>
+    button {
+      width: 100px;
+    }
+    .post-title {
+        text-align: left; /* Vänsterjustera rubriken */
+    }
 
-{% block content %}
-<h2>{{ sida }}</h2>
-<div class="ordet">
-    <button name="option" onclick="fetchNewWord()">New</button>
-    <label id="ordet-label">{{ ordet }}</label>
-    <div class="small-icon">
-        <img src="{{ url_for('static', filename='images/plus-icon-större.png') }}" class="edit-icon" onclick="editTitle()" alt="Redigera" />
-    </div>
-</div>
+    .post-author {
+        text-align: right; /* Högerjustera författar-raden */
+        font-size: 0.9em;  /* Eventuellt minska textstorleken */
+        color: #666;       /* Eventuellt en ljusare färg */
+    }
+    .hidden {
+        display: none;
+    }
+    </style>
+{% endblock head %}
 
-<form method="POST">
-    <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
-    <div class="button-center">
-        <button type="submit" class="button-style" name="option" value="timeless">Skicka</button>
+{% block body %}
+        {% if act_id %}
+        <div class="blogg-container">
+                <form method="POST">
+                    <div class="view-toggle" style="background-color: white">
+                        <button class="active-view" onclick="window.location.href='txt/journal?section_name=Mina+Ord'">Journal</button>
+                        <button class="page-toggle-btn" onclick="window.location.href='txt/blog'">Blog</button>
+                    </div>
+                    {% if sida == "Mina Ord" or sida == "Dagbok" or sida == "Mina Mål" %}
+                        <div class="ordet">
+                            <button name="option" style="width: 60px" onclick="fetchNewWord()">New</button>
+                            <label id="ordet-label" name="post-ord">{{ ordet }}</label>
+                            <input type="hidden" name="goal" value="{{ why_G }}">
+                            <input type="text" id="ordet-input" class="hidden" name="post-ord" value="{{ ordet }}">
+                            <div class="small-icon">
+                                <img src="{{ url_for('static', filename='images/plus-icon-större.png') }}" class="edit-icon" onclick="editTitle()" alt="Redigera" />
+                            </div>
+                        </div>
+
+                        <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
+
+                        <div id="activityForm" class="button-center">
+                            <button type="submit" id="time-less" class="button-style" name="option" value="timeless">Skicka</button>
+                            <button type="submit" id="write-on-time" class="button-style" name="option" style="display: none;" value="write-on-time">Save</button>
+                            <button type="button" id="start-timer" class="button-style" onclick="startTimerFromSelection()">Start Timer</button>
+                            <input id="goalSelect" value="{{ goal.id }}" style="display: none">
+                            <input id="activitySelect" value="{{ act_id }}" style="display: none">
+                            <input id="timeSelect" value="{{ time }}" style="display: none">
+                            <button id="startaAktivitet" style="display: none">A</button>
+                        </div>
+                        <div class="button-center">
+                            <button type="button" id="stopButton" class="button-style" style="display: none; background-color: red">Stop</button>
+                            <button type="button" id="continueButton" class="button-style" style="display: none; background-color: green">Continue</button>
+                        </div>
+                        <div class="repetitions" style="display: none">
+                            <h2 id="repetitons">0</h2>
+                        </div>
+                        <div id="completed-form" class="list-item" style="display: none;">
+                            <input type="text" id="gID" name="gID" value="{{ goal.id }}">
+                            <input type="text" id="aID" name="aID" value="{{ act_id }}">
+                            <input type="text" id="aDate" name="aDate" value="{{ current_date }}">
+                            <input type="text" id="score" name="score">
+                        </div>
+                    {% endif %}
+                </form>
+        {% endif %}
     </div>
-</form>
-{% endblock %}

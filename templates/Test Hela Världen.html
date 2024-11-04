@@ -1,25 +1,43 @@
-
-{% block head %}
-
-{% endblock head %}
-
-{% block body %}
-
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        let currentIndex = 0;
-        const images = document.querySelectorAll('.slideshow-container img');
-        const totalImages = images.length;
-
-        function showNextImage() {
-            images[currentIndex].classList.remove('active'); // Dölj aktuell bild
-            currentIndex = (currentIndex + 1) % totalImages; // Uppdatera index, starta om vid slutet
-            images[currentIndex].classList.add('active'); // Visa nästa bild
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotating Globe Animation</title>
+    <style>
+        .globe-container {
+            width: 200px; /* Anpassa storlek */
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+            margin: auto;
+            margin-top: 50px;
         }
 
-        // Växla bild var tredje sekund
-        setInterval(showNextImage, 1200);
-    });
-</script>
-{% endblock body %}
+        #globe-image {
+            width: 100%;
+            height: 100%;
+            animation: rotateGlobe 1s steps(8) infinite; /* 1 sekund för att gå genom alla bilder */
+        }
+
+        @keyframes rotateGlobe {
+            0% { content: url('static\images/1.png'); }
+            12.5% { content: url('static\images/2.png'); }
+            25% { content: url('static\images/3.png'); }
+            37.5% { content: url('static\images/4.png'); }
+            50% { content: url('static\images/5.png'); }
+            62.5% { content: url('static\images/6.png'); }
+            75% { content: url('static\images/7.png'); }
+            87.5% { content: url('static\images/8.png'); }
+            100% { content: url('static\images/1.png'); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="globe-container">
+        <img id="globe-image" src="static\images\1.png" alt="Rotating Globe">
+    </div>
+
+</body>
+</html>

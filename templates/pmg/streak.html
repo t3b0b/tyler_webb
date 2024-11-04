@@ -17,7 +17,7 @@
             <div class="list-content">
             {% for streak in streaks %}
                 <div class="list-item" data-level="{{ streak.level }}" onclick="window.location.href = '/pmg/streak/{{ streak.id }}/details';"> {{ streak.name }}
-                    <button class="tgl-btn" onclick="deleteStreak({{ streak.id }})">&#10060;</button>
+                    <button class="tgl-btn" onclick="deleteStreak({{ streak.id }}, event)">&#10060;</button>
                 </div>
             {% endfor %}
             </div>
@@ -48,31 +48,36 @@
     </div>
 </div>
     <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
-<script>
-function getColorForLevel(level) {
-    document.getSelection()
-    const colors = {
-        1: '#cce8ff',
-        2: '#99d5ff',
-        3: '#66c4ff',
-        4: '#b6ffa2',
-        5: '#83ff7f',
-        6: '#3cd337',
-        7: '#219900',
-        8: '#dec27c',
-        9: '#bda544',
-        10: '#a28e33'
-    };
-    return colors[level] || '#ffffff'; // Default color if level not found
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    const streakItems = document.querySelectorAll('.items-container');
-    streakItems.forEach(function(item) {
-        const level = item.getAttribute('data-level');
-        const color = getColorForLevel(level);
-        item.style.backgroundColor = color;
-    });
-});
-</script>
+    <script>
+        function getColorForLevel(level) {
+            const colors = {
+                1: '#cce8ff',
+                2: '#99d5ff',
+                3: '#66c4ff',
+                4: '#b6ffa2',
+                5: '#83ff7f',
+                6: '#3cd337',
+                7: '#219900',
+                8: '#dec27c',
+                9: '#bda544',
+                10: '#a28e33'
+            };
+            return colors[level] || '#ffffff'; // Standardfärg om nivå inte hittas
+        }
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            const streakItems = document.querySelectorAll('.list-item');
+            streakItems.forEach(function(item) {
+                const level = item.getAttribute('data-level');
+                const color = getColorForLevel(level);
+                item.style.backgroundColor = color;
+            });
+        });
+        
+        function deleteStreak(streakId, event) {
+            event.stopPropagation(); // Förhindrar att klicket på knappen påverkar list-item-onclick
+            // Din kod för att radera streaken
+        }
+        </script>
+        
 {% endblock %}
