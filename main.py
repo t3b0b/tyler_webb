@@ -40,7 +40,7 @@ app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = "pmg.automatic.services@gmail.com"
 app.config['MAIL_PASSWORD'] = "gygfvycgvmjybgse"
-app.config[('SQLALCHEMY_TRACK_MODIFICATI.- '
+app.config[('SQLALCHEMY_TRACK_MODIFICATI.- )'
             'ONS')] = False
 
 csrf = CSRFProtect(app)
