@@ -5,7 +5,7 @@ from models import (User, db, Notes, Goals, Bullet,
 
 from pmg_func import (section_content,common_route,getInfo,
                       getWord, add2db, update_dagar)
-
+from flask_login import current_user, login_required
 from datetime import datetime, timedelta, date
 
 from flask_login import current_user
@@ -52,7 +52,6 @@ def journal():
                                                      url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         my_posts = Notes.query.filter_by(title=section_name, user_id=current_user.id).all()
         return journal_section(None, sida, sub_menu, my_posts)
-
 @txt_bp.route('/journal/<section_name>', methods=['GET', 'POST'])
 def journal_section(act_id, sida, sub_menu, my_posts):
     page_info = ""
@@ -134,17 +133,55 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                            current_date=current_date, page_url=page_url, act_id=act_id,
                            page_info=page_info)
 
-@txt_bp.route('/blog/<section>', methods=['GET', 'POST'])
-def blog(section):
-    section = request.args.get('section')
-    sida, sub_menu = common_route("Blog", [url_for('txt.journal', section_name='skriva'),
-                                            url_for('txt.journal', section_name='blog')], ['Skriv', 'Blogg'])
-    my_posts = Notes.query.filter_by(user_id=current_user.id).all()
+@txt_bp.route('/bullet', methods=['GET', 'POST'])
+@login_required
+def bullet():
+    sida, sub_menu = common_route("Bullet", [url_for('txt.journal', section_name='skriva'),
+                                             url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
+    ordet = ['Tacksam för', 'Inför imorgon', "Personer som betyder",
+             'Distraherar mig', 'Motiverar mig',
+             'Jag borde...', 'Värt att fundera på', 'Jag ska försöka..']
 
+    if request.method == 'POST':
+        # Hantera inläggslogik för 'Bullet' här
+        pass
+
+    return render_template('txt/list.html', sida=sida, header=sida, sub_menu=sub_menu, ordet=ordet)
+
+
+@txt_bp.route('/my_words', methods=['GET', 'POST'])
+@login_required
+def mina_ord():
+    act_id = section_content(Activity, 'Mina Ord')
+    sida, sub_menu = common_route("Mina Ord", [url_for('txt.journal', section_name='skriva'),
+                                               url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
+    ordet, ord_lista = getWord()
+
+    if ordet is None:
+        for ord in ord_lista:
+            ord.used = False
+        db.session.commit()
+        ordet, ord_lista = getWord()
+
+    if request.method == 'POST':
+        # Hantera inläggslogik för 'Mina Ord' här
+        pass
+
+    return render_template('txt/my_words.html', sida=sida, header=sida, sub_menu=sub_menu,
+                           ordet=ordet, ord_lista=ord_lista)
+
+@txt_bp.route('/blog', methods=['GET', 'POST'])
+@login_required
+def blog():
+    sida, sub_menu = common_route("Blog", [url_for('txt.journal', section_name='skriva'),
+                                            url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
+    my_posts = Notes.query.filter_by(user_id=current_user.id).all()
     titles_list = Notes.query.filter_by(user_id=current_user.id).distinct().with_entities(Notes.title).all()
     titles = [item[0] for item in titles_list]
 
-    return render_template('txt/blog.html', sida=sida, header=sida, side_options=titles, myPosts=my_posts)
+    return render_template('txt/blog.html', sida=sida, header=sida, side_options=titles, my_posts=my_posts)
+
+
 
 @txt_bp.route('/get-new-word')
 def get_new_word(section_id):

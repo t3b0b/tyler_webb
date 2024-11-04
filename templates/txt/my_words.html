@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{{ sida }}</h2>
+<div class="ordet">
+    <button name="option" onclick="fetchNewWord()">New</button>
+    <label id="ordet-label">{{ ordet }}</label>
+    <div class="small-icon">
+        <img src="{{ url_for('static', filename='images/plus-icon-större.png') }}" class="edit-icon" onclick="editTitle()" alt="Redigera" />
+    </div>
+</div>
+
+<form method="POST">
+    <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
+    <div class="button-center">
+        <button type="submit" class="button-style" name="option" value="timeless">Skicka</button>
+    </div>
+</form>
+{% endblock %}

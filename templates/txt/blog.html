@@ -1,22 +1,18 @@
 {% extends 'base.html' %}
 
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
-{% endblock head %}
-
-{% block body %}
-    {% if myPosts %}
+{% block content %}
+<h2>{{ sida }}</h2>
+<div class="blogg-posts">
+    <div class="view-toggle">
+        <button class="page-toggle-btn" onclick="window.location.href='txt/journal?section_name=Mina+Ord'">Journal</button>
+        <button class="active-view" onclick="window.location.href='/txt/blog'">Blogg</button>
+    </div>
+    {% for post in my_posts %}
         <div class="blogg-post">
-            <div class="view-toggle" style="background-color: white">
-                <button class="page-toggle-btn" onclick="window.location.href='txt/journal?section_name=Mina+Ord'">Journal</button>
-                <button class="active-view" onclick="window.location.href='/cal/timebox'">Blog</button>
-            </div>
-            {% for post in myPosts %}
-                <h3 class="post-title">{{ post.title }}</h3>
-                <p class="post-content">{{ post.content }}</p>
-                <p class="post-author">{{ post.author }} {{ post.date }}</p>
-            {% endfor %}
+            <h3 class="post-title">{{ post.title }}</h3>
+            <p class="post-content">{{ post.content }}</p>
+            <p class="post-author">{{ post.author }} {{ post.date }}</p>
         </div>
-    {% endif %}
-<script src="{{ url_for('static', filename='common_functions.js') }}"></script>
-{% endblock body %}
+    {% endfor %}
+</div>
+{% endblock %}

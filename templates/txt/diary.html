@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{{ sida }}</h2>
+<div class="ordet">
+    <label>{{ current_date }}</label>
+    <label id="ordet-label">{{ ordet }}</label>
+</div>
+
+<form method="POST">
+    <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
+    <div class="button-center">
+        <button type="submit" class="button-style" name="option" value="timeless">Skicka</button>
+    </div>
+</form>
+{% endblock %}
