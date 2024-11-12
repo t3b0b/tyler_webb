@@ -13,6 +13,12 @@
             {% for event in events %}
                 <div class="event-item">
                     <span>{{ event.name }} ({{ event.start_time }} - {{ event.end_time }})</span>
+                    {% if event.location %}
+                        <p>Location: {{ event.location }}</p>
+                    {% endif %}
+                    {% if event.goal_id %}
+                        <p>Linked to Goal: {{ event.goal.name }}</p>
+                    {% endif %}
                 </div>
             {% endfor %}
         {% else %}
@@ -21,25 +27,46 @@
     </div>
 
     <div class="add-form-container">
+        <h3>Add Event or Deadline</h3>
         <form method="POST">
+            <label for="eventType">Type:</label>
             <select id="eventType" name="eventType" class="select-style">
                 <option value="event">Event</option>
-                <option value="milestone">Milestone</option>
                 <option value="deadline">Deadline</option>
             </select>
-            <input type="text" name="event-name" placeholder="Event Name" required>
-            <input type="time" name="event-start" placeholder="Start Time" required>
-            <input type="time" name="event-end" placeholder="End Time" required>
-            <button id="addEventButton" class="button-style" style="background-color: green">Add Event</button>
+
+            <label for="event-name">Name:</label>
+            <input type="text" id="event-name" name="event-name" placeholder="Event/Deadline Name" required>
+
+            <label for="event-start">Start Time:</label>
+            <input type="time" id="event-start" name="event-start" required>
+
+            <label for="event-end">End Time:</label>
+            <input type="time" id="event-end" name="event-end">
+
+            <label for="event-location">Location (optional):</label>
+            <input type="text" id="event-location" name="event-location" placeholder="Event Location">
+
+            {% if goals %}
+                <label for="goal-select">Link to Goal (for deadlines):</label>
+                <select id="goal-select" name="goal-id" class="select-style">
+                    <option value="">None</option>
+                    {% for goal in goals %}
+                        <option value="{{ goal.id }}">{{ goal.name }}</option>
+                    {% endfor %}
+                </select>
+            {% endif %}
+
+            <button id="addEventButton" class="button-style" style="background-color: green">Add</button>
         </form>
     </div>
 </div>
+
 <script>
     function onDateClick(element, date) {
         if (!element.classList.contains('other-month')) {
             window.location.href = '/pmg/day/' + date;
         }
     }
-
 </script>
-        {% endblock body %}
+{% endblock body %}

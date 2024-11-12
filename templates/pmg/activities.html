@@ -18,6 +18,9 @@
         {% for activity in activities %}
             <div class="list-item" data-goal-id="{{ activity.id }}" onclick="window.location.href = '/pmg/activity/{{ activity.id }}/tasks';">
                 {{ activity.name }}
+                {% if activity.shared_item_id %}
+                    <span class="shared-indicator">(Shared)</span>
+                {% endif %}
                 <button class="tgl-btn" onclick="event.stopPropagation(); deleteActivity('{{activity.id}}');">&#10060;</button>
             </div>
         {% endfor %}

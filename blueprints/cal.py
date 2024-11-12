@@ -44,27 +44,39 @@ def save_calendar_bullet(date, view_type):
 @cal_bp.route('/day/<string:date>', methods=['GET', 'POST'])
 @login_required
 def day_view(date):
-    # Här hämtar du relevant information om det specifika datumet
-    selected_date = datetime.strptime(date, '%Y-%m-%d').date()
-
-    # Hämta befintliga händelser för datumet (events, deadlines, milestones)
-    events = Event.query.filter_by(user_id=current_user.id, date=selected_date).all()
+    # Hämta dagens event
+    events = Event.query.filter_by(user_id=current_user.id, date=date).all()
+    goals = Goals.query.filter_by(user_id=current_user.id).all()
 
     if request.method == 'POST':
         event_type = request.form.get('eventType')
         event_name = request.form.get('event-name')
-        event_start = request.form.get('event-start')
-        event_end = request.form.get('event-end')
+        start_time = request.form.get('event-start')
+        end_time = request.form.get('event-end')
+        location = request.form.get('event-location')
+        goal_id = request.form.get('goal-id')  # Kan vara None för vanliga events
 
-        # Skapa nytt event, milestone eller deadline beroende på valt alternativ
-        new_event = Event(name=event_name, event_type=event_type, start_time=event_start, end_time=event_end,
-                          user_id=current_user.id)
-        db.session.add(new_event)
-        db.session.commit()
+        # Validera och skapa en ny händelse
+        if event_type and event_name and start_time:
+            new_event = Event(
+                name=event_name,
+                event_type=event_type,
+                start_time=start_time,
+                end_time=end_time,
+                location=location,
+                user_id=current_user.id,
+                date=date,
+                goal_id=goal_id if event_type == 'deadline' else None  # Koppla mål endast om det är en deadline
+            )
+            db.session.add(new_event)
+            db.session.commit()
+            flash(f'{event_type.capitalize()} "{event_name}" added successfully.', 'success')
+        else:
+            flash('Please provide all required fields.', 'danger')
 
-        return redirect(url_for('cal.day_view', date=date))
+        return redirect(url_for('pmg.day_view', date=date))
 
-    return render_template('cal/day_view.html', date=selected_date, events=events)
+    return render_template('pmg/day.html', date=date, events=events, goals=goals)
 
 
 @cal_bp.route('/month', methods=['GET', 'POST'])

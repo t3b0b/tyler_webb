@@ -248,7 +248,6 @@ def goals():
                            sida=sida, header=sida, personal_goals=personal_goals, sub_menu=sub_menu,
                            friends=friends, shared_goals=shared_goals)
 
-
 @pmg_bp.route('/goal_request/<int:request_id>/<action>', methods=['POST'])
 @login_required
 def handle_goal_request(request_id, action):
@@ -281,14 +280,22 @@ def handle_goal_request(request_id, action):
 def goal_activities(goal_id):
     goal = Goals.query.get_or_404(goal_id)
     user = current_user.id
-
+    shared_item = SharedItem.query.filter_by(item_id=goal_id, item_type='goal', status='active').first()
+    
     if request.method == 'POST':
         # Hantera POST-begäran för att lägga till en aktivitet
         goalId = goal_id
         activity_name = request.form.get('activity-name')
         measurement = request.form.get('activity-measurement')
+
         if activity_name and measurement:
-            new_activity = Activity(name=activity_name, goal_id=goalId, user_id=user)
+            # Skapa aktivitet
+            new_activity = Activity(
+                name=activity_name,
+                goal_id=goal.id,
+                user_id=user,
+                shared_item_id=shared_item.id if shared_item else None  # Koppla till delning om målet är delat
+            )
             db.session.add(new_activity)
             db.session.commit()
             flash('Activity added successfully', 'success')
@@ -625,15 +632,30 @@ def activity_tasks(activity_id):
 @pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST','GET'])
 def add_task(activity_id):
     activity = Activity.query.get_or_404(activity_id)
+
+    shared_item = SharedItem.query.filter_by(id=activity.shared_item_id).first()
+
     task_name = request.form.get('task_name')
     origin = request.form.get('origin')
 
+    if not task_name:
+        flash("Task name is required", "danger")
+        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+
     sida="PMG"
 
-    new_task = ToDoList(task=task_name, completed=False, user_id=current_user.id, activity_id=activity.id)
+    new_task = ToDoList(
+    task=task_name,
+    completed=False,
+    user_id=current_user.id,
+    activity_id=activity.id,
+    shared_item_id=shared_item.id if shared_item else None
+    )
+
     db.session.add(new_task)
     db.session.commit()
-
+    flash("Task added successfully", "success")
+    
     if origin == 'todo':
         return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
     elif origin == 'focus':
