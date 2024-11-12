@@ -126,8 +126,10 @@ class Activity(db.Model):
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)  # ForeignKey till goals
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ForeignKey till user
     milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=True)
+    shared_item_id = db.Column(db.Integer, db.ForeignKey('shared_items.id'), nullable=True)
 
-    # Lägg till relation till ToDoList via ForeignKey
+
+    shared_item = db.relationship('SharedItem', backref='activities')  # Kopplar till delning
     todo_list = db.relationship('ToDoList', backref='activity', lazy=True)
 
 class ToDoList(db.Model):
@@ -136,11 +138,11 @@ class ToDoList(db.Model):
     completed = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'))
+    shared_item_id = db.Column(db.Integer, db.ForeignKey('shared_items.id'), nullable=True)  # Koppling till delning
 
-    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # Tilldelad användare
-    marked_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)    # Den som markerade uppgiften som klar
-    confirmed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # Bekräftad av den andra användaren
-
+    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    marked_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    confirmed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     confirmed_date = db.Column(db.DateTime, nullable=True)
 
 class Streak(db.Model):
@@ -178,7 +180,6 @@ class Score(db.Model):
         return f'{self.Goal}, {self.Activity}, {self.Date}, {self.Time}, {self.user_id}'
 
 # endregion
-
 
 # region Calendar
 
