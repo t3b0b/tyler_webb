@@ -554,10 +554,12 @@ th {
 }
 
 .day-container {
+    width: 100%;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
-    margin-top: 20px;
+    margin-top: 5px;
 }
 
 .events-list {
@@ -742,16 +744,19 @@ button#addEventButton {
 .form-container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-evenly;
     align-items: center;
-    width:60%;
+    text-align: left;
+    width:65%;
     min-height: fit-content;
-    background-color:white;
     margin-inline: auto; /* Centrerar elementet */
+    background-color: beige;
+    gap: 5rem;
 }
 
-.form-container select, input[type="text"], input[type="email"], input[type="password"] {
-    width: 100%;
+.form-container select, input[type="time"],  input[type="text"], input[type="email"], input[type="password"] {
+    max-width: 85%;
+    min-width: 45%;
     padding: 5px;
     font-size: 14px;
     border: 1px solid #ccc;
@@ -759,7 +764,12 @@ button#addEventButton {
     background-color: white;
     margin-bottom: 20px;
     text-align:center;
-    width:100%;
+}
+
+.form-container label {
+    font-size: 16px;
+    text-align: center;
+
 }
 
 .input-group {

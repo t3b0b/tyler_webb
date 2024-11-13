@@ -128,8 +128,7 @@ class Activity(db.Model):
     milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=True)
     shared_item_id = db.Column(db.Integer, db.ForeignKey('shared_items.id'), nullable=True)
 
-
-    shared_item = db.relationship('SharedItem', backref='activities')  # Kopplar till delning
+    shared_item = db.relationship('SharedItem', backref='shared_activities', lazy=True)
     todo_list = db.relationship('ToDoList', backref='activity', lazy=True)
 
 class ToDoList(db.Model):
@@ -144,6 +143,8 @@ class ToDoList(db.Model):
     marked_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     confirmed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     confirmed_date = db.Column(db.DateTime, nullable=True)
+
+    shared_item = db.relationship('SharedItem', backref='tasks')  # Ny relation
 
 class Streak(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -189,11 +190,14 @@ class Event(db.Model):
     event_type = db.Column(db.String(20))  # event, milestone, deadline
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=True)
+    location = db.Column(db.String(255), nullable=True)  # Lägg till plats som en sträng
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=True)
     date = db.Column(db.Date, nullable=False)
 
     def __repr__(self):
-        return f'{self.name} on {self.date}'
+        return f'{self.name} on {self.date} at {self.location}'
 
 class Dagar(db.Model):
     id = db.Column(db.Integer, primary_key=True)

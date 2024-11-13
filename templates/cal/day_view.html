@@ -2,44 +2,179 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
+<style>
+    .day-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 20px;
+        background-color: #dcd8bf; /* Beige bakgrund */
+        border-radius: 2px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Yttre skuggning */
+        max-width: 75%;
+        margin: 0 auto;
+    }
+
+    .day-container h2 {
+        text-align: center;
+        color: #333;
+    }
+
+    .events-list {
+        margin-bottom: 20px;
+        width: 100%;
+    }
+
+    .event-item {
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #fff;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .add-form-container {
+        width: 80%;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f7f3eb;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .add-form-container h3 {
+        text-align: center;
+        margin-bottom: 15px;
+        color: #444;
+    }
+
+    .add-form-container form {
+        display: flex;
+        flex-direction: column;
+
+    }
+
+    .add-form-container label {
+        font-weight: bold;
+        margin-bottom: 3px;
+        font-size: 16px;
+        color: #555;
+    }
+
+    .select-style, input[type="text"], input[type="time"], button {
+        width: 90%;
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+    .select-style {
+        background-color: #f9f9f9;
+    }
+
+    input[type="text"]:focus, input[type="time"]:focus, .select-style:focus {
+        outline: none;
+        border-color: #a38f6e; /* Beige accent */
+        box-shadow: 0 0 5px rgba(163, 143, 110, 0.5);
+    }
+
+    button {
+        background-color: #a38f6e; /* Beige accent */
+        color: white;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #8f785e;
+    }
+</style>
 {% endblock head %}
 
 {% block body %}
 <div class="day-container">
-    <h2>Events for {{ date.strftime('%Y-%m-%d') }}</h2>
-
-    <div class="events-list">
-        {% if events %}
-            {% for event in events %}
-                <div class="event-item">
-                    <span>{{ event.name }} ({{ event.start_time }} - {{ event.end_time }})</span>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p>No events for this day.</p>
-        {% endif %}
-    </div>
-
     <div class="add-form-container">
+        <h3>Add Event or Deadline</h3>
         <form method="POST">
+            <label for="eventType">Type:</label>
             <select id="eventType" name="eventType" class="select-style">
                 <option value="event">Event</option>
-                <option value="milestone">Milestone</option>
                 <option value="deadline">Deadline</option>
             </select>
-            <input type="text" name="event-name" placeholder="Event Name" required>
-            <input type="time" name="event-start" placeholder="Start Time" required>
-            <input type="time" name="event-end" placeholder="End Time" required>
-            <button id="addEventButton" class="button-style" style="background-color: green">Add Event</button>
+
+            <label for="event-name">Name:</label>
+            <input type="text" id="event-name" name="event-name" placeholder="Event/Deadline Name" required>
+
+            <label for="event-start">Start Time:</label>
+            <input type="time" id="event-start" name="event-start" required>
+
+            <label for="event-end">End Time:</label>
+            <input type="time" id="event-end" name="event-end">
+
+            <label for="event-location">Location (optional):</label>
+            <input type="text" id="event-location" name="event-location" placeholder="Event Location">
+
+            {% if goals %}
+                <label for="goal-select">Link to Goal (for deadlines):</label>
+                <select id="goal-select" name="goal-id" class="select-style">
+                    <option value="">None</option>
+                    {% for goal in goals %}
+                        <option value="{{ goal.id }}">{{ goal.name }}</option>
+                    {% endfor %}
+                </select>
+            {% endif %}
+
+            <button id="addEventButton" class="button-style">Add</button>
         </form>
     </div>
 </div>
-<script>
-    function onDateClick(element, date) {
-        if (!element.classList.contains('other-month')) {
-            window.location.href = '/pmg/day/' + date;
-        }
-    }
 
+
+
+<script>
+function fetchActivities(goalId) {
+    const activityContainer = document.getElementById('activity-container');
+    const activitySelect = document.getElementById('activity-select');
+
+    if (goalId) {
+        fetch(`/cal/get_activities/${goalId}`)
+            .then(response => response.json())
+            .then(data => {
+                activitySelect.innerHTML = '<option value="">None</option>'; // Återställ alternativen
+                data.forEach(activity => {
+                    const option = document.createElement('option');
+                    option.value = activity.id;
+                    option.textContent = activity.name;
+                    activitySelect.appendChild(option);
+                });
+                activityContainer.style.display = 'block'; // Visa aktivitet-listan
+            })
+            .catch(error => {
+                console.error('Error fetching activities:', error);
+            });
+    } else {
+        activitySelect.innerHTML = '<option value="">None</option>';
+        activityContainer.style.display = 'none';
+    }
+}
+
+function toggleActivityInput() {
+    const eventType = document.getElementById('eventType').value;
+    const goalSelect = document.getElementById('goal-select');
+    const activityContainer = document.getElementById('activity-container');
+
+    if (eventType === 'deadline') {
+        goalSelect.parentElement.style.display = 'block';
+    } else {
+        goalSelect.parentElement.style.display = 'none';
+        activityContainer.style.display = 'none';
+    }
+}
 </script>
-        {% endblock body %}
+{% endblock body %}

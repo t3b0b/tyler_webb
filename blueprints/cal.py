@@ -41,31 +41,54 @@ def save_calendar_bullet(date, view_type):
     flash('Dagens anteckningar har sparats!', 'success')
     return redirect(url_for('cal.' + view_type))  # Omdirigera till motsvarande vy
 
+@cal_bp.route('/get_activities/<int:goal_id>', methods=['GET'])
+@login_required
+def get_activities(goal_id):
+    activities = Activity.query.filter_by(goal_id=goal_id).all()
+    activities_data = [{'id': act.id, 'name': act.name} for act in activities]
+    return jsonify(activities_data)
+
+
 @cal_bp.route('/day/<string:date>', methods=['GET', 'POST'])
 @login_required
 def day_view(date):
-    # Här hämtar du relevant information om det specifika datumet
-    selected_date = datetime.strptime(date, '%Y-%m-%d').date()
+    # Konvertera `date` från sträng till datetime-objekt
+    try:
+        date = datetime.strptime(date, '%Y-%m-%d').date()
+    except ValueError:
+        flash("Ogiltigt datumformat. Använd 'YYYY-MM-DD'.", 'danger')
+        return redirect(url_for('cal.month_view'))
 
-    # Hämta befintliga händelser för datumet (events, deadlines, milestones)
-    events = Event.query.filter_by(user_id=current_user.id, date=selected_date).all()
+    events = Event.query.filter_by(user_id=current_user.id, date=date).all()
+    goals = Goals.query.filter_by(user_id=current_user.id).all()
 
     if request.method == 'POST':
-        event_type = request.form.get('eventType')
+        # Hantera POST för att skapa event eller deadline
         event_name = request.form.get('event-name')
-        event_start = request.form.get('event-start')
-        event_end = request.form.get('event-end')
+        event_type = request.form.get('eventType')
+        start_time = request.form.get('event-start')
+        end_time = request.form.get('event-end')
+        goal_id = request.form.get('goal-id')
 
-        # Skapa nytt event, milestone eller deadline beroende på valt alternativ
-        new_event = Event(name=event_name, event_type=event_type, start_time=event_start, end_time=event_end,
-                          user_id=current_user.id)
-        db.session.add(new_event)
-        db.session.commit()
+        if event_name and event_type and start_time:
+            new_event = Event(
+                name=event_name,
+                event_type=event_type,
+                start_time=start_time,
+                end_time=end_time,
+                date=date,
+                user_id=current_user.id,
+                goal_id=goal_id or None
+            )
+            db.session.add(new_event)
+            db.session.commit()
+            flash('Event added successfully!', 'success')
+        else:
+            flash('Please provide all required fields.', 'danger')
 
-        return redirect(url_for('cal.day_view', date=date))
+        return redirect(url_for('cal.day_view', date=date.strftime('%Y-%m-%d')))
 
-    return render_template('cal/day_view.html', date=selected_date, events=events)
-
+    return render_template('cal/day_view.html', date=date, events=events, goals=goals)
 
 @cal_bp.route('/month', methods=['GET', 'POST'])
 @cal_bp.route('/month/<int:year>/<int:month>')

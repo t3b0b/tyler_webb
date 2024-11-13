@@ -4,14 +4,117 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
 
 <style>
-    .container {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        height: 100%;
-        align-items: center; /* Centrera elementen horisontellt */
-        justify-content: center; /* Centrera elementen vertikalt */
-    }
+
+
+.top-five {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.head-list {
+    background-color: #f4e4c1;
+    border: 2px solid #d1c097;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: all 0.5s ease-in-out;
+    text-align: center;
+    z-index: 1; /* Se till att den är ovanför andra element när inaktiv */
+}
+
+/* Aktiv lista med centrerad position */
+.head-list.active {
+    transform: scale(1.1);
+    z-index: 100; /* Placera aktiv lista längst fram */
+}
+
+/* Centrera listan i mitten av skärmen */
+.list-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    justify-items: center;
+    width: 40%; /* Smalare bredd */
+    height: auto;
+    max-height: 80%; /* Begränsad höjd om listan blir lång */
+    overflow-y: auto; /* Scroll om för många objekt */
+    position: fixed;
+    top: 50%; /* Precis under rubriken */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f9f9f9;
+    border: 2px solid #d1c097;
+    border-radius: 12px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    z-index: 200; /* Se till att den är ovanför andra element */
+    opacity: 0; /* Dold som standard */
+    pointer-events: none; /* Förhindra interaktion när dold */
+    transition: all 0.5s ease-in-out;
+}
+.list-content form {
+    display: flex;
+    flex-direction: column; /* Vertikal layout */
+    align-items: center; /* Centrerar horisontellt */
+    justify-content: center; /* Centrerar vertikalt */
+    gap: 10px; /* Mellanrum mellan elementen */
+    width: 100%; /* Sträcker sig över hela förälderns bredd */
+}
+
+.list-content form input[type="text"] {
+    width: 75%; /* Bredd för inputfält */
+    margin: 10px 0 10px 10px; /* Ta bort överflödiga marginaler */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+.list-content form button {
+    width: 60%; /* Bredd för knappen */
+    min-height: 3rem;
+    padding: 10px;
+    margin: 10px; /* Ta bort överflödiga marginaler */
+    background-color: #d1c097;
+    color: #000;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-align: center; /* Centrerar knapptexten */
+}
+
+.list-content form button:hover {
+    background-color: #bda67f; /* Mörkare beige vid hover */
+}
+/* När listan är aktiv */
+.head-list.active + .list-content {
+    opacity: 1;
+    pointer-events: auto; /* Tillåter interaktion när aktiv */
+}
+
+/* Lista som en del av innehållet */
+.tab-title {
+    margin: 0 auto;
+    font-size: 1.8rem;
+    font-weight: bold;
+    min-height: 3.5rem;
+    text-align: center;
+    background-color: #f4e4c1;
+    border: 2px solid #d1c097;
+    border-radius: 8px;
+    width: 90%;
+}
+
     .wrap-container {
         display: flex;
         flex-wrap: wrap;
@@ -85,37 +188,40 @@
 
 <div class="top-five">
     <div class="top5-container">
-        <div class="list-header" onclick="toggleList(this)">Priorities</div>
-        <div class="list-content" style="display:none;">
+        <div class="head-list" onclick="toggleList(this)">Priorities</div>
+        <ul class="list-content hidden">
             <form method="POST">
+                <li class="tab-title">Priorities</li>
                 {% for num in range(1, 6) %}
                     <input type="text" name="todo_{{ num }}" placeholder="{{ num }}Priority" value="{{ to_do_list[num-1] if to_do_list|length >= num else '' }}">
                 {% endfor %}
                 <button type="submit" name="save_todo">Spara</button>
             </form>
-        </div>
+        </ul>
     </div>
     <div class="top5-container">
-        <div class="list-header" onclick="toggleList(this)">Keep in mind</div>
-        <div class="list-content" style="display:none;">
+        <div class="head-list" onclick="toggleList(this)">Keep in mind</div>
+        <ul class="list-content hidden">
             <form method="POST">
+                <li class="tab-title">Keep in mind</li>
                 {% for num in range(1, 6) %}
                     <input type="text" name="think_{{ num }}" placeholder="Keep in mind {{ num }}" value="{{ to_think_list[num-1] if to_think_list|length >= num else '' }}">
                 {% endfor %}
-                <button type="submit" name="save_think">Spara Att tänka på</button>
+                <button type="submit" name="save_think">Spara</button>
             </form>
-        </div>
+        </ul>
     </div>
     <div class="top5-container">
-        <div class="list-header" onclick="toggleList(this)">Remember</div>
-        <div class="list-content" style="display:none;">
+        <div class="head-list" onclick="toggleList(this)">Remember</div>
+        <ul class="list-content hidden">
             <form method="POST">
+                <li class="tab-title">Remember</li>
                 {% for num in range(1, 6) %}
                     <input type="text" name="remember_{{ num }}" placeholder="Remember {{ num }}" value="{{ remember_list[num-1] if remember_list|length >= num else '' }}">
                 {% endfor %}
-                <button type="submit" name="save_remember">Spara Kom-ihåg</button>
+                <button type="submit" name="save_remember">Spara</button>
             </form>
-        </div>
+        </ul>
     </div>
 </div>
 
@@ -221,7 +327,9 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
+
 <script>
+
     var el = document.getElementById('topFiveTable');
     var sortable = Sortable.create(el, {
         animation: 150,
@@ -241,33 +349,49 @@
             });
         }
     });
+
+function toggleList(element) {
+    // Stäng andra öppna element
+    document.querySelectorAll('.head-list.active').forEach(activeElement => {
+        if (activeElement !== element) {
+            activeElement.classList.remove('active');
+            activeElement.nextElementSibling.style.opacity = '0';
+            activeElement.nextElementSibling.style.pointerEvents = 'none';
+        }
+    });
+
+    // Växla synlighet på den klickade listan
+    const list = element.nextElementSibling;
+    if (element.classList.contains('active')) {
+        element.classList.remove('active');
+        list.style.opacity = '0';
+        list.style.pointerEvents = 'none';
+    } else {
+        element.classList.add('active');
+        list.style.opacity = '1';
+        list.style.pointerEvents = 'auto';
+    }
+}
+
+
     var maxScore = 0
     var myScore = 0
     var percentage = 0
-    function updateProgress(myScore, maxScore) {
-        const styleSheet = document.styleSheets[0];
 
+    function updateProgress(myScore, maxScore) {
         const progressFill = document.getElementById('Progstroke');
         const gearContainer = document.getElementById('Gear');
-        percentage = (myScore / maxScore);
-        let dashArray = `@keyframes dasharray {
-            stroke-dashoffset: ${170 - (percentage * 170)};
-        }`;
-        let gearAnimation = `@keyframes gear {
-            to { transform: translateX(${percentage * 100}%); }
-        }`;
+        const percentage = myScore / maxScore;
 
-        styleSheet.insertRule(dashArray, styleSheet.cssRules.length);
-        styleSheet.insertRule(gearAnimation, styleSheet.cssRules.length);
-
-        document.getElementById('Progstroke').style.animation = 'dasharray 2s linear forwards';
-        document.getElementById('Gear').style.animation = 'gear 2s linear forwards';
+        progressFill.style.strokeDashoffset = `${170 - percentage * 170}`;
+        gearContainer.style.transform = `translateX(${percentage * 100}%)`;
     }
 
-    function toggleList(element) {
-    const content = element.nextElementSibling;
-    content.style.display = content.style.display === 'none' || content.style.display === '' ? 'block' : 'none';
-    }
+    document.addEventListener("DOMContentLoaded", function () {
+        const myScore = {{ total_score }};
+        const maxScore = 350;
+        updateProgress(myScore, maxScore);
+    });
 
     // Kör funktionen när sidan laddas
     document.addEventListener("DOMContentLoaded", function() {
@@ -280,6 +404,7 @@
         maxScore = 350; // Sätt max poäng
         updateProgress(myScore, maxScore);
     });
+
 document.addEventListener('DOMContentLoaded', function () {
     const list = document.getElementById('sortable-list');
     let draggedItem = null;
