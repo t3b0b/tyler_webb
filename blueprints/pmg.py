@@ -307,21 +307,43 @@ def goal_activities(goal_id):
     activities = Activity.query.filter_by(goal_id=goal_id).all()
     return render_template('pmg/activities.html', goal=goal, activities=activities)
 
-@pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
+@pmg_bp.route('/goal/<int:goal_id>/delete', methods=['GET', 'POST'])
+@login_required
 def delete_goal(goal_id):
-    # Här kan du implementera logiken för att ta bort målet från databasen
-    session = scoped_session(db.session)
-    with session.begin():
-        goal = Goals.query.get(goal_id)
-        if goal:
-            try:
-                db.session.delete(goal)
-                db.session.commit()
-            except Exception:
-                db.session.rollback()
-            return jsonify({'success': True}), 200
-        else:
-            return jsonify({'success': False, 'error': 'Goal not found'}), 404
+    goal = Goals.query.get_or_404(goal_id)
+
+    # Kontrollera att användaren äger målet
+    if goal.user_id != current_user.id:
+        flash("Du har inte behörighet att ta bort detta mål.", "danger")
+        return redirect(url_for('pmg.goals'))
+
+    try:
+        # Radera alla relaterade aktiviteter och tasks
+        for activity in goal.activities:
+            for task in activity.todo_list:
+                db.session.delete(task)
+            db.session.delete(activity)
+        
+        # Ta bort relaterade milstolpar (om de finns)
+        for milestone in goal.milestones:
+            db.session.delete(milestone)
+
+        # Ta bort delade objekt (om målet är delat)
+        shared_items = SharedItem.query.filter_by(item_type='goal', item_id=goal.id).all()
+        for shared_item in shared_items:
+            db.session.delete(shared_item)
+
+        # Radera själva målet
+        db.session.delete(goal)
+        db.session.commit()
+        flash("Målet har tagits bort.", "success")
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Något gick fel vid raderingen: {str(e)}", "danger")
+
+    return redirect(url_for('pmg.goals'))
+
 
 @pmg_bp.route('pmg/goal_requests', methods=['GET'])
 @login_required
