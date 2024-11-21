@@ -67,6 +67,7 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 #endregion
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
