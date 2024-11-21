@@ -126,9 +126,13 @@ class Activity(db.Model):
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)  # ForeignKey till goals
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ForeignKey till user
     milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=True)
-    shared_item_id = db.Column(db.Integer, db.ForeignKey('shared_items.id'), nullable=True)
+    
+    shared_item_id = db.Column(db.Integer, db.ForeignKey('shared_items.id'), nullable=True)  # Koppling till shared_items
+    shared_item = db.relationship('SharedItem', backref='shared_activities', lazy=True)
+
 
     shared_item = db.relationship('SharedItem', backref='shared_activities', lazy=True)
+
     todo_list = db.relationship('ToDoList', backref='activity', lazy=True)
 
 class ToDoList(db.Model):
@@ -190,7 +194,9 @@ class Event(db.Model):
     event_type = db.Column(db.String(20))  # event, milestone, deadline
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=True)
+
     location = db.Column(db.String(255), nullable=True)  # Lägg till plats som en sträng
+
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=True)

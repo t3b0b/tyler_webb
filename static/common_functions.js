@@ -77,6 +77,27 @@ function formatDateForMySQL(date) {
     return date.toISOString().slice(0, 19).replace('T', ' ');
 }
 
+function deleteGoal(goalId) {
+    if (confirm('Är du säker på att du vill ta bort detta mål?')) {
+        fetch(`/pmg/goal/${goalId}/delete`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Målet har tagits bort.');
+                location.reload();
+            } else {
+                alert('Något gick fel. Försök igen.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+}
+
 function deleteActivity(activityId) {
     if (confirm('Är du säker på att du vill radera denna aktivitet?')) {
         fetch('/pmg/delete-activity/' + activityId, {

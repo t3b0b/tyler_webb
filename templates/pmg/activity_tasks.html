@@ -12,7 +12,11 @@
     <div class="list-content">
         {% if tasks %}
             {% for task in tasks %}
-                <div class="list-item">{{ task.task }}
+                <div class="list-item">
+                    {{ task.task }}
+                    {% if task.shared_item_id %}
+                        <span class="shared-indicator">(Shared)</span>
+                    {% endif %}
                     <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
                         <input type="hidden" name="origin" value="todo">
                         <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>

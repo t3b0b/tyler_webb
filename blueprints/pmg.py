@@ -248,7 +248,6 @@ def goals():
                            sida=sida, header=sida, personal_goals=personal_goals, sub_menu=sub_menu,
                            friends=friends, shared_goals=shared_goals)
 
-
 @pmg_bp.route('/goal_request/<int:request_id>/<action>', methods=['POST'])
 @login_required
 def handle_goal_request(request_id, action):
@@ -281,14 +280,22 @@ def handle_goal_request(request_id, action):
 def goal_activities(goal_id):
     goal = Goals.query.get_or_404(goal_id)
     user = current_user.id
-
+    shared_item = SharedItem.query.filter_by(item_id=goal_id, item_type='goal', status='active').first()
+    
     if request.method == 'POST':
         # Hantera POST-begäran för att lägga till en aktivitet
         goalId = goal_id
         activity_name = request.form.get('activity-name')
         measurement = request.form.get('activity-measurement')
+
         if activity_name and measurement:
-            new_activity = Activity(name=activity_name, goal_id=goalId, user_id=user)
+            # Skapa aktivitet
+            new_activity = Activity(
+                name=activity_name,
+                goal_id=goal.id,
+                user_id=user,
+                shared_item_id=shared_item.id if shared_item else None  # Koppla till delning om målet är delat
+            )
             db.session.add(new_activity)
             db.session.commit()
             flash('Activity added successfully', 'success')
@@ -300,21 +307,43 @@ def goal_activities(goal_id):
     activities = Activity.query.filter_by(goal_id=goal_id).all()
     return render_template('pmg/activities.html', goal=goal, activities=activities)
 
-@pmg_bp.route('/delete-goal/<int:goal_id>', methods=['POST'])
+@pmg_bp.route('/goal/<int:goal_id>/delete', methods=['GET', 'POST'])
+@login_required
 def delete_goal(goal_id):
-    # Här kan du implementera logiken för att ta bort målet från databasen
-    session = scoped_session(db.session)
-    with session.begin():
-        goal = Goals.query.get(goal_id)
-        if goal:
-            try:
-                db.session.delete(goal)
-                db.session.commit()
-            except Exception:
-                db.session.rollback()
-            return jsonify({'success': True}), 200
-        else:
-            return jsonify({'success': False, 'error': 'Goal not found'}), 404
+    goal = Goals.query.get_or_404(goal_id)
+
+    # Kontrollera att användaren äger målet
+    if goal.user_id != current_user.id:
+        flash("Du har inte behörighet att ta bort detta mål.", "danger")
+        return redirect(url_for('pmg.goals'))
+
+    try:
+        # Radera alla relaterade aktiviteter och tasks
+        for activity in goal.activities:
+            for task in activity.todo_list:
+                db.session.delete(task)
+            db.session.delete(activity)
+        
+        # Ta bort relaterade milstolpar (om de finns)
+        for milestone in goal.milestones:
+            db.session.delete(milestone)
+
+        # Ta bort delade objekt (om målet är delat)
+        shared_items = SharedItem.query.filter_by(item_type='goal', item_id=goal.id).all()
+        for shared_item in shared_items:
+            db.session.delete(shared_item)
+
+        # Radera själva målet
+        db.session.delete(goal)
+        db.session.commit()
+        flash("Målet har tagits bort.", "success")
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Något gick fel vid raderingen: {str(e)}", "danger")
+
+    return redirect(url_for('pmg.goals'))
+
 
 @pmg_bp.route('pmg/goal_requests', methods=['GET'])
 @login_required
@@ -625,15 +654,30 @@ def activity_tasks(activity_id):
 @pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST','GET'])
 def add_task(activity_id):
     activity = Activity.query.get_or_404(activity_id)
+
+    shared_item = SharedItem.query.filter_by(id=activity.shared_item_id).first()
+
     task_name = request.form.get('task_name')
     origin = request.form.get('origin')
 
+    if not task_name:
+        flash("Task name is required", "danger")
+        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+
     sida="PMG"
 
-    new_task = ToDoList(task=task_name, completed=False, user_id=current_user.id, activity_id=activity.id)
+    new_task = ToDoList(
+    task=task_name,
+    completed=False,
+    user_id=current_user.id,
+    activity_id=activity.id,
+    shared_item_id=shared_item.id if shared_item else None
+    )
+
     db.session.add(new_task)
     db.session.commit()
-
+    flash("Task added successfully", "success")
+    
     if origin == 'todo':
         return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
     elif origin == 'focus':
