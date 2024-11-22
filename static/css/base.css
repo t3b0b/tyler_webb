@@ -1,73 +1,328 @@
-.services_container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Två kolumner */
-    gap: 50px; /* Mellanrum mellan kort */
-    padding: 50px;
-    margin: 0 auto;
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
-.card img {
-    width: 100%; /* Sätt bildens bredd till 100% av föräldrakontainern */
-    height:80%;
-    border-top-left-radius: 10px; /* Rundade hörn på bilden */
-    border-top-right-radius: 10px;
+body {
+    display: flex;
+    flex-direction: column;
 }
-.description {
-    padding: 15px; /* Lite utrymme runt texten */
-    text-align: center; /* Centrerad text */
+.main-container {
+    flex-grow: 1;
+    flex-direction: column;
+    justify-content: center; /* Innehållet centrerat vertikalt om möjligt */
+    align-items: center;
+    justify-items: center;
 }
-.service-info-box h {
+.top-header {
+    background-color: #ecf0f1;
+    padding: 10px;
+    display: flex;
+    justify-content: center; /* Sprid ut ikonerna */
+    align-items: center;
+    align-content:center;
+    width: 100%; /* Se till att footern täcker hela skärmen */
+    max-height:50px;
+    box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.header-icons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 90%; /* Gör så att alla ikoner täcker hela bredden av headern */
+}
+
+.header-icons .left-icons, .header-icons .right-icons {
+    display: flex;
+    flex-direction: row;
+    width: 40%;
+    justify-content: space-around;
+}
+
+.header-icons img {
+    height: 30px;
+    width: 30px;
+}
+
+.header-icons a, .header-icons span {
+    flex: 1;
     text-align: center;
 }
-.kontakt-main-container {
-    display: flex; /* This will align the sidebar and form side-by-side */
-    max-width: 100%;
-    flex-direction: row;
+
+.header-icons span {
+    font-size: 22px;
+    font-weight: bold;
 }
 
-.kontakt-sidebar-container {
-    position: absolute; /* Fixera sidomenyn */
-    align-content: flex-end;
-    top: 99px;
-    left: 0;
-    width: 200px; /* Ange önskad bredd för sidebar */
-    background-color: #1c2d5b; /* Mörkblå färg som i headern */
+.footer {
+    background-color: #ecf0f1;
+    padding: 10px;
+    display: none;
+    justify-content: center; /* Sprid ut ikonerna */
+    align-items: center;
+    align-content:center;
+    width: 100%; /* Se till att footern täcker hela skärmen */
+    max-height:50px;
+    box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.footer-icons a, .footer-icons span {
+    flex: 1; /* Sprid ut elementen jämnt */
+    text-align: center; /* Centrera ikonerna */
+}
+
+.footer-icons img {
+    height: 40px;
+    width: 40px;
+}
+
+.footer-icons {
+    display: none;
+    flex-direction:row;
+    justify-content: center;
+    align-items: center;
+    width: 100%; /* Gör så att alla ikoner täcker hela bredden av footern */
+}
+
+.left-icons {
+    display:none;
+    flex-direction:row;
+    width: 40%;
+    justify-content:space-between;
+}
+
+.right-icons {
+    display:none;
+    flex-direction:row;
+    width: 40%;
+    justify-content:space-between;
+}
+
+.footer-icons img:hover {
+    height: 40px;
+    width: 40px;
+    color:black;
+}
+
+.footer-icons a, .footer-icons span {
+    flex: 1; /* Sprid ut elementen jämnt */
+    text-align: center; /* Centrera ikonerna */
+}
+
+.footer-icons span {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+/* Förhindra understrykning av texten och centrera innehållet */
+.icon-text {
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center; /* Centrera texten */
+}
+
+/* Dölj texten som standard */
+.icon-text .icon-label {
+    display: none;
+    font-size: 14px;
+    color: #333;
+    margin-top: 5px; /* Liten marginal ovanför texten för bättre visning */
+}
+
+/* När användaren hovrar, döljs bilden och texten visas */
+.icon-text:hover img {
+    display: none;
+}
+
+.icon-text:hover .icon-label {
+    display: inline-block;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* När användaren hovrar, döljs bilden och texten visas */
+.icon-text:hover img {
+    display: none;
+}
+
+.icon-text:hover .icon-label {
+    display: inline;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.search-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+.search-button img {
+    width: 24px;
+    height: 24px;
+}
+.side-menu {
+    position: fixed;
+    top: 0;
+    left: -210px; /* Döljer menyn utanför skärmen */
+    width: 180px;
+    height: 100%;
+    background-color: #2c3e50;
     color: white;
-    padding: 0 5px 0 10px; /* Lägg till padding runtom */
-    border-right: 1px solid #fff; /* Lägger till en vit kantlinje på höger sida */
-    height: 100%; /* Sätter höjden till full viewport height */
+    padding: 20px;
+    transition: left 0.3s ease; /* Lägger till en smidig övergångseffekt */
+    box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.2);
 }
-.kontakt-info {
-    margin-bottom: 150px;
+
+.side-menu.expanded {
+    left: 0; /* Flyttar menyn in i synfältet */
 }
-.kontakt-info h3 {
-    margin-left: 5px;
+
+.side-menu ul {
+    list-style: none;
+    padding: 0;
+}
+
+.side-menu ul li {
+    margin: 15px 0;
+}
+
+.side-menu ul li a {
+    color: white;
+    text-decoration: none;
     font-size: 18px;
 }
-.kontakt-info p {
-    margin-left: 15px;
-    font-size: 14px;
-    font-weight: normal;
+
+.side-menu ul li a:hover {
+    text-decoration: underline;
 }
-.kontakt-form-container {
-    display: flex;
-    height: fit-content;
-    flex-direction: column; /* Ordna innehållet vertikalt */
-    justify-content: center; /* Centrerar innehållet vertikalt */
-    align-items: center; /* Centrerar innehållet horisontellt */
-    margin: 0 auto; /* Centrerar containern inom huvudcontainern */
-    width: 1200px;
+
+.side-menu-nav {
+    animation: slideIn 0.5s ease forwards;
 }
-.kontakt-form-container form {
-    display: flex;
-    flex-grow: 2;
-    flex-direction: column; /* Ordna innehållet vertikalt */
-    height: 100%; /* Använd all tillgänglig höjd i container */
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
 }
-.kontakt-form-name {
+
+.info-button {
+    position: absolute;
+    top: 15%;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    background-color: white;
+    border-radius: 50%;
     display: flex;
-    flex-direction: row;
-    gap: 30px;
-    width: 900px;
-    max-width: 100%; /* Max bredd för stora skärmar */
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: blue;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.tooltip {
+    display: none;
+    position: absolute;
+    top: 65%;
+    right: 10px;
+    width: 200px;
+    padding: 10px;
+    background-color: white;
+    border: 1px solid #4077ee;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.info-button:hover + .tooltip {
+    display: inline-block;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Position the tooltip above the button */
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.flashes {
+    list-style-type: none;
+    padding: 0;
+}
+
+.flashes li {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.flashes li.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.flashes li.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+.link {
+    margin-top: 20px;
+}
+
+.link a {
+    color: #007BFF;
+    text-decoration: none;
+}
+
+.link a:hover {
+    text-decoration: underline;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+}
+
+nav ul li {
+    padding: 10px;
+}
+
+nav ul.right {
+    justify-content: flex-end;
+}
+
+nav a {
+    text-decoration: none;
+    color: black;
+}
+
+nav a.active {
+    font-weight: bold;
 }

@@ -3,9 +3,14 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css')}}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/list.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/btns.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/txt.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/form.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cal.css')}}">
 
     <title> {{ sida }} </title>
     {% block head %}{% endblock head %}

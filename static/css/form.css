@@ -1,0 +1,72 @@
+.form-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width:65%;
+    min-height: fit-content;
+    margin-inline: auto; /* Centrerar elementet */
+    background-color: #ffffff;
+}
+
+.form-container select, input[type="time"],  input[type="text"], input[type="email"], input[type="password"] {
+    max-width: 85%;
+    min-width: 45%;
+    width: 70%;
+    padding: 5px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: white;
+    margin-bottom: 20px;
+    text-align:left;
+}
+
+.form-container label {
+    font-size: 16px;
+    text-align: center;
+
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #007BFF;
+}
+
+.name-fields {
+    display: flex;
+    justify-content: space-between;
+    gap: 3%;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.input-half {
+    width: 48%;
+}
+
+.input-full {
+    width: 100%;
+}
+
+.add-form-container {
+    margin-top: 20px;
+}
+
+input[type="checkbox"] {
+    margin-left: auto;
+    margin-right: 15px; /* Lägg till marginal till höger */
+    transform: scale(1); /* Gör kryssrutan lite större om nödvändigt */
+}
+.select-style {
+    display: block;
+    font-size: 1.2em;
+    min-width: 120px;
+    margin: 0 auto 10px;
+    width: 100%;
+}

@@ -1,0 +1,132 @@
+.view-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #e3e0c5;
+    border-radius: 5px;  /* Tar bort rundade hörn */
+}
+
+.active-view {
+    background-color: #6c6c6c;
+    font-weight: bold;
+    border: 1px solid #ccc;
+    color: #ffffff;
+    font-size: 16px;
+    width: 100px;
+    transition: background-color 0.3s;
+    border-radius: 2px;  /* Tar bort rundade hörn */
+    margin: 0;  /* Tar bort alla marginaler */
+}
+.tgl-btn {
+    background-color: #fdfdfd;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: red;
+    margin-left: auto;
+}
+
+.tgl-btn:hover {
+    height: 30px;
+    width: 30px;
+}
+
+#reg-btn {
+    min-height: 25px;
+    margin: 5px 0 5px 0;
+    padding: 5px 0 5px 0;
+    background-color: cornflowerblue;
+    max-width: 300px;
+    width: 100%;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.button-center {
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    align-items:center;
+    gap:15px;
+    margin: 20px 0;
+}
+.small-icon, img {
+    height: 24px;
+    width: 24px;
+    cursor: pointer;
+}
+.blue-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.button-style {
+    display: block;
+    max-height:80px;
+    width: 100%;
+    margin: 20px auto;
+    padding: 10px;
+    background-color: cornflowerblue;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size:16px;
+    border-radius: 5px;
+}
+
+.new-button {
+    background-color: #ccc;
+    border: 1px solid #888;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+button#addEventButton {
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.page-toggle-btn {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    color: black;
+    font-size: 16px;
+    width: 100px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border-radius: 2px;  /* Tar bort rundade hörn */
+    margin: 0;  /* Tar bort alla marginaler */
+}
+.page-toggle-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.page-toggle-btn.active {
+    background-color: #515050;
+    font-weight: bold;
+    color: white;
+}
+
+.send-button {
+    width: 80%; /* Gör knappen bredare på små skärmar */
+}
+
+.blue-btn:hover {
+    background-color: #0056b3;
+}

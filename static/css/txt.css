@@ -1,0 +1,97 @@
+.blogg-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40%;
+    max-width: 100%;
+}
+
+.blogg-container label textarea {
+    margin: 20px;
+}
+
+.blogg-post{
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    max-width: 80%;
+    margin-inline: auto;
+}
+
+.post-content {
+    white-space: pre-wrap;
+
+}
+.post-title {
+    text-align: left; /* Vänsterjustera rubriken */
+    margin-bottom: 8px;
+}
+
+.post-author {
+    text-align: right; /* Högerjustera författar-raden */
+    font-size: 0.9em;  /* Eventuellt minska textstorleken */
+    color: #666;       /* Eventuellt en ljusare färg */
+    margin-bottom: 12px;
+    border-bottom: gray solid 1px;
+}
+
+.blogg-container textarea {
+    width: 600px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    min-height: 30lh;
+    padding: 12px 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+.ordet {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    width: 100%;
+}
+.ordet label {
+    font-family: 'Arial', sans-serif;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.ordet input {
+    margin-inline: auto;
+    height: 30px;
+    width: 100%;
+    font-family: 'Arial', sans-serif;
+    font-size: larger;
+    font-weight: bold;
+}
+.notes {
+    display: flex;
+    justify-content: space-evenly;
+    justify-items: center;
+    align-content: center;
+    width: 90%;
+    flex-direction: column;
+    margin-bottom: 20px; /* Lägger till mellanrum under varje input */
+    margin-left: 10px;
+}
+.bullet-list-container {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+
+@media (max-width: 720px) {
+    textarea {
+        width: 200px;
+        max-height:50%;
+    }
+}
