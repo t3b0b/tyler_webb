@@ -665,44 +665,64 @@ def create_notebook(activity_id):
 # region Todos
 @pmg_bp.route('/activity/<int:activity_id>/tasks', methods=['GET'])
 def activity_tasks(activity_id):
+    # Hämta aktiviteten
     activity = Activity.query.get_or_404(activity_id)
-    todos = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).order_by(ToDoList.completed.desc()).all()
-    sida=f"{activity.name} ToDos"
+
+    # Kontrollera om aktiviteten är kopplad till ett SharedItem
+    shared_item = SharedItem.query.filter_by(
+        id=activity.shared_item_id
+    ).first()
+
+
+    todos = ToDoList.query.filter_by(activity_id=activity_id).all()
+
+    sida = f"{activity.name} ToDos"
     return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos, sida=sida, header=sida)
 
-@pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST','GET'])
+
+
+
+@pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST', 'GET'])
 def add_task(activity_id):
+    # Hämta aktiviteten
     activity = Activity.query.get_or_404(activity_id)
 
-    shared_item = SharedItem.query.filter_by(id=activity.shared_item_id).first()
+    # Kontrollera om aktiviteten är kopplad till ett SharedItem
+    shared_item = SharedItem.query.filter_by(
+        id=activity.shared_item_id
+    ).first()
 
+    # Hämta task-namn från formuläret
     task_name = request.form.get('task_name')
     origin = request.form.get('origin')
 
+    # Validera task-namn
     if not task_name:
         flash("Task name is required", "danger")
         return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
 
-    sida="PMG"
-
+    # Skapa ny task
     new_task = ToDoList(
-    task=task_name,
-    completed=False,
-    user_id=current_user.id,
-    activity_id=activity.id,
-    shared_item_id=shared_item.id if shared_item else None
+        task=task_name,
+        completed=False,
+        user_id=current_user.id,  # Användaren som skapar tasken
+        activity_id=activity.id,
+        shared_item_id=shared_item.id if shared_item else None
     )
 
     db.session.add(new_task)
     db.session.commit()
     flash("Task added successfully", "success")
-    
+
+    # Omdirigera baserat på ursprung (origin)
     if origin == 'todo':
         return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
     elif origin == 'focus':
         return redirect(url_for('pmg.focus_room', activity_id=activity_id))
 
-    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id),sida=sida, header=sida)
+    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+
+
 
 # endregion
 

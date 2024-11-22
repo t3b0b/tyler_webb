@@ -60,13 +60,14 @@ class SharedItem(db.Model):
 
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     shared_with_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    status = db.Column(db.Enum('active', 'completed', 'pending'), default='active')
+    status = db.Column(db.Enum('active', 'completed', 'pending', 'accepted'), default='active')
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationer
     goal = db.relationship('Goals', foreign_keys=[item_id],
                            primaryjoin="and_(SharedItem.item_id == Goals.id, SharedItem.item_type == 'goal')")
+    
     owner = db.relationship('User', foreign_keys=[owner_id], backref='shared_items_owned')
     shared_with = db.relationship('User', foreign_keys=[shared_with_id], backref='shared_with_items')
 
@@ -130,9 +131,6 @@ class Activity(db.Model):
     milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=True)
     
     shared_item_id = db.Column(db.Integer, db.ForeignKey('shared_items.id'), nullable=True)  # Koppling till shared_items
-    shared_item = db.relationship('SharedItem', backref='shared_activities', lazy=True)
-
-
     shared_item = db.relationship('SharedItem', backref='shared_activities', lazy=True)
 
     todo_list = db.relationship('ToDoList', backref='activity', lazy=True)

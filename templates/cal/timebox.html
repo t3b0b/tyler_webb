@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
-{% block head %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cal.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css')}}">
 <style>
     input[type="text"], input[type="email"], input[type="password"] {
     width: 100%;
