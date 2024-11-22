@@ -4,6 +4,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/list.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/btns.css')}}">
 
     <title> {{ sida }} </title>
     {% block head %}{% endblock head %}
@@ -51,7 +53,10 @@
                     <img src="{{ url_for('static', filename='images/User.png') }}" alt="Profil">
                     <span class="icon-label">Profil</span>
                 </a>
-                <button class="search-button"><img src="{{ url_for('static', filename='images/Search.png') }}" alt="Search"></button>
+                <a href="/auth/logout" class="icon-text">
+                    <img src="{{ url_for('static', filename='images/Search.png') }}" alt="Log Out">
+                    <span class="icon-label">Log Out</span>
+                </a>
             </div>
         </div>
     </header>

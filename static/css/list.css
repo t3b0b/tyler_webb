@@ -1,0 +1,101 @@
+/* Rubrik och knappsektion */
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    margin-bottom: 10px;
+}
+
+/* Stil för rubriken */
+.list-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: left;
+}
+.list-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-height: 700px;
+    border: 2px solid #333;
+    padding: 10px;
+    box-sizing: border-box;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+.list-content {
+    flex-direction: column;
+    align-items: center; /* Centrera text och knapp vertikalt */
+    width: 90%;
+    height: 80%;
+    border-radius: 8px;
+    overflow-y: auto; /* Endast vertikal scrollning tillåten */
+    overflow-x: hidden; /* Förhindrar horisontell scrollning */
+    border: 1px solid #535353;
+    background-color: #ecebdc;
+    padding:  2px;
+    box-sizing: border-box;
+}
+/* Stil för varje list-item, nu är det en knapp */
+.list-item {
+    display: flex;
+    justify-content: space-between; /* Gör så att innehållet sprids ut */
+    align-items: stretch; /* Centrera text och knapp vertikalt */
+    justify-items: center;
+    width:96%;
+    border: 1px solid slategray;
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+    height: 30px;
+    background-color: #fff;
+    border-radius: 5px;
+    text-align: left;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    appearance: none;
+    font-size: 20px;
+    font-family: inherit;
+    color: black;
+}
+.list-item label {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.list-item:hover {
+    background-color: #f0f0f0;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+}
+.list-item:focus {
+    outline: none;
+    box-shadow: 0 0 5px 2px rgba(0, 0, 255, 0.3);
+}
+
+/* Scrollbarens utseende */
+.list-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.list-content::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    border-radius: 10px;
+}
+
+.list-content::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 10px;
+}
+.list-content::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+.list-header {
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 22px;
+}
+.expanded .list-content {
+    display: flex;
+}

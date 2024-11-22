@@ -2,17 +2,8 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/myStyle.css') }}">
-
+<link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}">
 <style>
-
-
-.top-five {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
 
 .head-list {
     background-color: #f4e4c1;
@@ -26,15 +17,23 @@
     text-align: center;
     z-index: 1; /* Se till att den är ovanför andra element när inaktiv */
 }
-
-/* Aktiv lista med centrerad position */
-.head-list.active {
-    transform: scale(1.1);
-    z-index: 100; /* Placera aktiv lista längst fram */
+.top5-container {
+    max-height: 50px;
+    max-width: 200px;
+    top: 5px;
 }
-
+.top-five {
+    display:flex;
+    width: 100%;
+    flex-direction: row;
+    height:30px;
+    padding: 2% 5% 2% 5%;
+    justify-content: space-around;
+    align-items: center;
+    justify-items: center;
+}
 /* Centrera listan i mitten av skärmen */
-.list-content {
+.five-list-content {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -58,7 +57,7 @@
     pointer-events: none; /* Förhindra interaktion när dold */
     transition: all 0.5s ease-in-out;
 }
-.list-content form {
+.five-list-content form {
     display: flex;
     flex-direction: column; /* Vertikal layout */
     align-items: center; /* Centrerar horisontellt */
@@ -66,8 +65,7 @@
     gap: 10px; /* Mellanrum mellan elementen */
     width: 100%; /* Sträcker sig över hela förälderns bredd */
 }
-
-.list-content form input[type="text"] {
+.five-list-content form input[type="text"] {
     width: 75%; /* Bredd för inputfält */
     margin: 10px 0 10px 10px; /* Ta bort överflödiga marginaler */
     padding: 10px;
@@ -77,8 +75,7 @@
     box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.1);
     text-align: left;
 }
-
-.list-content form button {
+.five-list-content form button {
     width: 60%; /* Bredd för knappen */
     min-height: 3rem;
     padding: 10px;
@@ -92,8 +89,7 @@
     transition: background-color 0.3s ease;
     text-align: center; /* Centrerar knapptexten */
 }
-
-.list-content form button:hover {
+.five-list-content form button:hover {
     background-color: #bda67f; /* Mörkare beige vid hover */
 }
 /* När listan är aktiv */
@@ -115,40 +111,10 @@
     width: 90%;
 }
 
-    .wrap-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-evenly; /* För att jämnt fördela korten */
-        align-items: center;
-        width: 100%;
-        height: 100vh; /* För att täcka hela höjden av sidan */
-    }
-
-    .card-container {
-        width: 30%; /* Använd 30% för att passa tre kort på rad */
-        height: 200px; /* Exempel på höjd för korten */
-        margin: 10px; /* Mellanrum mellan korten */
-        background-color: #f0f0f0; /* Bakgrundsfärg för kort */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        border-radius: 10px; /* Rundade hörn */
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-
-    .draggable-item {
-        list-style: none;
-        padding: 10px;
-        margin: 5px 0;
-        background-color: #f2f2f2;
-        border: 1px solid #ccc;
-        cursor: move;
-    }
-    .streak-form {
+.streak-form {
     display: flex;
     align-items: center;
 }
-
 .streak-input {
     background: #f0f0f0;
     height: 20px;
@@ -156,30 +122,11 @@
     text-align: center;
     margin-right: 10px;
 }
-
 .streak-icon {
     border: none;
     background: none;
     cursor: pointer;
 }
-    .draggable-item:focus {
-        outline: 2px solid #007bff;
-    }
-    .top5-container {
-        max-height: 50px;
-        max-width: 200px;
-        top: 5px;
-    }
-    .top-five {
-        display:flex;
-        width: 100%;
-        flex-direction: row;
-        height:30px;
-        padding: 2% 5% 2% 5%;
-        justify-content: space-around;
-        align-items: center;
-        justify-items: center;
-    }
 </style>
 
 {% endblock head %}
@@ -189,7 +136,7 @@
 <div class="top-five">
     <div class="top5-container">
         <div class="head-list" onclick="toggleList(this)">Priorities</div>
-        <ul class="list-content hidden">
+        <ul class="five-list-content hidden">
             <form method="POST">
                 <li class="tab-title">Priorities</li>
                 {% for num in range(1, 6) %}
@@ -201,7 +148,7 @@
     </div>
     <div class="top5-container">
         <div class="head-list" onclick="toggleList(this)">Keep in mind</div>
-        <ul class="list-content hidden">
+        <ul class="five-list-content hidden">
             <form method="POST">
                 <li class="tab-title">Keep in mind</li>
                 {% for num in range(1, 6) %}
@@ -213,7 +160,7 @@
     </div>
     <div class="top5-container">
         <div class="head-list" onclick="toggleList(this)">Remember</div>
-        <ul class="list-content hidden">
+        <ul class="five-list-content hidden">
             <form method="POST">
                 <li class="tab-title">Remember</li>
                 {% for num in range(1, 6) %}
@@ -226,7 +173,7 @@
 </div>
 
 <div id="day-section" class="grid-container">
-    <div id="goal-section" class="list-container" style="width: 65%;">
+    <div id="goal-section" class="list-container" style="width: 75%;">
         <div class="list-header">
             <h3 onclick="window.location.href = '/pmg/goals';">Goals</h3>
         </div>
@@ -252,39 +199,30 @@
     <div id="score-section">
         <img style="width:100%; height: 100%" src="data:image/png;base64,{{ plot_url }}" alt="Aktivitetsgraf"/>
     </div>
-    <div id="streak-section" class="list-container" style=" width: 65%">
-            <div class="list-header">
-                <h3 onclick="window.location.href = '/pmg/streak';">Streaks</h3>
-            </div>
+    <div id="streak-section" class="list-container" style=" width: 75%">
+        <div class="list-header">
+            <h3 onclick="window.location.href = '/pmg/streak';">Streaks</h3>
+        </div>
+        {% if my_streaks %}
             <div class="list-content">
-            {% if activeStreaks %}
-                {% for streak in activeStreaks %}
-                    <div class="list-item" style="width: 96%; justify-content: space-between; background-color: #c1eac1;">
-                        <label>{{ streak.name }}</label>
-                        <label>{{ streak.count }}</label>
-                        <label>{{ streak.best }}</label>
-                    </div>
-                {% endfor %}
-            {% endif %}
-            {% if inactiveStreaks %}
-                {% for streak in inactiveStreaks %}
-                    <div class="list-item" style="width: 96%;">
-                        <label>{{ streak.name }}</label>
-                        <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post" class="streak-form">
-                            {% if streak.type == "number" %}
-                                <input type="number" name="amount" class="streak-input">
-                            {% endif %}
-                            <button class="streak-icon" type="submit">
+            {% for streak in my_streaks %}
+                <div class="list-item">
+                    <label>{{ streak.name }}</label>
+                    <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post" style="display: flex; justify-content: center; align-items: center;">
+                        {% if streak.type == "number" %}
+                            <input type="number" name="amount" style="background: #f0f0f0; height: 20px; width: 40px; text-align: center; margin-right: 40px;">
+                        {% endif %}
+                            <button class="streak-icon" type="submit" style="border: none; background: none; margin-right: 10px;">
                                 <svg id="checkbox-{{ streak.id }}" class="checkbox" xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 242 216">
                                     <ellipse id="background-{{ streak.id }}" class="background" cx="121" cy="108" rx="121" ry="108" fill="green"/>
                                     <path id="check" d="M38.5133 122.529L65.1039 95.7875L107.94 135.826L215.29 52.7692L101.124 171.413L38.5133 122.529Z" fill="white"/>
-                                </svg></svg>
+                                </svg>
                             </button>
-                        </form>
-                    </div> <!-- Korrigerad stängning av div -->
-                {% endfor %}
+                    </form>
                 </div>
-            {% endif %}
+            {% endfor %}
+            </div>
+        {% endif %}
         </div>
 
 
@@ -404,56 +342,6 @@ function toggleList(element) {
         maxScore = 350; // Sätt max poäng
         updateProgress(myScore, maxScore);
     });
-
-document.addEventListener('DOMContentLoaded', function () {
-    const list = document.getElementById('sortable-list');
-    let draggedItem = null;
-
-    // Gör det möjligt att dra elementen
-    document.querySelectorAll('.draggable-item').forEach(item => {
-        item.addEventListener('dragstart', function (e) {
-            draggedItem = item;
-            setTimeout(() => {
-                item.style.display = 'none';
-            }, 0);
-        });
-
-        item.addEventListener('dragend', function (e) {
-            setTimeout(() => {
-                draggedItem.style.display = 'block';
-                draggedItem = null;
-            }, 0);
-        });
-
-        item.addEventListener('dragover', function (e) {
-            e.preventDefault();
-        });
-
-        item.addEventListener('dragenter', function (e) {
-            e.preventDefault();
-            this.style.backgroundColor = '#f0f0f0';
-        });
-
-        item.addEventListener('dragleave', function (e) {
-            this.style.backgroundColor = '#f2f2f2';
-        });
-
-        item.addEventListener('drop', function (e) {
-            this.style.backgroundColor = '#f2f2f2';
-            if (draggedItem !== this) {
-                let allItems = document.querySelectorAll('.draggable-item');
-                let draggedIndex = Array.from(allItems).indexOf(draggedItem);
-                let droppedIndex = Array.from(allItems).indexOf(this);
-
-                if (draggedIndex < droppedIndex) {
-                    this.after(draggedItem);
-                } else {
-                    this.before(draggedItem);
-                }
-            }
-        });
-    });
-});
 
 </script>
 {% endblock body %}

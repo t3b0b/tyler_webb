@@ -76,12 +76,12 @@ def create_activity_plot(activity_times):
 
     # Färger för varje stapel, genereras automatiskt för att vara unika
     colors = plt.cm.get_cmap('tab20', len(activity_names))(range(len(activity_names)))
-    plt.figure(figsize=(10, 6),facecolor='none', edgecolor='k',)
+    plt.figure(figsize=(10, 8),facecolor='none', edgecolor='k',)
     plt.bar(activity_names, total_times, color=colors)  # Stående staplar
-    plt.ylabel('Total Tid (min)',fontsize=14)
-    plt.xlabel('Aktivitet', fontsize=14)
-    plt.xticks(rotation=0, ha='center',fontsize=18)
-    plt.yticks(rotation=0, ha='right',fontsize=18)
+    plt.ylabel('Total Tid (min)',fontsize=10)
+    plt.xlabel('Aktivitet', fontsize=10)
+    plt.xticks(rotation=0, ha='center',fontsize=14)
+    plt.yticks(rotation=0, ha='right',fontsize=14)
     img = io.BytesIO()
     plt.savefig(img, format='png')
     img.seek(0)
@@ -224,17 +224,33 @@ def goals():
     ).all()
 
     # Hämta mottagna mål-förfrågningar som ännu inte accepterats
-    received_requests = db.session.query(SharedItem).filter(
-        (SharedItem.shared_with_id == current_user.id) &  # Förfrågningar till användaren
-        (SharedItem.status == 'pending') &  # Ej accepterade förfrågningar
-        (SharedItem.item_type == 'goal')  # Endast för mål
+    received_requests = db.session.query(
+        SharedItem.id.label('request_id'),  # ID för förfrågan
+        Goals.name.label('goal_title'),  # Målets namn
+        User.username.label('created_by')  # Skaparen av målet
+    ).join(
+        Goals, SharedItem.item_id == Goals.id
+    ).join(
+        User, Goals.user_id == User.id
+    ).filter(
+        SharedItem.shared_with_id == current_user.id,  # Förfrågningar till den inloggade användaren
+        SharedItem.status == 'pending',  # Endast ej accepterade förfrågningar
+        SharedItem.item_type == 'goal'  # Endast för mål
     ).all()
 
     # Hämta skickade mål-förfrågningar som ännu inte accepterats
-    sent_requests = db.session.query(SharedItem).filter(
-        (SharedItem.owner_id == current_user.id) &  # Förfrågningar från den inloggade användaren
-        (SharedItem.status == 'pending') &  # Ej accepterade förfrågningar
-        (SharedItem.item_type == 'goal')  # Endast för mål
+    sent_requests = db.session.query(
+        SharedItem.id.label('request_id'),  # ID för förfrågan
+        Goals.name.label('goal_title'),  # Målets namn
+        User.username.label('sent_to')  # Mottagaren av förfrågan
+    ).join(
+        Goals, SharedItem.item_id == Goals.id
+    ).join(
+        User, SharedItem.shared_with_id == User.id
+    ).filter(
+        SharedItem.owner_id == current_user.id,  # Förfrågningar från den inloggade användaren
+        SharedItem.status == 'pending',  # Endast ej accepterade förfrågningar
+        SharedItem.item_type == 'goal'  # Endast för mål
     ).all()
 
     # Hämta vänner för att kunna dela mål
@@ -244,9 +260,15 @@ def goals():
                          accepted_friends]
     friends = User.query.filter(User.id.in_(accepted_user_ids)).all()
 
-    return render_template('pmg/goals.html', received_requests=received_requests, sent_requests=sent_requests,
-                           sida=sida, header=sida, personal_goals=personal_goals, sub_menu=sub_menu,
-                           friends=friends, shared_goals=shared_goals)
+    return render_template('pmg/goals.html',
+                           received_requests=received_requests,
+                           sent_requests=sent_requests,
+                           sida=sida,
+                           header=sida,
+                           personal_goals=personal_goals,
+                           sub_menu=sub_menu,
+                           friends=friends,
+                           shared_goals=shared_goals)
 
 @pmg_bp.route('/goal_request/<int:request_id>/<action>', methods=['POST'])
 @login_required
@@ -399,8 +421,7 @@ def myday():
             }
 
     today = datetime.now()
-    inactiveStreaks = []
-    activeStreaks = []
+    valid_streaks = []
 
     goal_id = request.args.get('goalSel')  # Om du skickar goal_id som en parameter
     if goal_id:
@@ -414,16 +435,11 @@ def myday():
             try:
                 last_reg_date = streak.lastReg
                 streak_interval = last_reg_date + interval_days
-
-                if last_reg_date.date() == today.date():
-                    activeStreaks.append(streak)
-                    continue
-
                 if streak.count == 0:
-                    inactiveStreaks.append(streak)
+                    valid_streaks.append(streak)
                 elif streak.count >= 1:
                     if today.date() == streak_interval.date():
-                        inactiveStreaks.append(streak)
+                        valid_streaks.append(streak)
                     elif streak_interval.date() < today.date():
                         continue
                 elif streak_interval.date() < today.date():
@@ -433,7 +449,10 @@ def myday():
             except (ValueError, TypeError) as e:
                 print(f'Hantera ogiltigt datum: {e}, streak ID: {streak.id}, lastReg: {streak.lastReg}')
         else:
-            inactiveStreaks.append(streak)
+            valid_streaks.append(streak)
+
+        print(valid_streaks)
+
     if myScore:
         sorted_myScore = sorted([score for score in myScore if score[0] is not None], key=lambda score: score[0])
 
@@ -495,7 +514,7 @@ def myday():
         remember_list = []
 
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now, acts=myActs,
-                           my_goals=my_Goals,activeStreaks=activeStreaks, inactiveStreaks=inactiveStreaks, my_score=myScore, total_score=total, plot_url=plot_url,
+                           my_goals=my_Goals, my_streaks=valid_streaks, my_score=myScore, total_score=total, plot_url=plot_url,
                            sub_menu=sub_menu, sum_scores=aggregated_scores, current_goal=current_goal,
                            remember_list=remember_list,to_think_list=to_think_list,to_do_list=to_do_list)
 @pmg_bp.route('/myday/<date>')
@@ -561,7 +580,7 @@ def focus_room(activity_id):
 
     return render_template('pmg/focus_room.html',activity_notes=activity_notes, activity=activity, tasks=tasks, current_date=current_date)
 
-@pmg_bp.route('/activity/<int:activity_id>/update_task/<int:task_id>', methods=['POST'])
+@pmg_bp.route('/activity/<int:activity_id>/update_task/<int:task_id>', methods=['GET','POST'])
 def update_task(activity_id, task_id):
     task = ToDoList.query.get_or_404(task_id)
 
@@ -582,18 +601,18 @@ def update_task(activity_id, task_id):
     # Om ingen origin skickas med, omdirigera till standard-sidan
     return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
 
-@pmg_bp.route('/delete-activity/<int:activity_id>', methods=['DELETE'])
+@pmg_bp.route('/delete-activity/<int:activity_id>', methods=['GET','POST'])
 def delete_activity(activity_id):
-    activity = Activity.query.get(activity_id)
+    activity = Activity.query.get_or_404(activity_id)
     if activity:
         try:
             db.session.delete(activity)
             db.session.commit()
-            return "Success", 200  # Returnera en enkel sträng istället för JSON
+            flash("Målet har tagits bort.", "success")  # Returnera en enkel sträng istället för JSON
         except Exception as e:
             db.session.rollback()
             return "Internal server error", 500
-    return "Activity not found", 404
+    return redirect(url_for('pmg.activities'))
 
 
 @pmg_bp.route('/get_activities/<goal_id>')

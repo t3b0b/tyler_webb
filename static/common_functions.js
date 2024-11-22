@@ -51,9 +51,6 @@ function applyActivityLayout() {
 }
 
 
-    // Kör funktionen när sidan laddas
-
-
 function toggleTodoList(actId) {
 const todoList = document.getElementById('todo-list-' + actId);
 
@@ -65,64 +62,6 @@ if (todoList.style.display === 'none' || todoList.style.display === '') {
 
 }
 
-function toggleEditMode(button) {
-    const deleteButtons = document.querySelectorAll('.delete-button');
-    deleteButtons.forEach(btn => {
-        btn.style.display = btn.style.display === 'none' || btn.style.display === '' ? 'inline-block' : 'none';
-    });
-    button.textContent = button.textContent === '🖉' ? '✔' : '🖉';
-}
-
-function formatDateForMySQL(date) {
-    return date.toISOString().slice(0, 19).replace('T', ' ');
-}
-
-function deleteGoal(goalId) {
-    if (confirm('Är du säker på att du vill ta bort detta mål?')) {
-        fetch(`/pmg/goal/${goalId}/delete`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('Målet har tagits bort.');
-                location.reload();
-            } else {
-                alert('Något gick fel. Försök igen.');
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-}
-
-function deleteActivity(activityId) {
-    if (confirm('Är du säker på att du vill radera denna aktivitet?')) {
-        fetch('/pmg/delete-activity/' + activityId, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.text();  // Hämta svaret som text
-            } else {
-                throw new Error('Request failed with status ' + response.status);
-            }
-        })
-        .then(text => {
-            alert(text);  // Visa svaret som är antingen "Success", "Activity not found" eller annat
-            location.reload();
-        })
-        .catch(error => {
-            console.error('Network error:', error);
-            alert('Ett nätverksfel inträffade. Försök igen.');
-        });
-    }
-}
 
 function expandNewStreakForm() {
     document.getElementById('new-streak-button').style.display = 'none';
@@ -133,28 +72,6 @@ function cancelNewStreakForm() {
     document.getElementById('new-streak-form').style.display = 'none';
     document.getElementById('new-streak-button').style.display = 'block';
 }
-
-function deleteStreak(streakId) {
-    if (confirm('Är du säker på att du vill radera denna streak?')) {
-        fetch('/pmg/delete-streak/' + streakId, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ streakId: streakId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Streaken har raderats!');
-                location.reload(); // Ladda om sidan för att uppdatera listan
-            } else {
-                alert('Ett fel inträffade. Försök igen.');
-            }
-        });
-    }
-}
-
 
 async function fetchNewWord() {
     try {
@@ -174,7 +91,7 @@ function editTitle() {
 function toggleActivityForm() {
     var form = document.getElementById('activityForm');
     if (form) {
-        form.style.display = form.style.display = 'block';
+        form.style.display = form.style.display = 'flex';
         document.getElementById('startaAktivitet').style.display = 'none';
         document.getElementById('start-timer').style.display = 'block';
 
@@ -182,44 +99,6 @@ function toggleActivityForm() {
         console.error('Activity form element not found');
     }
 }
-
-function animateCheck(event, form) {
-    event.preventDefault();
-    const checkbox = form.querySelector('.checkbox');
-    const background = form.querySelector('.background');
-
-    checkbox.classList.add('animate-check');
-    background.classList.add('animate-bg');
-
-    setTimeout(() => {
-        form.submit();
-    }, 1000);
-}
-
-function updateTaskStatus(taskId, isCompleted) {
-    fetch('/pmg/update-task-status/' + taskId, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()  // Använd om du har CSRF-skydd
-        },
-        body: JSON.stringify({
-            completed: isCompleted
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            console.log('Task updated successfully');
-        } else {
-            console.error('Error updating task:', data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Network error:', error);
-    });
-}
-
 
 $('#goalSelect').change(function () {
     var goalId = $(this).val();
