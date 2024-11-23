@@ -154,7 +154,7 @@ class ToDoList(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'))
     shared_item_id = db.Column(db.Integer, db.ForeignKey('shared_items.id'), nullable=True)  # Koppling till delning
-    time = db.Column(db.Float, default=0.0)  # Total tid i sekunder
+    time = db.Column(db.Integer, default=0)
     assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     marked_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     confirmed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)

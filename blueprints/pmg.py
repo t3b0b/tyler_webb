@@ -245,7 +245,12 @@ def goals():
             return redirect(url_for('pmg.goals'))
 
     # Hämta mål på nytt varje gång sidan laddas för att säkerställa att listan är uppdaterad
-    personal_goals = Goals.query.filter_by(user_id=current_user.id)
+    personal_goals = Goals.query.filter(
+        Goals.user_id == current_user.id,  # Mål som tillhör nuvarande användare
+        ~Goals.id.in_(db.session.query(SharedItem.item_id).filter(
+            SharedItem.item_type == 'goal'  # Endast SharedItems kopplade till mål
+        ))
+    ).all()
 
     # Hämta alla mål som antingen skapats av användaren eller som användaren har blivit inbjuden till och accepterat
     shared_goals = db.session.query(Goals).select_from(Goals).join(
