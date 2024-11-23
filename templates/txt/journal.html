@@ -26,8 +26,8 @@
         <div class="blogg-container">
                 <form method="POST">
                     <div class="view-toggle" style="background-color: white">
-                        <button class="active-view" onclick="window.location.href='txt/journal?section_name=Mina+Ord'">Journal</button>
-                        <button class="page-toggle-btn" onclick="window.location.href='txt/blog'">Blog</button>
+                        <button class="page-toggle-btn" type="button" onclick="window.location.href='/txt/journal?section_name=Blog'">Blog</button>
+                        <button class="active-view" type="button" onclick="window.location.href='/txt/journal?section_name=Mina+Ord'">Journal</button>
                     </div>
                     {% if sida == "Mina Ord" or sida == "Dagbok" or sida == "Mina Mål" %}
                         <div class="ordet">
@@ -68,13 +68,12 @@
                 </form>
         {% endif %}
     </div>
-
         {% if not act_id %}
-<!--            {% if myPosts %}
+           {% if myPosts %}
                 <div class="blogg-post">
                     <div class="view-toggle" style="background-color: white">
-                        <button class="page-toggle-btn" onclick="window.location.href='txt/journal?section_name=Mina+Ord'">Journal</button>
-                        <button class="active-view" onclick="window.location.href='/cal/timebox'">Blog</button>
+                        <button class="page-toggle-btn" type="button" onclick="window.location.href='/txt/journal?section_name=Blog'">Blog</button>
+                        <button class="active-view" type="button" onclick="window.location.href='/txt/journal?section_name=Mina+Ord'">Journal</button>
                     </div>
                     {% for post in myPosts %}
                         <h3 class="post-title">{{ post.title }}</h3>
@@ -82,7 +81,7 @@
                         <p class="post-author">{{ post.author }} {{ post.date }}</p>
                     {% endfor %}
                 </div>
-            {% endif %} -->
+            {% endif %}
         {% endif %}
 
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>

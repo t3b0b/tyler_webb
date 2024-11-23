@@ -4,17 +4,18 @@ from models import (User, db, Notes, Goals, Bullet,
                     Activity, Score, MyWords, Settings, Dagar)
 
 from pmg_func import (section_content,common_route,getInfo,
-                      getWord, add2db, update_dagar,add_unique_word)
+                      getWord, add2db, update_dagar,add_unique_word,add_words_from_file)
 
 from datetime import datetime, timedelta, date
 
-from flask_login import current_user
+from flask_login import current_user, login_required, login_user, logout_user
 
 txt_bp = Blueprint('txt', __name__, template_folder='templates/txt')
 
 #region Journal
 
 @txt_bp.route('/journal', methods=['GET', 'POST'])
+@login_required
 def journal():
     section_name = request.args.get('section_name')
     my_act = Activity.query.filter_by(name=section_name, user_id=current_user.id).all()
@@ -60,6 +61,7 @@ def journal():
         return journal_section(None, sida, sub_menu, my_posts)
 
 @txt_bp.route('/journal/<section_name>', methods=['GET', 'POST'])
+@login_required
 def journal_section(act_id, sida, sub_menu, my_posts):
     page_info = ""
     current_date = date.today()
@@ -76,7 +78,11 @@ def journal_section(act_id, sida, sub_menu, my_posts):
 
     if sida == 'Dagbok':
         ordet = current_date
+
     elif sida == 'Mina Mål':
+        MyWords.query.filter_by(user_id=current_user.id).all()
+        if not MyWords:
+            add_words_from_file('orden.txt',current_user.id)
         goals = Goals.query.filter_by(user_id=current_user.id).with_entities(Goals.name).all()
 #        used_goals = WhyGoals.query.filter_by(user_id=current_user.id).with_entities(WhyGoals.goal).all()
         goal_list = [goal[0] for goal in goals]
@@ -92,6 +98,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                  'Jag borde...', 'Värt att fundera på', 'Jag ska försöka..']
 
     timeInt = Settings.query.filter_by(user_id=current_user.id).first()
+
     if timeInt and timeInt.stInterval:
         time = timeInt.stInterval
     else:
