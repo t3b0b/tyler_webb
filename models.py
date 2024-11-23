@@ -31,6 +31,18 @@ class User(db.Model, UserMixin):
         return f'<User {self.username}, ID: {self.id}>'
 
 
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Mottagarens ID
+    message = db.Column(db.String(255), nullable=False)  # Notifikationsmeddelandet
+    related_item_id = db.Column(db.Integer, nullable=True)  # ID för det relaterade objektet (t.ex. mål eller aktivitet)
+    item_type = db.Column(db.Enum('goal', 'activity', 'task'), nullable=True)  # Typ av relaterat objekt
+    is_read = db.Column(db.Boolean, default=False)  # Om notifikationen är läst
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)  # När notifikationen skapades
+
+    user = db.relationship('User', backref='notifications')
+
 class Settings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     wImp = db.Column(db.Boolean, nullable=False, default=False)
@@ -142,7 +154,7 @@ class ToDoList(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'))
     shared_item_id = db.Column(db.Integer, db.ForeignKey('shared_items.id'), nullable=True)  # Koppling till delning
-
+    time = db.Column(db.Float, default=0.0)  # Total tid i sekunder
     assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     marked_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     confirmed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)

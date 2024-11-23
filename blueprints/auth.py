@@ -8,16 +8,29 @@ from werkzeug.utils import secure_filename
 from pmg_func import (common_route,getInfo,filter_mod,add2db,readWords)
 
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Streak, Goals, Activity, Settings, MyWords
+from models import db, User, Streak, Goals, Activity, Settings, MyWords, Notification
 from flask_mail import Message
 
 from datetime import datetime, timedelta
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from sqlalchemy.orm import scoped_session
 
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime, timedelta
+
 auth_bp = Blueprint('auth', __name__, template_folder='auth/templates')
 
 s = URLSafeTimedSerializer("K6SM4x14")
+def delete_old_notifications():
+    cutoff_date = datetime.utcnow() - timedelta(days=30)
+    Notification.query.filter(Notification.created_at < cutoff_date).delete()
+    db.session.commit()
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=delete_old_notifications, trigger="interval", days=1)
+scheduler.start()
+
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     sida = 'P.M.G'
@@ -133,28 +146,34 @@ def confirm_email(token):
 
         if user:
             user.verifierad = True
-            db.session.commit()
+
+            # Skapa ett grundläggande mål
             skriva_goal = Goals(name="Skriva", user_id=user.id)
             db.session.add(skriva_goal)
-            db.session.commit()
-            skriv_goal_id = skriva_goal.id
-            mina_ord = Activity(name="Mina Ord", user_id=user.id, goal_id=skriv_goal_id, unit=None)
-            db.session.add(mina_ord)
-            dagbok = Activity(name="Dagbok", user_id=user.id, goal_id=skriv_goal_id, unit=None)
-            db.session.add(dagbok)
-            bullet = Activity(name="Bullet", user_id=user.id, goal_id=skriv_goal_id, unit=None)
-            db.session.add(bullet)
-            db.session.commit()
+            db.session.flush()  # Flush för att få ID utan att committa
 
-            ordet, ord_lista = readWords('orden.txt')
-            for ord in ord_lista:
-                nyttOrd = MyWords(ord=ord, user_id=user.id)
-                db.session.add(nyttOrd)
-                db.session.commit()
+            # Skapa aktiviteter kopplade till målet
+            aktiviteter = [
+                Activity(name="Mina Ord", user_id=user.id, goal_id=skriva_goal.id),
+                Activity(name="Dagbok", user_id=user.id, goal_id=skriva_goal.id),
+                Activity(name="Bullet", user_id=user.id, goal_id=skriva_goal.id)
+            ]
+            db.session.add_all(aktiviteter)
+
+            # Lägg till ord från fil
+            try:
+                ordet, ord_lista = readWords('orden.txt')
+                ord_objekt = [MyWords(word=ord, user_id=user.id) for ord in ord_lista]
+                db.session.add_all(ord_objekt)
+            except Exception as e:
+                return f"Fel vid läsning av ord: {e}", 500
+
+            # Lägg till standardinställningar
             imported = Settings(stInterval=5, wImp=True, user_id=user.id)
             db.session.add(imported)
+
+            # Slutför alla operationer i en enda commit
             db.session.commit()
-            # Skapa målet "Skriva" och aktiviteterna för den nya användaren
 
             return 'Din e-post har verifierats! Du kan nu logga in.'
         else:
@@ -256,14 +275,19 @@ def settings(section_name=None):
     return render_template('auth/settings.html', sida=sida, header=sida, my_words=mina_Ord,
                            sub_menu=sub_menu, page_info=page_info, user=current_user)
 
+
+
+
 @auth_bp.route('/profile')
 @login_required
 def profile():
     uID = current_user.id
     my_user = User.query.filter_by(id=uID).first()
+    notifications = Notification.query.filter_by(user_id=my_user.id).order_by(Notification.created_at.desc()).all()
     print(my_user)
     sida, sub_menu = common_route(f'{my_user.firstName} {my_user.lastName}', ['/pmg/streak', '/pmg/goals', '/pmg/milestones'], ['Streaks','Goals','Milestones'])
-    return render_template('auth/profile.html', user=my_user, sida = sida, header=sida,)
+    return render_template('auth/profile.html', user=my_user, sida = sida, header=sida, notifications=notifications)
+
 
 @auth_bp.route('/upload', methods=['POST'])
 def upload_file():

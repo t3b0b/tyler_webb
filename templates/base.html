@@ -141,6 +141,7 @@
     </div>
         </footer>
 <script>
+
  document.addEventListener('DOMContentLoaded', function () {
     const sideMenu = document.querySelector('.side-menu');
 
@@ -185,6 +186,16 @@ function toggleMenu() {
     }
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/pmg/notifications/unread')
+    .then(response => response.json())
+    .then(notifications => {
+        notifications.forEach(notification => {
+            showNotification(notification.message);
+        });
+    })
+        .catch(error => console.error('Error fetching notifications:', error));
+});
     </script>
 
 </body>

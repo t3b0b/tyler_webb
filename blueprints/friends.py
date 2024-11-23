@@ -1,7 +1,8 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 from flask_login import current_user, login_required
 from datetime import datetime, timedelta, date
-from models import User, Friendship, Message, db
+from models import User, Friendship, Message, db, Notification
+from pmg_func import create_notification
 
 friends_bp = Blueprint('friends', __name__)
 
@@ -77,6 +78,14 @@ def add_friend(friend_id):
     new_friendship = Friendship(user_id=current_user.id, friend_id=friend.id, status='pending')
     db.session.add(new_friendship)
     db.session.commit()
+
+    create_notification(
+        user_id=friend_id,  # Mottagarens ID
+        message=f"{current_user.username} wants to be your friend",
+        related_item_id=new_friendship.id,
+        item_type='friend'
+    )
+
     flash('Vänförfrågan har skickats.', 'success')
     return redirect(url_for('friends.users'))
 
@@ -118,7 +127,6 @@ def respond_friend_request(request_id, response):
 
     return redirect(url_for('friends.friends'))
 
-
 @friends_bp.route('/send_message/<int:recipient_id>', methods=['GET', 'POST'])
 @login_required
 def send_message(recipient_id):
@@ -135,6 +143,13 @@ def send_message(recipient_id):
             )
             db.session.add(message)
             db.session.commit()
+
+            create_notification(
+                user_id=recipient_id,  # Mottagarens ID
+                message=f"{current_user.username} sent you a message",
+                related_item_id=message.id,
+                item_type='message'
+            )
             flash('Message sent successfully.', 'success')
             return redirect(url_for('friends.send_message', recipient_id=recipient_id))
     

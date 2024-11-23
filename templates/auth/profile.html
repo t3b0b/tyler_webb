@@ -72,6 +72,17 @@
                 <h2>{{ user.username }}</h2>
                 <p>{{ user.email }}</p>
             </div>
+            <div>
+                <h2>Your Notifications</h2>
+                    <ul>
+                        {% for notification in notifications %}
+                            <li>
+                                <p>{{ notification.message }}</p>
+                                <small>{{ notification.created_at }}</small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+            </div>
             <div class="profile-stats">
                 <!-- Placeholder for stats -->
             </div>

@@ -1,6 +1,6 @@
 from models import (User, db, Streak, Notes, Goals, Friendship, Bullet,
                     Activity, Score, MyWords, Settings, Dagar, Message, ToDoList,
-                    Event, TopFive)
+                    Event, TopFive,Notification)
 from datetime import datetime, timedelta, date
 import pandas as pd
 from pytz import timezone
@@ -13,6 +13,24 @@ from flask_login import current_user
 def section_content(db,section):
     list = db.query.filter_by(name=section).first()
     return list
+
+def create_notification(user_id, message, related_item_id=None, item_type=None):
+    """
+    Skapa och spara en notifikation i databasen.
+
+    :param user_id: ID för användaren som notifikationen är riktad till
+    :param message: Notifikationsmeddelandet
+    :param related_item_id: ID för det relaterade objektet (t.ex. mål eller aktivitet)
+    :param item_type: Typ av objekt (t.ex. 'goal', 'activity', 'task')
+    """
+    notification = Notification(
+        user_id=user_id,
+        message=message,
+        related_item_id=related_item_id,
+        item_type=item_type
+    )
+    db.session.add(notification)
+    db.session.commit()
 
 def get_activities_for_user(user_id, start_date, end_date):
     tz = timezone('Europe/Stockholm')  # Byt till din aktuella tidszon om den skiljer sig

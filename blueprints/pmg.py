@@ -1,6 +1,6 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, session
-from models import (User, db, Streak, Goals, Friendship, Notes, SharedItem, ActivityTracking,
+from models import (User, db, Streak, Goals, Friendship, Notes, SharedItem, ActivityTracking, Notification,
                     Activity, Score, Dagar, ToDoList, TopFive)
 import matplotlib.pyplot as plt
 import io
@@ -10,7 +10,7 @@ from sqlalchemy import and_
 from pmg_func import (getInfo, common_route, add2db, unique,
                       section_content, update_dagar, completed_streaks,
                       update_streak_details, myDayScore,
-                      generate_calendar_weeks, filter_mod)
+                      generate_calendar_weeks, filter_mod, create_notification)
 import pandas as pd
 from pytz import timezone
 from flask_login import current_user, login_required, login_user, logout_user
@@ -89,6 +89,24 @@ def create_activity_plot(activity_times):
     plot_url = base64.b64encode(img.getvalue()).decode('utf8')
     plt.close()
     return plot_url
+@pmg_bp.route('/notifications/unread', methods=['GET'])
+@login_required
+def get_unread_notifications():
+    notifications = Notification.query.filter_by(user_id=current_user.id, is_read=False).order_by(Notification.created_at.desc()).all()
+    return jsonify([{
+        'id': notification.id,
+        'message': notification.message,
+        'created_at': notification.created_at.strftime('%Y-%m-%d %H:%M:%S')
+    } for notification in notifications])
+
+@pmg_bp.route('/notifications/mark_as_read', methods=['POST'])
+@login_required
+def mark_notifications_as_read():
+    notifications = Notification.query.filter_by(user_id=current_user.id, is_read=False).all()
+    for notification in notifications:
+        notification.is_read = True
+    db.session.commit()
+    return jsonify({'message': 'All notifications marked as read'})
 
 #region Streak
 
@@ -173,6 +191,7 @@ def delete_streak(streak_id):
 def goals():
     sida, sub_menu = common_route("Mina Mål", ['/pmg/streak', '/pmg/goals', '/pmg/milestones'],
                                   ['Streaks', 'Goals', 'Milestones'])
+
     if request.method == 'POST':
         if 'addGoal' in request.form['action']:
             goal_name = request.form.get('goalName')
@@ -199,6 +218,14 @@ def goals():
                 db.session.add_all([shared_goal_user, shared_goal_friend])
                 db.session.commit()
 
+                create_notification(
+                    user_id=friend_id,  # Mottagarens ID
+                    message=f"{current_user.username} has invited you to share the goal:'{goal_name}'.",
+                    related_item_id=new_goal.id,
+                    item_type='goal'
+                )
+
+                flash("Goal request sent!", "success")
         elif 'addTodo' in request.form['action']:
             goal_id = request.form.get('goalId')
             task_content = request.form.get('task')
@@ -320,6 +347,19 @@ def goal_activities(goal_id):
             )
             db.session.add(new_activity)
             db.session.commit()
+
+            if shared_item:
+                # Hämta alla användare som målet är delat med
+                shared_users = SharedItem.query.filter_by(item_id=goal_id, item_type='goal', status='active').all()
+                for shared_user in shared_users:
+                    if shared_user.shared_with_id != current_user.id:  # Hoppa över nuvarande användare
+                        create_notification(
+                            user_id=shared_user.shared_with_id,  # Mottagarens ID
+                            message=f"{current_user.username} created a new activity '{activity_name}' in goal '{goal.name}'.",
+                            related_item_id=new_activity.id,
+                            item_type='activity'
+                        )
+
             flash('Activity added successfully', 'success')
             return redirect(url_for('pmg.goal_activities', goal_id=goal_id))
         else:
@@ -712,6 +752,19 @@ def add_task(activity_id):
 
     db.session.add(new_task)
     db.session.commit()
+
+    if shared_item:
+        # Hämta alla användare som delar aktiviteten
+        shared_users = SharedItem.query.filter_by(item_id=activity.id, item_type='activity', status='active').all()
+        for shared_user in shared_users:
+            if shared_user.shared_with_id != current_user.id:  # Hoppa över nuvarande användare
+                create_notification(
+                    user_id=shared_user.shared_with_id,  # Mottagarens ID
+                    message=f"{current_user.username} added the task '{task_name}' to '{activity.name}'.",
+                    related_item_id=new_task.id,
+                    item_type='task'
+                )
+
     flash("Task added successfully", "success")
 
     # Omdirigera baserat på ursprung (origin)

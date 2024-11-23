@@ -122,6 +122,12 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                 if sida == 'Dagbok':
                     add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Mina Ord':
+
+                    nytt_ord = request.form.get('post-ord')
+                    new_word=MyWords(word=nytt_ord, user_id=current_user.id)
+                    db.session.add(new_word)
+                    db.session.commit()
+
                     add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Bullet':
                     theme = request.form['post-ord']

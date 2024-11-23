@@ -44,6 +44,7 @@ function saveActivity(time) {
     document.getElementById("elapsedTime").value = time; // Använd rätt element-ID
     localStorage.setItem('active', false);
 }
+
 function applyActivityLayout() {
     document.getElementById('day-section').style.display = 'none';
     document.getElementById('stopButton').style.display = 'block';
@@ -52,13 +53,14 @@ function applyActivityLayout() {
 
 
 function toggleTodoList(actId) {
-const todoList = document.getElementById('todo-list-' + actId);
+    const todoList = document.getElementById('todo-list-' + actId);
 
-if (todoList.style.display === 'none' || todoList.style.display === '') {
-    todoList.style.display = 'flex'; // Ändra till 'block'
-} else {
-    todoList.classList.toggle('hidden');;
-}
+    if (todoList.style.display === 'none' || todoList.style.display === '') {
+        todoList.style.display = 'flex'; // Ändra till 'block'
+    } else {
+        todoList.classList.toggle('hidden');
+        ;
+    }
 
 }
 
@@ -118,7 +120,7 @@ $('#goalSelect').change(function () {
     });
 });
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     let savedOpenTime = localStorage.getItem('openTime');
     let savedActiveTimer = localStorage.getItem('active');
 
@@ -135,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
 
     let startaAktivitetButton = document.getElementById('startaAktivitet');
     if (startaAktivitetButton) {
@@ -151,3 +153,31 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('stopButton not found');
     }
 });
+
+function showNotification(message) {
+        // Skapa en ny notifikations-div
+        const notification = document.createElement('div');
+        notification.className = 'notification-popup show';
+        notification.innerText = message;
+
+        // Lägg till notifikationen i dokumentet
+        document.body.appendChild(notification);
+
+        // Ta bort popup efter 7 sekunder
+        setTimeout(() => {
+        notification.classList.add('hide');
+        setTimeout(() => notification.remove(), 500); // Vänta på transition innan den tas bort
+    }, 7000);
+}
+
+function markNotificationsAsRead() {
+        fetch('/pmg/notifications/mark_as_read', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => console.log(data.message))
+            .catch(error => console.error('Error marking notifications as read:', error));
+    }
+
+    // Markera som lästa efter popup visas
+    setTimeout(markNotificationsAsRead, 7500); // Vänta tills alla popup-notiser har visats
+
+
