@@ -4,7 +4,7 @@ from models import (User, db, Notes, Goals, Bullet,
                     Activity, Score, MyWords, Settings, Dagar)
 
 from pmg_func import (section_content,common_route,getInfo,
-                      getWord, add2db, update_dagar)
+                      getWord, add2db, update_dagar,add_unique_word)
 
 from datetime import datetime, timedelta, date
 
@@ -106,6 +106,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
             activities = Activity.query.filter_by(goal_id=myGoals.id,user_id=current_user.id).all()
             titles_list = Activity.query.filter_by(goal_id=myGoals.id,user_id=current_user.id).all()
             titles = [item.name for item in titles_list]
+
     elif act_id is None:
         myGoals = None
         activities = None
@@ -122,12 +123,8 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                 if sida == 'Dagbok':
                     add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Mina Ord':
-
                     nytt_ord = request.form.get('post-ord')
-                    new_word=MyWords(word=nytt_ord, user_id=current_user.id)
-                    db.session.add(new_word)
-                    db.session.commit()
-
+                    add_unique_word(nytt_ord,current_user.id)
                     add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Bullet':
                     theme = request.form['post-ord']

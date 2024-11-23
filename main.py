@@ -3,7 +3,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from flask import (Flask, render_template, flash,
                    request, redirect, url_for, session)
-
+from pmg_func import delete_old_notifications
 from flask_login import LoginManager, current_user
 from blueprints.friends import friends_bp
 from blueprints.base import base_bp,read_info
@@ -14,6 +14,7 @@ from blueprints.cal import cal_bp
 from blueprints.txt import txt_bp
 from flask_mail import Mail, Message
 from flask_wtf import CSRFProtect
+
 from flask_migrate import Migrate,migrate,init
 import sshtunnel
 import os
@@ -22,8 +23,10 @@ from dotenv import load_dotenv
 
 
 #region Appconfig
+
 load_dotenv()  # Ladda miljövariabler från .env-filen
 app = Flask(__name__)
+
 
 if os.getenv('FLASK_ENV') == 'development':
     tunnel = sshtunnel.SSHTunnelForwarder(
@@ -72,6 +75,8 @@ with app.app_context():
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
 @app.errorhandler(500)
 def internal_error(error):
     app.logger.error(f"Server Error: {error}, User: {current_user.get_id()}, Route: {request.url}, "
@@ -104,7 +109,6 @@ def blog():
 app.register_blueprint(auth_bp, url_prefix='/auth')
 
 #endregion
-
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=5001, debug=True)

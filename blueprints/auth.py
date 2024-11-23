@@ -5,7 +5,7 @@ from flask import (Blueprint, render_template, redirect, url_for,
 from flask_login import (login_user, logout_user, current_user, login_required)
 from werkzeug.utils import secure_filename
 
-from pmg_func import (common_route,getInfo,filter_mod,add2db,readWords)
+from pmg_func import (common_route,getInfo,filter_mod,add2db,readWords, add_words_from_file)
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Streak, Goals, Activity, Settings, MyWords, Notification
@@ -15,20 +15,13 @@ from datetime import datetime, timedelta
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from sqlalchemy.orm import scoped_session
 
-from apscheduler.schedulers.background import BackgroundScheduler
-from datetime import datetime, timedelta
+
 
 auth_bp = Blueprint('auth', __name__, template_folder='auth/templates')
 
 s = URLSafeTimedSerializer("K6SM4x14")
-def delete_old_notifications():
-    cutoff_date = datetime.utcnow() - timedelta(days=30)
-    Notification.query.filter(Notification.created_at < cutoff_date).delete()
-    db.session.commit()
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=delete_old_notifications, trigger="interval", days=1)
-scheduler.start()
+
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
@@ -161,12 +154,7 @@ def confirm_email(token):
             db.session.add_all(aktiviteter)
 
             # Lägg till ord från fil
-            try:
-                ordet, ord_lista = readWords('orden.txt')
-                ord_objekt = [MyWords(word=ord, user_id=user.id) for ord in ord_lista]
-                db.session.add_all(ord_objekt)
-            except Exception as e:
-                return f"Fel vid läsning av ord: {e}", 500
+            add_words_from_file('orden.txt', user.id)
 
             # Lägg till standardinställningar
             imported = Settings(stInterval=5, wImp=True, user_id=user.id)

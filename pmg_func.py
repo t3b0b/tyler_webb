@@ -7,9 +7,43 @@ from pytz import timezone
 from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
 from flask_login import current_user
-
+from sqlalchemy.exc import IntegrityError
 
 # region Functions
+
+def delete_old_notifications():
+    cutoff_date = datetime.utcnow() - timedelta(days=30)
+    Notification.query.filter(Notification.created_at < cutoff_date).delete()
+    db.session.commit()
+
+def add_words_from_file(file_name, user_id):
+    try:
+        _, word_list = readWords(file_name)
+        added_count = 0
+        for word in word_list:
+            try:
+                add_unique_word(word, user_id)
+                added_count += 1
+            except Exception as e:
+                print(f"Could not add word '{word}': {e}")
+        return f"{added_count} words added successfully."
+    except FileNotFoundError:
+        return "File not found."
+    except Exception as e:
+        return f"An unexpected error occurred: {e}"
+
+def add_unique_word(word, user_id):
+    # Kontrollera om ordet redan finns
+    existing_word = MyWords.query.filter_by(word=word).first()
+    if existing_word:
+        return f"Word '{word}' already exists!", False  # Returnera ett felmeddelande
+
+    # Skapa nytt ord
+    new_word = MyWords(word=word, user_id=user_id)
+    db.session.add(new_word)
+    db.session.commit()
+    return f"Word '{word}' added successfully!", True
+
 def section_content(db,section):
     list = db.query.filter_by(name=section).first()
     return list
