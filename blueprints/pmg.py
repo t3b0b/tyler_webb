@@ -202,30 +202,39 @@ def goals():
                 # Skapa ett nytt mål för den inloggade användaren
                 new_goal = Goals(name=goal_name, user_id=current_user.id)
                 db.session.add(new_goal)
-                db.session.commit()
             else:
-                # Skapa SharedItem-poster för den inloggade användaren och vännen
+                # Skapa målet först
                 new_goal = Goals(name=goal_name, user_id=current_user.id)
                 db.session.add(new_goal)
-                db.session.commit()  # Spara mål först för att få id
+                db.session.flush()  # Få mål-ID utan att committa
 
                 # Skapa SharedItem-poster för både skaparen och vännen
-                shared_goal_user = SharedItem(item_type='goal', item_id=new_goal.id,
-                                              owner_id=current_user.id, shared_with_id=current_user.id,
-                                              status='accepted')
-                shared_goal_friend = SharedItem(item_type='goal', item_id=new_goal.id,
-                                                owner_id=current_user.id, shared_with_id=friend_id, status='pending')
+                shared_goal_user = SharedItem(
+                    item_type='goal',
+                    item_id=new_goal.id,
+                    owner_id=current_user.id,
+                    shared_with_id=current_user.id,
+                    status='accepted'
+                )
+                shared_goal_friend = SharedItem(
+                    item_type='goal',
+                    item_id=new_goal.id,
+                    owner_id=current_user.id,
+                    shared_with_id=friend_id,
+                    status='pending'
+                )
                 db.session.add_all([shared_goal_user, shared_goal_friend])
-                db.session.commit()
 
+                # Skapa en notifikation för vännen
                 create_notification(
-                    user_id=friend_id,  # Mottagarens ID
-                    message=f"{current_user.username} has invited you to share the goal:'{goal_name}'.",
+                    user_id=friend_id,
+                    message=f"{current_user.username} has invited you to share the goal: '{goal_name}'.",
                     related_item_id=new_goal.id,
                     item_type='goal'
                 )
 
-                flash("Goal request sent!", "success")
+            db.session.commit()  # Slutför allt i en transaktion
+
         elif 'addTodo' in request.form['action']:
             goal_id = request.form.get('goalId')
             task_content = request.form.get('task')

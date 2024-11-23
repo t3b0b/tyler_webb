@@ -21,9 +21,6 @@ auth_bp = Blueprint('auth', __name__, template_folder='auth/templates')
 
 s = URLSafeTimedSerializer("K6SM4x14")
 
-
-
-
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     sida = 'P.M.G'
