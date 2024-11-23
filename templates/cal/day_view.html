@@ -98,7 +98,6 @@
 
 {% block body %}
 <div class="day-container">
-<<<<<<< HEAD
     <h2>Events for {{ date.strftime('%Y-%m-%d') }}</h2>
 
     <div class="events-list">
@@ -119,9 +118,7 @@
         {% endif %}
     </div>
 
-=======
->>>>>>> 5189c3f766ccdafa68097b3cf94a042c1c6e481f
-    <div class="add-form-container">
+   <div class="add-form-container">
         <h3>Add Event or Deadline</h3>
         <form method="POST">
             <label for="eventType">Type:</label>
@@ -152,23 +149,22 @@
                 </select>
             {% endif %}
 
-<<<<<<< HEAD
+
             <button id="addEventButton" class="button-style" style="background-color: green">Add</button>
-=======
+
             <button id="addEventButton" class="button-style">Add</button>
->>>>>>> 5189c3f766ccdafa68097b3cf94a042c1c6e481f
+
         </form>
     </div>
 </div>
 
-<<<<<<< HEAD
+
 <script>
     function onDateClick(element, date) {
         if (!element.classList.contains('other-month')) {
             window.location.href = '/pmg/day/' + date;
         }
     }
-=======
 
 
 <script>
@@ -210,6 +206,6 @@ function toggleActivityInput() {
         activityContainer.style.display = 'none';
     }
 }
->>>>>>> 5189c3f766ccdafa68097b3cf94a042c1c6e481f
+
 </script>
 {% endblock body %}
