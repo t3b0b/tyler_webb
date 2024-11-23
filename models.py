@@ -6,15 +6,43 @@ from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.associationproxy import association_proxy
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@tylerobri.mysql.pythonanywhere-services.com/tylerobri$PMG'
 migrate = Migrate(app, db)
 
+class BaseModelMixin:
+    def to_dict(self, exclude=None, include_relations=False, relation_depth=1):
+        if exclude is None:
+            exclude = []
+
+        # Serialisera kolumner
+        data = {
+            col.name: getattr(self, col.name)
+            for col in self.__table__.columns
+            if col.name not in exclude
+        }
+
+        # Serialisera relationer
+        if include_relations and relation_depth > 0:
+            for rel in self.__mapper__.relationships:
+                related_objects = getattr(self, rel.key)
+                if related_objects is not None:
+                    if isinstance(related_objects, list):  # One-to-many
+                        data[rel.key] = [
+                            obj.to_dict(include_relations=False) for obj in related_objects
+                        ]
+                    else:  # One-to-one
+                        data[rel.key] = related_objects.to_dict(include_relations=False)
+
+        return data
+
+
 #region User
 
-class User(db.Model, UserMixin):
+class User(db.Model, UserMixin, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(80), unique=True, nullable=False)
@@ -30,11 +58,17 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f'<User {self.username}, ID: {self.id}>'
 
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
 
-class Notification(db.Model):
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
+
+
+class Notification(db.Model, BaseModelMixin):
     __tablename__ = 'notifications'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Mottagarens ID
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)  # Mottagarens ID
     message = db.Column(db.String(255), nullable=False)  # Notifikationsmeddelandet
     related_item_id = db.Column(db.Integer, nullable=True)  # ID för det relaterade objektet (t.ex. mål eller aktivitet)
     item_type = db.Column(db.Enum('goal', 'activity', 'task'), nullable=True)  # Typ av relaterat objekt
@@ -43,18 +77,19 @@ class Notification(db.Model):
 
     user = db.relationship('User', backref='notifications')
 
-class Settings(db.Model):
+class Settings(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     wImp = db.Column(db.Boolean, nullable=False, default=False)
     stInterval = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),index=True)
+
     def __repr__(self):
         return f'{self.stInterval}, {self.wImp} ,{self.user_id}'
 
 # endregion
 
 # region Friends
-class Friendship(db.Model):
+class Friendship(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     friend_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -64,7 +99,13 @@ class Friendship(db.Model):
     user = db.relationship('User', foreign_keys=[user_id])
     friend = db.relationship('User', foreign_keys=[friend_id])
 
-class SharedItem(db.Model):
+    def __init__(self, status):
+        if status not in ['pending', 'accepted', 'rejected', 'blocked']:
+            raise ValueError(f"Invalid status: {status}")
+        self.status = status
+
+
+class SharedItem(db.Model, BaseModelMixin):
     __tablename__ = 'shared_items'
     id = db.Column(db.Integer, primary_key=True)
     item_type = db.Column(db.Enum('goal', 'list', 'streak', 'challenge'), nullable=False)
@@ -86,10 +127,13 @@ class SharedItem(db.Model):
     def __repr__(self):
         return f'<SharedItem ID: {self.id}, Owner ID: {self.owner_id}>'
 
-class ActivityTracking(db.Model):
+    def to_dict(self):
+        return {col.name: getattr(self, col.name) for col in self.__table__.columns}
+
+class ActivityTracking(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('shared_items.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),index=True, nullable=False)
     activity_type = db.Column(db.Enum('task_completed', 'streak_maintained', 'challenge_participated'),
                               nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
@@ -98,7 +142,7 @@ class ActivityTracking(db.Model):
     item = db.relationship('SharedItem', backref='activities')
     user = db.relationship('User', backref='activities')
 
-class Message(db.Model):
+class Message(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Uppdatera till receiver_id
@@ -111,20 +155,20 @@ class Message(db.Model):
 
 #region Development
 
-class Goals(db.Model):
+class Goals(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     deadline = db.Column(db.String, nullable=True)
     timeLimit = db.Column(db.Integer, nullable=True)
     activities = db.relationship('Activity', backref='goal', lazy=True)
     milestones = db.relationship('Milestones', backref='goal', lazy=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),index=True)
     shared_items = association_proxy('shared_items', 'id', creator=lambda goal: SharedItem(item_type='goal', item_id=goal.id))
 
     def __repr__(self):
         return f"{self.name}, {self.user_id}"
 
-class Milestones(db.Model):
+class Milestones(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
@@ -134,12 +178,12 @@ class Milestones(db.Model):
     date_achieved = db.Column(db.DateTime, nullable=True)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
 
-class Activity(db.Model):
+class Activity(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     unit = db.Column(db.String(20), nullable=True)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)  # ForeignKey till goals
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ForeignKey till user
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)  # ForeignKey till user
     milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=True)
     
     shared_item_id = db.Column(db.Integer, db.ForeignKey('shared_items.id'), nullable=True)  # Koppling till shared_items
@@ -147,11 +191,11 @@ class Activity(db.Model):
 
     todo_list = db.relationship('ToDoList', backref='activity', lazy=True)
 
-class ToDoList(db.Model):
+class ToDoList(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     task = db.Column(db.String(255), nullable=False)
     completed = db.Column(db.Boolean, default=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'))
     shared_item_id = db.Column(db.Integer, db.ForeignKey('shared_items.id'), nullable=True)  # Koppling till delning
     time = db.Column(db.Integer, default=0)
@@ -162,7 +206,7 @@ class ToDoList(db.Model):
 
     shared_item = db.relationship('SharedItem', backref='tasks')  # Ny relation
 
-class Streak(db.Model):
+class Streak(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     active = db.Column(db.Boolean, nullable=True)
@@ -174,7 +218,7 @@ class Streak(db.Model):
     dayOne = db.Column(db.DateTime, nullable=False)
     amount = db.Column(db.Integer, default=0)
     type = db.Column(db.String(20), default='check', nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False, index=True)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=True)
     level = db.Column(db.Integer, nullable=True, default=1)
     shared_items = association_proxy('shared_items', 'id', creator=lambda streak: SharedItem(item_type='streak', item_id=streak.id))
@@ -182,7 +226,7 @@ class Streak(db.Model):
     def __repr__(self):
         return f"{self.name}, {self.interval}, {self.count}, {self.goal_id}, {self.best}, {self.condition}, {self.lastReg}, {self.dayOne}, {self.user_id}"
 
-class Score(db.Model):
+class Score(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     Goal = db.Column(db.Integer, db.ForeignKey(Goals.id))
     Activity = db.Column(db.Integer, db.ForeignKey(Activity.id), nullable=False)
@@ -191,7 +235,7 @@ class Score(db.Model):
     End = db.Column(db.DateTime, nullable=True)
     Date = db.Column(db.DateTime, nullable=False)
     Time = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     Streak = db.Column(db.Integer, db.ForeignKey('streak.id'), nullable=False)
     def __repr__(self):
         return f'{self.Goal}, {self.Activity}, {self.Date}, {self.Time}, {self.user_id}'
@@ -200,7 +244,7 @@ class Score(db.Model):
 
 # region Calendar
 
-class Event(db.Model):
+class Event(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     event_type = db.Column(db.String(20))  # event, milestone, deadline
@@ -209,7 +253,7 @@ class Event(db.Model):
 
     location = db.Column(db.String(255), nullable=True)  # Lägg till plats som en sträng
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=True)
     date = db.Column(db.Date, nullable=False)
@@ -217,7 +261,7 @@ class Event(db.Model):
     def __repr__(self):
         return f'{self.name} on {self.date} at {self.location}'
 
-class Dagar(db.Model):
+class Dagar(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.DateTime, nullable=False, unique=True)
     prioriteringar = db.Column(db.Text, nullable=True)
@@ -226,7 +270,7 @@ class Dagar(db.Model):
     completed_streaks = db.Column(db.Integer)
     completed_streaks_names = db.Column(db.Text)
     total_points = db.Column(db.Integer)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
 
     def __repr__(self):
         return f'{self.user_id}, {self.date}, {self.total_streaks}, {self.completed_streaks}, {self.completed_streaks_names}, {self.total_points}'
@@ -235,39 +279,39 @@ class Dagar(db.Model):
 
 #region Text
 
-class TopFive(db.Model):
+class TopFive(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=True)
     content = db.Column(db.String(1200), nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
     title = db.Column(db.String(100), nullable=False)
     def __repr__(self):
         return f"<CalendarBullet {self.date}>"
 
-class Bullet(db.Model):
+class Bullet(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     author = db.Column(db.String(50), nullable=False)
     theme = db.Column(db.String(50), nullable=False)
     content = db.Column(db.Text, unique=False, nullable=True)
     date = db.Column(db.Date, unique=False, nullable=False, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     shared_items = association_proxy('shared_items', 'id',
                                      creator=lambda bullet: SharedItem(item_type='bullet', item_id=bullet.id))
 
-class Notes(db.Model):
+class Notes(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, unique=False, nullable=False)
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, unique=False, nullable=False)
     author = db.Column(db.String(50), nullable=True)
     type = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)
 
     def __repr__(self):
         return f"{self.author}, {self.title}, {self.content},{self.date}, {self.user_id}"
 
-class MyWords(db.Model):
+class MyWords(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     word = db.Column(db.String(120), nullable=False)
     what = db.Column(db.Boolean, nullable=False,default=False)
@@ -275,13 +319,13 @@ class MyWords(db.Model):
     when = db.Column(db.Boolean, nullable=False, default=False)
     how = db.Column(db.Boolean, nullable=False, default=False)
     used = db.Column(db.Boolean, nullable=False, default=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     def __repr__(self):
         return f'{self.word}, {self.used},{self.user_id}'
 
 # endregion
 
-class Mail(db.Model):
+class Mail(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     company = db.Column(db.String(80))
     first_name = db.Column(db.String(50))
@@ -289,6 +333,6 @@ class Mail(db.Model):
     email = db.Column(db.String(80))
     subject = db.Column(db.String(50))
     message = db.Column(db.Text)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     def __repr__(self):
         return f"{self.company},{self.first_name},{self.last_name},{self.email},{self.subject},{self.message}"

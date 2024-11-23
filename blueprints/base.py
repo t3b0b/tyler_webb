@@ -97,7 +97,7 @@ def service_content(section_name):
 
 @base_bp.route('/kontakt', methods=['GET', 'POST'])
 def kontakt():
-    from main import app, mail
+    from app import app, mail
     sida = 'Kontakt'
     if request.method == 'POST':
         mail_company = request.form['company']

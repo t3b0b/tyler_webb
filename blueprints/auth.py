@@ -89,7 +89,7 @@ def confirm_reset():
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    from main import mail
+    from app import mail
 
     if request.method == 'POST':
         first = request.form.get('first-name')
@@ -276,7 +276,7 @@ def profile():
 
 @auth_bp.route('/upload', methods=['POST'])
 def upload_file():
-    from main import app
+    from app import app
 
     if 'profile-pic' not in request.files:
         return redirect(request.url)
