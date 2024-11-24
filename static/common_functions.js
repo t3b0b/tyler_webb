@@ -181,3 +181,16 @@ function markNotificationsAsRead() {
     setTimeout(markNotificationsAsRead, 7500); // Vänta tills alla popup-notiser har visats
 
 
+document.querySelectorAll('.add-subtask-form').forEach(form => {
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form)
+        });
+        if (response.ok) {
+            location.reload();
+        }
+    });
+});
+

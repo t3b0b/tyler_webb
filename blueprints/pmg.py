@@ -1,7 +1,7 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, session
 from models import (User, db, Streak, Goals, Friendship, Notes, SharedItem, ActivityTracking, Notification,
-                    Activity, Score, Dagar, ToDoList, TopFive)
+                    Activity, Score, Dagar, ToDoList, TopFive, SubTask)
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -728,7 +728,9 @@ def activity_tasks(activity_id):
     ).first()
 
 
-    todos = ToDoList.query.filter_by(activity_id=activity_id).all()
+    todos = ToDoList.query.filter_by(activity_id=activity_id).options(
+            db.joinedload(ToDoList.subtasks)).all()
+
 
     sida = f"{activity.name} ToDos"
     return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos, sida=sida, header=sida)
@@ -789,9 +791,44 @@ def add_task(activity_id):
 
     return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
 
-
-
 # endregion
 
+#region Subtasks
+@pmg_bp.route('/task/<int:task_id>/add_subtask', methods=['POST'])
+@login_required
+def add_subtask(task_id):
+    task = ToDoList.query.get_or_404(task_id)
+    subtask_name = request.form.get('subtask_name')
+
+    if not subtask_name:
+        flash("Subtask name is required", "danger")
+        return redirect(url_for('pmg.activity_tasks', activity_id=task.activity_id))
+
+    new_subtask = SubTask(name=subtask_name, task_id=task_id)
+    db.session.add(new_subtask)
+    db.session.commit()
+
+    flash("Subtask added successfully!", "success")
+    return redirect(url_for('pmg.activity_tasks', activity_id=task.activity_id))
+
+@pmg_bp.route('/subtask/<int:subtask_id>/update', methods=['POST'])
+@login_required
+def update_subtask(subtask_id):
+    subtask = SubTask.query.get_or_404(subtask_id)
+    subtask.completed = not subtask.completed
+    db.session.commit()
+    flash("Subtask updated successfully!", "success")
+    return redirect(url_for('pmg.get_subtasks', task_id=subtask.task_id))
+
+
+@pmg_bp.route('/task/<int:task_id>/subtasks', methods=['GET'])
+@login_required
+def get_subtasks(task_id):
+    task = ToDoList.query.get_or_404(task_id)
+    subtasks = SubTask.query.filter_by(task_id=task_id).all()
+    return render_template('pmg/subtasks.html', task=task, subtasks=subtasks)
+
+
+#end region
 
 

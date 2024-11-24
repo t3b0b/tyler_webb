@@ -12,7 +12,36 @@ from flask_login import current_user, login_required, login_user, logout_user
 
 txt_bp = Blueprint('txt', __name__, template_folder='templates/txt')
 
+def sync_blog_titles_to_mywords(user):
+    # Hämta alla rubriker från Notes där activity_id är None
+    all_titles = db.session.query(Notes.title).filter(Notes.activity_id == None).distinct().all()
+    all_titles = [title[0] for title in all_titles]
+
+    # Hämta alla ord från MyWords-tabellen för användaren
+    existing_words = db.session.query(MyWords.word).filter_by(user_id=user.id).all()
+    existing_words = {word[0] for word in existing_words}  # Gör om till en set för snabbare jämförelse
+
+    # Identifiera saknade rubriker
+    missing_titles = [title for title in all_titles if title not in existing_words]
+
+    # Lägg till saknade rubriker i MyWords
+    new_words = [MyWords(word=title, user_id=user.id) for title in missing_titles]
+    db.session.add_all(new_words)
+    db.session.commit()
+
+    print(f"Lade till {len(new_words)} nya rubriker i MyWords.")
+
+
+
 #region Journal
+
+@txt_bp.route('/sync_titles', methods=['GET'])
+@login_required
+def sync_titles():
+    sync_blog_titles_to_mywords(current_user)
+    flash('Synkronisering av bloggrubriker till MyWords slutförd!', 'success')
+    return redirect(url_for('txt.blog'))
+
 
 @txt_bp.route('/journal', methods=['GET', 'POST'])
 @login_required
@@ -164,7 +193,7 @@ def blog(section_name):
     if section_name:
         my_posts = Notes.query.filter_by(title=section_name, user_id=current_user.id).all()
     else:
-        my_posts = Notes.query.filter_by(user_id=current_user.id).all()
+        my_posts = Notes.query.filter_by(user_id=current_user.id, activity_id=None).all()
 
     sida, sub_menu = common_route("Blog", [
         url_for('txt.journal', section_name='skriva'),

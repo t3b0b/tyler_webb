@@ -161,6 +161,17 @@ class ToDoList(db.Model):
     confirmed_date = db.Column(db.DateTime, nullable=True)
 
     shared_item = db.relationship('SharedItem', backref='tasks')  # Ny relation
+    subtasks = db.relationship('SubTask', backref='task', lazy=True)
+
+class SubTask(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)  # Namnet på subtasken
+    completed = db.Column(db.Boolean, default=False)  # Om subtasken är klar
+    task_id = db.Column(db.Integer, db.ForeignKey('to_do_list.id'), nullable=False)  # Koppling till huvudtasken
+
+    def __repr__(self):
+        return f"<SubTask {self.name}, Completed: {self.completed}>"
+
 
 class Streak(db.Model):
     id = db.Column(db.Integer, primary_key=True)

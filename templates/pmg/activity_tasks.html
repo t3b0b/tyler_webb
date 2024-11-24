@@ -1,7 +1,30 @@
 {% extends 'base.html' %}
 
 {% block head %}
-    
+<style>
+    .hidden {
+        display: none;
+    }
+    .subtasks-container {
+        margin-left: 20px;
+        list-style-type: circle;
+    }
+    .list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        cursor: pointer; /* Gör hela raden klickbar */
+    }
+    .list-item:hover {
+        background-color: #f0f0f0; /* Lägg till hover-effekt */
+    }
+    .task-actions {
+        display: flex;
+        align-items: center;
+    }
+</style>
 {% endblock head %}
 
 {% block body %}
@@ -12,16 +35,38 @@
     <div class="list-content">
         {% if tasks %}
             {% for task in tasks %}
-                <div class="list-item">
-                    {{ task.task }}
-                    {% if task.shared_item_id %}
-                        <span class="shared-indicator">(Shared)</span>
-                    {% endif %}
-                    <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
-                        <input type="hidden" name="origin" value="todo">
-                        <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
-                    </form>
+                <div class="list-item" data-target="subtasks-{{ task.id }}">
+                    <div>
+                        {{ task.task }}
+                        {% if task.shared_item_id %}
+                            <span class="shared-indicator">(Shared)</span>
+                        {% endif %}
+                    </div>
+                    <div class="task-actions">
+                        <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
+                            <input type="hidden" name="origin" value="todo">
+                            <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
+                        </form>
+                    </div>
                 </div>
+                <!-- Subtasks-container (hidden by default) -->
+                <ul id="subtasks-{{ task.id }}" class="list-item hidden">
+                    {% for subtask in task.subtasks %}
+                        <li>
+                            {{ subtask.name }}
+                            <form method="POST" action="{{ url_for('pmg.update_subtask', subtask_id=subtask.id) }}">
+                                <input type="checkbox" name="completed" onchange="this.form.submit()" {% if subtask.completed %}checked{% endif %}>
+                            </form>
+                        </li>
+                    {% endfor %}
+                    <!-- Form to add new subtask -->
+                    <li>
+                        <form method="POST" action="{{ url_for('pmg.add_subtask', task_id=task.id) }}">
+                            <input type="text" name="subtask_name" placeholder="Add subtask">
+                            <button type="submit">Add</button>
+                        </form>
+                    </li>
+                </ul>
             {% endfor %}
         {% else %}
             <p>No tasks found for this activity.</p>
@@ -35,45 +80,24 @@
         </form>
     </div>
 </div>
-<!-- Form to add a new task -->
-
 
 <script>
-    function showNewTaskForm() {
-        // Show form to create new task
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.list-item').forEach(item => {
+            item.addEventListener('click', (event) => {
+                // Förhindra klick om checkboxen klickas
+                if (event.target.tagName === 'INPUT') return;
 
-    // Function to handle the task completion toggle
-function updateTaskStatus(taskId, isCompleted) {
-    console.log(`Task ID: ${taskId}, Completed: ${isCompleted}`);  // Lägg till denna rad för felsökning
+                const targetId = item.getAttribute('data-target');
+                const targetList = document.getElementById(targetId);
 
-    fetch('/pmg/update-task-status/' + taskId, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()  // Om CSRF-skydd används
-        },
-        body: JSON.stringify({
-            completed: isCompleted
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            console.log('Task updated successfully');
-        } else {
-            console.error('Error updating task:', data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Network error:', error);
+                if (targetList.classList.contains('hidden')) {
+                    targetList.classList.remove('hidden');
+                } else {
+                    targetList.classList.add('hidden');
+                }
+            });
+        });
     });
-}
-
-
-function getCSRFToken() {
-    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-}
 </script>
-
 {% endblock body %}
