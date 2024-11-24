@@ -10,7 +10,6 @@
     margin-bottom: 10px;
 }
 
-
 .list-header h3 {
     margin: 0;
     font-size: 20px;
@@ -47,7 +46,7 @@
 .list-item {
     display: flex;
     justify-content: space-between; /* Gör så att innehållet sprids ut */
-    align-items: stretch; /* Centrera text och knapp vertikalt */
+    align-items: center; /* Centrera text och knapp vertikalt */
     justify-items: center;
     width:96%;
     border: 1px solid slategray;
@@ -61,9 +60,14 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     appearance: none;
-    font-size: 20px;
+    font-size: 18px;
     font-family: inherit;
     color: black;
+    line-height: 50px;
+}
+.list-item strong {
+    justify-content: center;
+    text-align: left;
 }
 .list-item label {
     margin-left: 10px;
@@ -71,7 +75,7 @@
 }
 .list-item:hover {
     background-color: #f0f0f0;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 .list-item:focus {
     outline: none;
@@ -109,6 +113,8 @@
 
 .todo-list {
     display: flex;
+    width: 90%;
+    max-height: 70%;
     justify-content: center;
     align-items: center;
     flex-direction: column;
@@ -136,17 +142,147 @@
     gap:50px
 }
 .details-container {
-    width: 60%;
+    width: 90%;
     margin: 20px auto;
 }
 .completed-task {
     color: gray;
     text-decoration: line-through;
 }
+.top-five {
+    display:flex;
+    width: 100%;
+    flex-direction: row;
+    height:30px;
+    padding: 2% 5% 2% 5%;
+    justify-content: space-between;
+    align-items: center;
+    justify-items: center;
+}
+.top5-container {
+    max-height: 50px;
+    max-width: 200px;
+    margin-top: 5%;
+}
+.head-list {
+    background-color: #f4e4c1;
+    border: 2px solid #d1c097;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: all 0.5s ease-in-out;
+    text-align: center;
+    z-index: 1; /* Se till att den är ovanför andra element när inaktiv */
+}
+.tab-title {
+    font-size: 24px;
+    font-weight: bold;
+    min-height: fit-content;
+    height: 45px;
+    text-align: center;
+    background-color: #f4e4c1;
+    border-bottom: 2px solid #524021;
+    width: 100%;
+    line-height: 45px;
+}
 
+.five-list-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    justify-items: center;
+    margin-inline: auto;
+    width: 60%; /* Smalare bredd */
+    height: auto;
+    max-height: 80%; /* Begränsad höjd om listan blir lång */
+    overflow-y: auto; /* Scroll om för många objekt */
+    position: fixed;
+    top: 50%; /* Precis under rubriken */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #dcdcdc;
+    border: 2px solid #53461d;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    z-index: 200; /* Se till att den är ovanför andra element */
+    opacity: 0; /* Dold som standard */
+    pointer-events: none; /* Förhindra interaktion när dold */
+    transition: all 0.5s ease-in-out;
+}
+.five-list-content form {
+    display: flex;
+    text-align: center;
+    flex-direction: column; /* Vertikal layout */
+    align-items: center; /* Centrerar horisontellt */
+    justify-content: center; /* Centrerar vertikalt */
+    gap: 5px; /* Mellanrum mellan elementen */
+    width: 100%; /* Sträcker sig över hela förälderns bredd */
+}
+
+.five-list-content form input[type="text"] {
+    width: 75%; /* Bredd för inputfält */
+    margin: 10px 0 10px 0; /* Ta bort överflödiga marginaler */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+.five-list-content form button {
+    width: 90%; /* Bredd för knappen */
+    min-height: 2rem;
+    padding: 10px;
+    margin: 10px; /* Ta bort överflödiga marginaler */
+    background-color: #ffffd3;
+    color: #000;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-weight: bold;
+    text-align: center; /* Centrerar knapptexten */
+}
+.five-list-content form button:hover {
+    background-color: #e1ffbf; /* Mörkare beige vid hover */
+
+}
+/* När listan är aktiv */
+.head-list.active + .list-content {
+    opacity: 1;
+    pointer-events: auto; /* Tillåter interaktion när aktiv */
+}
 
 @media (max-width: 720px) {
-    
+
+    .five-list-content form {
+    font-size: 16px;
+    }
+    .five-list-content form input[type="text"] {
+    font-size: 16px;
+    }
+    .five-list-content form button {
+    font-size: 16px;
+    }
+    .head-list {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .top5-container {
+        min-height: fit-content;
+        max-height: 1.2rem;
+        max-width: 20%;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
     .scrollable-list {
         height: 50%;  /* Höjd på listan */
         width: 80%;    /* Full bredd */
@@ -154,5 +290,13 @@
         overflow-y: auto;  /* Vertikal scrollning */
         padding: 5px;
         background-color: #fff;
+    }
+
+    .list-header h3 {
+        font-size: 16px;
+    }
+
+    .list-item {
+        font-size: 14px;
     }
 }

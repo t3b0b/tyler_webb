@@ -20,7 +20,7 @@
             </li>
             {% endfor %}
         </ul>
-        <form style="display: flex; flex-direction: row; padding: 0 4rem 0 4rem; gap: 1rem; justify-content: space-evenly; width: 60%"
+        <form class
               action="{{ url_for('pmg.add_task', activity_id=activity.id) }}" method="POST">
 
             <input type="hidden" name="actId" value="{{ activity.id }}" style="display: none">

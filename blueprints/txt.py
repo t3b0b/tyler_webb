@@ -48,17 +48,6 @@ def journal():
                                                      url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         return journal_section(act_id, sida, sub_menu, None)
 
-    elif section_name == 'blogg':
-        sida, sub_menu = common_route("Blogg", [url_for('txt.journal', section_name='skriva'),
-                                                url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
-        my_posts = Notes.query.filter_by(user_id=current_user.id).all()
-        return journal_section(None, sida, sub_menu, my_posts)
-
-    else:
-        sida, sub_menu = common_route(section_name, [url_for('txt.journal', section_name='skriva'),
-                                                     url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
-        my_posts = Notes.query.filter_by(title=section_name, user_id=current_user.id).all()
-        return journal_section(None, sida, sub_menu, my_posts)
 
 @txt_bp.route('/journal/<section_name>', methods=['GET', 'POST'])
 @login_required
@@ -114,12 +103,6 @@ def journal_section(act_id, sida, sub_menu, my_posts):
             titles_list = Activity.query.filter_by(goal_id=myGoals.id,user_id=current_user.id).all()
             titles = [item.name for item in titles_list]
 
-    elif act_id is None:
-        myGoals = None
-        activities = None
-        titles_list = Notes.query.filter_by(user_id=current_user.id).distinct().with_entities(Notes.title).all()
-        titles = [item[0] for item in titles_list]
-
     if request.method == 'POST':
         option = request.form.get('option')
         print(option)
@@ -173,5 +156,31 @@ def get_new_word(section_id):
         ordet, ord_lista = getWord()
 
     return jsonify(ordet)
+
+@txt_bp.route('/blog/', defaults={'section_name': None}, methods=['GET', 'POST'])
+@txt_bp.route('/blog/<section_name>', methods=['GET', 'POST'])
+@login_required
+def blog(section_name):
+    if section_name:
+        my_posts = Notes.query.filter_by(title=section_name, user_id=current_user.id).all()
+    else:
+        my_posts = Notes.query.filter_by(user_id=current_user.id).all()
+
+    sida, sub_menu = common_route("Blog", [
+        url_for('txt.journal', section_name='skriva'),
+        url_for('txt.blog', section_name=None)
+    ], ['Skriv', 'Blogg'])
+
+    titles_list = Notes.query.filter_by(user_id=current_user.id).distinct().with_entities(Notes.title).all()
+    titles = [item[0] for item in titles_list]
+
+    page_url = 'txt.blog'
+
+    return render_template('txt/blog.html',
+                           page_url=page_url,
+                           side_options=titles,
+                           myPosts=my_posts,
+                           sida=sida,
+                           header=sida)
 
 # endregion

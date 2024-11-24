@@ -26,7 +26,8 @@
         <div class="blogg-container">
                 <form method="POST">
                     <div class="view-toggle" style="background-color: white">
-                        <button class="page-toggle-btn" type="button" onclick="window.location.href='/txt/journal?section_name=Blog'">Blog</button>
+                        <a href="{{ url_for('txt.blog', section_name=None) }}">
+                        <button class="page-toggle-btn" type="button">Blog</button></a>
                         <button class="active-view" type="button" onclick="window.location.href='/txt/journal?section_name=Mina+Ord'">Journal</button>
                     </div>
                     {% if sida == "Mina Ord" or sida == "Dagbok" or sida == "Mina Mål" %}

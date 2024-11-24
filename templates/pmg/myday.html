@@ -3,111 +3,9 @@
 {% block head %}
 <style>
 
-.head-list {
-    background-color: #f4e4c1;
-    border: 2px solid #d1c097;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 80%;
-    padding: 10px 15px;
-    cursor: pointer;
-    transition: all 0.5s ease-in-out;
-    text-align: center;
-    z-index: 1; /* Se till att den är ovanför andra element när inaktiv */
-}
-.top5-container {
-    max-height: 50px;
-    max-width: 200px;
-    top: 5px;
-}
-.top-five {
-    display:flex;
-    width: 100%;
-    flex-direction: row;
-    height:30px;
-    padding: 2% 5% 2% 5%;
-    justify-content: space-around;
-    align-items: center;
-    justify-items: center;
-}
-/* Centrera listan i mitten av skärmen */
-.five-list-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    justify-items: center;
-    width: 40%; /* Smalare bredd */
-    height: auto;
-    max-height: 80%; /* Begränsad höjd om listan blir lång */
-    overflow-y: auto; /* Scroll om för många objekt */
-    position: fixed;
-    top: 50%; /* Precis under rubriken */
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #f9f9f9;
-    border: 2px solid #d1c097;
-    border-radius: 12px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    z-index: 200; /* Se till att den är ovanför andra element */
-    opacity: 0; /* Dold som standard */
-    pointer-events: none; /* Förhindra interaktion när dold */
-    transition: all 0.5s ease-in-out;
-}
-.five-list-content form {
-    display: flex;
-    flex-direction: column; /* Vertikal layout */
-    align-items: center; /* Centrerar horisontellt */
-    justify-content: center; /* Centrerar vertikalt */
-    gap: 10px; /* Mellanrum mellan elementen */
-    width: 100%; /* Sträcker sig över hela förälderns bredd */
-}
-.five-list-content form input[type="text"] {
-    width: 75%; /* Bredd för inputfält */
-    margin: 10px 0 10px 10px; /* Ta bort överflödiga marginaler */
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 1rem;
-    box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.1);
-    text-align: left;
-}
-.five-list-content form button {
-    width: 60%; /* Bredd för knappen */
-    min-height: 3rem;
-    padding: 10px;
-    margin: 10px; /* Ta bort överflödiga marginaler */
-    background-color: #d1c097;
-    color: #000;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    text-align: center; /* Centrerar knapptexten */
-}
-.five-list-content form button:hover {
-    background-color: #bda67f; /* Mörkare beige vid hover */
-}
-/* När listan är aktiv */
-.head-list.active + .list-content {
-    opacity: 1;
-    pointer-events: auto; /* Tillåter interaktion när aktiv */
-}
 
 /* Lista som en del av innehållet */
-.tab-title {
-    margin: 0 auto;
-    font-size: 1.8rem;
-    font-weight: bold;
-    min-height: 3.5rem;
-    text-align: center;
-    background-color: #f4e4c1;
-    border: 2px solid #d1c097;
-    border-radius: 8px;
-    width: 90%;
-}
+
 
 .streak-form {
     display: flex;
@@ -134,15 +32,15 @@
 <div class="top-five">
     <div class="top5-container">
         <div class="head-list" onclick="toggleList(this)">Priorities</div>
-        <ul class="five-list-content hidden">
+        <div class="five-list-content hidden">
             <form method="POST">
-                <li class="tab-title">Priorities</li>
+                <div class="tab-title">Priorities</div>
                 {% for num in range(1, 6) %}
                     <input type="text" name="todo_{{ num }}" placeholder="{{ num }}Priority" value="{{ to_do_list[num-1] if to_do_list|length >= num else '' }}">
                 {% endfor %}
                 <button type="submit" name="save_todo">Spara</button>
             </form>
-        </ul>
+        </div>
     </div>
     <div class="top5-container">
         <div class="head-list" onclick="toggleList(this)">Keep in mind</div>
