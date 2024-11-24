@@ -145,6 +145,7 @@
     width: 100%;
     padding-left: 5%;
     margin-inline: auto;
+
     max-height: 60%; /* Gör så att listan inte blir för bred */
     height:1.5rem;
     border: 1px solid black;

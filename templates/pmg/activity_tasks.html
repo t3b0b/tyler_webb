@@ -5,18 +5,7 @@
     .hidden {
         display: none;
     }
-    .subtasks-container {
-        margin-left: 20px;
-        list-style-type: circle;
-    }
-    .list-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px;
-        border-bottom: 1px solid #ddd;
-        cursor: pointer; /* Gör hela raden klickbar */
-    }
+
     .list-item:hover {
         background-color: #f0f0f0; /* Lägg till hover-effekt */
     }
@@ -36,21 +25,19 @@
         {% if tasks %}
             {% for task in tasks %}
                 <div class="list-item" data-target="subtasks-{{ task.id }}">
-                    <div>
                         {{ task.task }}
                         {% if task.shared_item_id %}
                             <span class="shared-indicator">(Shared)</span>
                         {% endif %}
-                    </div>
-                    <div class="task-actions">
-                        <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
-                            <input type="hidden" name="origin" value="todo">
-                            <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
-                        </form>
-                    </div>
+                        <div class="task-actions">
+                            <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
+                                <input type="hidden" name="origin" value="todo">
+                                <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
+                            </form>
+                        </div>
                 </div>
                 <!-- Subtasks-container (hidden by default) -->
-                <ul id="subtasks-{{ task.id }}" class="list-item hidden">
+                <ul id="subtasks-{{ task.id }}" class="todo-list hidden">
                     {% for subtask in task.subtasks %}
                         <li>
                             {{ subtask.name }}
@@ -60,14 +47,15 @@
                         </li>
                     {% endfor %}
                     <!-- Form to add new subtask -->
-                    <li>
-                        <form method="POST" action="{{ url_for('pmg.add_subtask', task_id=task.id) }}">
-                            <input type="text" name="subtask_name" placeholder="Add subtask">
-                            <button type="submit">Add</button>
-                        </form>
-                    </li>
+                    <form method="POST" action="{{ url_for('pmg.add_subtask', task_id=task.id) }}">
+                        <input type="hidden" name="actId" value="{{ activity.id }}" style="display: none">
+                        <input type="hidden" name="todo" value="focus" style="display: none">
+                        <input type="text" name="task_name" placeholder="Enter new task" required>
+                        <button onclick="" type="submit" name="action" style="height: 1.5rem;" value="addTodo">Add</button>
+                    </form>
                 </ul>
             {% endfor %}
+    </div>
         {% else %}
             <p>No tasks found for this activity.</p>
         {% endif %}
@@ -79,8 +67,6 @@
             <button style="margin: 20px; color: white;font-weight: bold; background-color: #4caf50; border-radius: 3px;" type="submit">Add</button>
         </form>
     </div>
-</div>
-
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.list-item').forEach(item => {
