@@ -38,7 +38,7 @@
     overflow-y: auto; /* Endast vertikal scrollning tillåten */
     overflow-x: hidden; /* Förhindrar horisontell scrollning */
     border: 1px solid #535353;
-    background-color: #ecebdc;
+    background-color: #ddd6be;
     padding:  2px;
     box-sizing: border-box;
 }
@@ -113,34 +113,71 @@
 
 .todo-list {
     display: flex;
+    flex-direction: column;
     width: 90%;
     max-height: 70%;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
+    justify-items: center;
     margin-top: 10px;
-    gap: 10px;
+    margin-inline: auto;
 }
 
-.todo-list ul {
+.striped-list {
     list-style-type: none;
-    flex-direction: column;
     align-items: center; /* Ändra från center till flex-start */
-    width: 70%;
+    width: 90%;
+}
+
+.striped-list li:nth-child(odd) {
+    background-color: #f2f2f2; /* Ljusgrå */
+}
+.striped-list li:nth-child(even) {
+    background-color: #ffffff; /* Vit */
 }
 
 .todo-list li {
     display: flex;
-    justify-content: space-between; /* Centrera checkbox och text horisontellt */
+    flex-direction: row;
+    justify-content: center; /* Centrera checkbox och text horisontellt */
     align-items: center;
     justify-items: center;
-    width: 90%;
-    max-height: 60%; /* Gör så att listan inte blir för bred */
-    text-align: left; /* Centrera texten */
-    margin-inline: 0 auto;
+    width: 100%;
     padding-left: 5%;
-    gap:50px
+    margin-inline: auto;
+    max-height: 60%; /* Gör så att listan inte blir för bred */
+    height:1.5rem;
+    border: 1px solid black;
+    margin: 0 auto;
 }
+
+.todo-list form {
+    display: flex;
+    flex-direction: row;
+    justify-content: center; /* Centrera checkbox och text horisontellt */
+    align-items: center;
+    width: 60%;
+    gap: 10px;
+    height: 2rem;
+    margin-inline: auto;
+}
+.todo-list form,input[type="text"] {
+    font-size: 18px;
+    padding: 5px 0 5px 0;
+
+}
+
+.todo-list form button {
+    background-color: #257825;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    height: 23px;
+    width: 50px;
+    margin-bottom: 1.1rem;
+
+}
+
 .details-container {
     width: 90%;
     margin: 20px auto;
@@ -151,7 +188,7 @@
 }
 .top-five {
     display:flex;
-    width: 100%;
+    width: 90%;
     flex-direction: row;
     height:30px;
     padding: 2% 5% 2% 5%;
