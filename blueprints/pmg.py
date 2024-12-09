@@ -19,6 +19,50 @@ from sqlalchemy.orm import scoped_session
 
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
+def get_user_activities(user_id):
+    # Hämta mål som användaren har tillgång till
+    all_goals = get_user_goals(user_id)
+    goal_ids = [goal.id for goal in all_goals]
+
+    # Hämta aktiviteter kopplade till dessa mål
+    return Activity.query.filter(Activity.goal_id.in_(goal_ids)).all()
+
+def get_user_goals(user_id):
+    # Hämta användarens egna mål
+    own_goals = Goals.query.filter_by(user_id=user_id).all()
+
+    # Hämta delade mål via SharedItem
+    shared_goal_ids = db.session.query(SharedItem.item_id).filter(
+        SharedItem.shared_with_id == user_id,
+        SharedItem.item_type == 'goal',
+        SharedItem.status == 'accepted'
+    ).all()
+
+    # Konvertera shared_goal_ids till en lista av ID:n
+    shared_goal_ids = [item[0] for item in shared_goal_ids]
+
+    # Hämta själva målen från deras ID:n
+    shared_goals = Goals.query.filter(Goals.id.in_(shared_goal_ids)).all()
+
+    # Kombinera egna och delade mål
+    return own_goals + shared_goals
+
+def get_user_tasks(user_id, activity_id=None):
+    """
+    Hämtar tasks för användaren (egna och delade aktiviteter).
+    Om activity_id tillhandahålls, filtrera tasks tillhörande den specifika aktiviteten.
+    """
+    # Hämta alla aktiviteter som användaren har tillgång till
+    all_activities = get_user_activities(user_id)
+    activity_ids = [activity.id for activity in all_activities]
+
+    # Om activity_id anges, filtrera på den specifika aktiviteten
+    query = ToDoList.query.filter(ToDoList.activity_id.in_(activity_ids))
+    if activity_id:
+        query = query.filter(ToDoList.activity_id == activity_id)
+
+    # Sortera tasks (avklarade först, sedan alfabetiskt)
+    return query.options(db.joinedload(ToDoList.subtasks)).order_by(ToDoList.completed.desc(), ToDoList.task.asc()).all()
 def get_daily_scores(user_id):
     today = datetime.now().date()
     yesterday = today - timedelta(days=1)
@@ -38,6 +82,7 @@ def get_daily_scores(user_id):
         message = "Inga poäng registrerade för idag ännu."
 
     return today_score, yesterday_score, message
+
 def get_today_score(user_id):
     """Hämta dagens score för en specifik användare."""
     today = datetime.now().date()
@@ -449,128 +494,36 @@ def myday():
     sida, sub_menu = common_route("Min Grind", ['/pmg/timebox', '/pmg/streak', '/pmg/goals'],
                                   ['My Day', 'Streaks', 'Goals'])
     date_now = date.today()
-    # Använd konsekvent my_goals istället för både my_goals och myGoals
-    myActs = filter_mod(Activity, user_id=current_user.id)
-    my_Goals = filter_mod(Goals, user_id=current_user.id)
+
+    # Använd den uppdaterade myDayScore
+    total, point_details = myDayScore(date_now, current_user.id)
+    activity_points = point_details.get("activity_points", 0)
+    streak_points = point_details.get("streak_points", 0)
+
+    myActs = get_user_activities(current_user.id)
+    my_Goals = get_user_goals(current_user.id)
     myStreaks = filter_mod(Streak, user_id=current_user.id)
-    myScore, total = myDayScore(date_now, current_user.id)
-    today_score = get_today_score(current_user.id)
-    yesterday_score = get_yesterday_score(current_user.id)
+
     act_times = get_week_activity_times(current_user.id)
     plot_url = create_activity_plot(act_times)
-    print(total)
-    aggregated_scores = {}
-    # Bygg den aggregerade poänglistan och koppla till to-dos
-    for score in myScore:
-        activity_name = score.goal_name if score.goal_name else "?"
-        if activity_name in aggregated_scores:
-            aggregated_scores[activity_name]['total_time'] += float(score.Time)
-        else:
-            aggregated_scores[activity_name] = {
-                'Goal': score.goal_name,
-                'Activity': score.activity_name,
-                'Streak': score.streak_name,
-                'total_time': float(score.Time),
-                'todos': []  # Lägg till todos (om det behövs)
-            }
 
-    today = datetime.now()
-    valid_streaks = []
+    aggregated_scores = {
+        "activity_points": activity_points,
+        "streak_points": streak_points,
+        "total_points": total
+    }
 
-    goal_id = request.args.get('goalSel')  # Om du skickar goal_id som en parameter
-    if goal_id:
-        current_goal = Goals.query.get('goalSel')
-    else:
-        current_goal = None
-
-    for streak in myStreaks:
-        interval_days = timedelta(days=streak.interval, hours=23, minutes=59, seconds=59)
-        if streak.lastReg:
-            try:
-                last_reg_date = streak.lastReg
-                streak_interval = last_reg_date + interval_days
-                if streak.count == 0:
-                    valid_streaks.append(streak)
-                elif streak.count >= 1:
-                    if today.date() == streak_interval.date():
-                        valid_streaks.append(streak)
-                    elif streak_interval.date() < today.date():
-                        continue
-                elif streak_interval.date() < today.date():
-                    streak.active = False
-                    streak.count = 0
-                    db.session.commit()
-            except (ValueError, TypeError) as e:
-                print(f'Hantera ogiltigt datum: {e}, streak ID: {streak.id}, lastReg: {streak.lastReg}')
-        else:
-            valid_streaks.append(streak)
-
-        print(valid_streaks)
-
-    if myScore:
-        sorted_myScore = sorted([score for score in myScore if score[0] is not None], key=lambda score: score[0])
-
+    # Hantera POST-begäran, exempel
     if request.method == 'POST':
         if 'save-score' in request.form['action']:
-            score_str = request.form.get('score', '').strip()
-            if score_str:
-                try:
-                    score_check = float(score_str)
-                    if score_check >= 1:
-                        add2db(Score, request, ['gID', 'aID', 'aDate', 'start', 'end', 'score'],
-                               ['Goal', 'Activity', 'Date', 'Start', 'End', 'Time'], current_user)
-                        return redirect(url_for('pmg.myday'))
-                except ValueError:
-                    print(f"Invalid score value: {score_str}")
-            else:
-                print("Score field is empty")
+            # Hantera sparad poäng
+            pass
 
-    elif 'save_todo' in request.form:
-        todo_list = [request.form.get(f'todo_{i}') for i in range(1, 6) if request.form.get(f'todo_{i}')]
-        # Skapa en ny post med titel "To-Do" och spara listan som innehåll
-        todo_bullet = TopFive(title='To-Do', content=','.join(todo_list), user_id=current_user.id,
-                              date=today)
-        db.session.add(todo_bullet)
-        db.session.commit()
-    # Spara Think listan
-    elif 'save_think' in request.form:
-        think_list = [request.form.get(f'think_{i}') for i in range(1, 6) if request.form.get(f'think_{i}')]
-        think_bullet = TopFive(title='Think', content=','.join(think_list), user_id=current_user.id,
-                               date=today)
-        db.session.add(think_bullet)
-        db.session.commit()
-    # Spara Remember listan
-    elif 'save_remember' in request.form:
-        remember_list = [request.form.get(f'remember_{i}') for i in range(1, 6) if
-                         request.form.get(f'remember_{i}')]
-        remember_bullet = TopFive(title='Remember', content=','.join(remember_list), user_id=current_user.id,
-                                  date=today)
-        db.session.add(remember_bullet)
-        db.session.commit()
-    # Spara ändringarna i databasen
-        flash('Listor sparade!', 'success')
+    return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
+                           acts=myActs, my_goals=my_Goals, my_streaks=myStreaks,
+                           total_score=total, aggregated_scores=aggregated_scores,
+                           sub_menu=sub_menu, plot_url=plot_url)
 
-        # Hämta listor för att visa på sidan
-    priorities = TopFive.query.filter_by(user_id=current_user.id, title="To-Do").first()
-    if priorities:
-        to_do_list = priorities.content.split(',')
-    else:
-        to_do_list = []
-    to_think_list = TopFive.query.filter_by(user_id=current_user.id, title="Think").first()
-    if to_think_list:
-        to_think_list = to_think_list.content.split(',')
-    else:
-        to_think_list = []
-    remember_list = TopFive.query.filter_by(user_id=current_user.id, title="Remember").first()
-    if remember_list:
-        remember_list = remember_list.content.split(',')
-    else:
-        remember_list = []
-
-    return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now, acts=myActs,
-                           my_goals=my_Goals, my_streaks=valid_streaks, my_score=myScore, total_score=total, plot_url=plot_url,
-                           sub_menu=sub_menu, sum_scores=aggregated_scores, current_goal=current_goal,
-                           remember_list=remember_list,to_think_list=to_think_list,to_do_list=to_do_list)
 @pmg_bp.route('/myday/<date>')
 @login_required
 def myday_date(date):
@@ -605,7 +558,7 @@ def focus_room(activity_id):
     goal_id = activity.goal_id  # Hämta goal_id från aktiviteten
     today = date.today()
     current_date=today
-    tasks = ToDoList.query.filter_by(activity_id=activity_id, user_id=current_user.id).order_by(ToDoList.completed.desc()).all()
+    tasks = get_user_tasks(current_user.id, activity_id)  # Hämta och sortera tasks
     activity_notes = Notes.query.filter_by(user_id=current_user.id, activity_id=activity_id).all()
     if request.method == 'POST':
         if 'save-score' in request.form['action']:
@@ -671,8 +624,9 @@ def delete_activity(activity_id):
 
 @pmg_bp.route('/get_activities/<goal_id>')
 def get_activities(goal_id):
-    activities = Activity.query.filter_by(goal_id=goal_id, user_id=current_user.id).all()
+    activities = get_user_activities(current_user.id)
     activity_list = [{'id': activity.id, 'name': activity.name} for activity in activities]
+
     return jsonify(activity_list)
 
 @pmg_bp.route('/update_note/<int:note_id>', methods=['POST'])
@@ -722,15 +676,13 @@ def activity_tasks(activity_id):
     # Hämta aktiviteten
     activity = Activity.query.get_or_404(activity_id)
 
-    # Kontrollera om aktiviteten är kopplad till ett SharedItem
-    shared_item = SharedItem.query.filter_by(
-        id=activity.shared_item_id
-    ).first()
+    # Kontrollera om användaren har åtkomst till aktiviteten
+    if activity.goal_id not in [goal.id for goal in get_user_goals(current_user.id)]:
+        flash("Du har inte behörighet att visa denna aktivitet.", "danger")
+        return redirect(url_for('pmg.myday'))  # Omdirigera till en lämplig sida
 
-
-    todos = ToDoList.query.filter_by(activity_id=activity_id).options(
-            db.joinedload(ToDoList.subtasks)).all()
-
+    # Hämta tasks och subtasks kopplade till aktiviteten
+    todos = get_user_tasks(current_user.id,activity_id)  # Använd den uppdaterade funktionen
 
     sida = f"{activity.name} ToDos"
     return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos, sida=sida, header=sida)
@@ -790,6 +742,33 @@ def add_task(activity_id):
         return redirect(url_for('pmg.focus_room', activity_id=activity_id))
 
     return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+
+@pmg_bp.route('/activity/<int:activity_id>/delete_task/<int:task_id>', methods=['POST'])
+@login_required
+def delete_task(activity_id, task_id):
+    # Hämta tasken
+    task = ToDoList.query.get_or_404(task_id)
+
+    # Kontrollera om användaren har åtkomst till aktiviteten
+    if task.activity_id != activity_id:
+        flash("Ogiltig förfrågan: Aktiviteten matchar inte.", "danger")
+        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+
+    # Kontrollera om användaren är ägare till tasken eller att aktiviteten är delad
+    if not current_user.id == task.user_id:
+        flash("Du har inte behörighet att ta bort denna task.", "danger")
+        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+
+    try:
+        db.session.delete(task)
+        db.session.commit()
+        flash("Task raderades framgångsrikt.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Något gick fel vid raderingen: {str(e)}", "danger")
+
+    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+
 
 # endregion
 

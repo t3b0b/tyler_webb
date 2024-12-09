@@ -251,32 +251,40 @@ def unique(db, by_db):
 
 def update_dagar(user_id, model):
     today = date.today()
-    my_Score, total = myDayScore(today, user_id)
+    total_points, point_details = myDayScore(today, user_id)
+    activity_points = point_details.get("activity_points", 0)
+    streak_points = point_details.get("streak_points", 0)
+
     my_streaks = Streak.query.filter_by(user_id=user_id).all()
     tot_streaks = len(my_streaks)
 
     if my_streaks:
         active_streaks = Streak.query.filter_by(user_id=user_id, active=True).all()
         completed = len(active_streaks)
-        streakNames = ""
+        streakNames = ", ".join(streak.name for streak in active_streaks)
 
-        for i, streak in enumerate(active_streaks):
-            if i == completed:
-                streakNames += streak.name
-            elif i < completed:
-                streakNames += streak.name + ','
         dag = model.query.filter_by(date=today, user_id=user_id).first()
         if dag is None:
-            dag = model(user_id=user_id, date=today, total_streaks=tot_streaks, completed_streaks=completed,
-                        completed_streaks_names=streakNames, total_points=total)
+            dag = model(
+                user_id=user_id,
+                date=today,
+                total_streaks=tot_streaks,
+                completed_streaks=completed,
+                completed_streaks_names=streakNames,
+                total_points=total_points,
+                streak_points=streak_points,
+                activity_points=activity_points
+            )
             db.session.add(dag)
-            db.session.commit()
         else:
             dag.completed_streaks = completed
             dag.total_streaks = tot_streaks
             dag.completed_streaks_names = streakNames
-            dag.total_points = total
-            db.session.commit()
+            dag.total_points = total_points
+            dag.streak_points = streak_points
+            dag.activity_points = activity_points
+        db.session.commit()
+
 
 
 def completed_streaks(day, model=Dagar):
@@ -341,8 +349,32 @@ def update_streak_details(streak, today):
 
         return score, goal_id
 
-
 def myDayScore(date, user_id):
+    # Beräkna streaks-poäng
+    streak_points = db.session.query(db.func.sum(Score.Time)).filter(
+        Score.user_id == user_id,
+        db.func.date(Score.Date) == date,
+        Score.Activity == None  # Streaks har ingen aktivitet kopplad
+    ).scalar() or 0
+
+    # Beräkna aktivitetspoäng
+    activity_points = db.session.query(db.func.sum(Score.Time)).filter(
+        Score.user_id == user_id,
+        db.func.date(Score.Date) == date,
+        Score.Activity != None  # Poäng kopplade till aktiviteter
+    ).scalar() or 0
+
+    # Totalpoäng
+    total_points = streak_points + activity_points
+
+    # Returnera totalpoäng och en ordbok med detaljer
+    return total_points, {
+        "streak_points": streak_points,
+        "activity_points": activity_points
+    }
+
+
+def myDayScore2(date, user_id):
     total = 0
     myScore = db.session.query(
         Goals.name.label('goal_name'),

@@ -21,7 +21,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 100%;
+    width: 65%;
     max-height: 700px;
     border: 2px solid #333;
     padding: 10px;
@@ -48,7 +48,7 @@
     justify-content: space-between; /* Gör så att innehållet sprids ut */
     align-items: center; /* Centrera text och knapp vertikalt */
     justify-items: center;
-    width:96%;
+    width:100%;
     border: 1px solid slategray;
     padding: 5px;
     border-bottom: 1px solid #ddd;

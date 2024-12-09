@@ -14,9 +14,10 @@
     </div>
     <div class="calendar-grid">
         <div class="calendar-header">
-            <button onclick="changeMonth(-1)"> < </button>
+            <button onclick="changeMonth(-1)" class="nav-btn">&lt;</button>
             <span>{{ month_name }} {{ year }}</span>
-            <button onclick="changeMonth(1)"> > </button>
+            <button onclick="changeMonth(1)" class="nav-btn">&gt;</button>
+
         </div>
         <div class="day-header">Måndag</div>
         <div class="day-header">Tisdag</div>
@@ -68,11 +69,12 @@ function onDateClick(element, date) {
 }
 
 function changeMonth(change) {
-    var currentYear = {{ year }};
-    var currentMonth = {{ month }};
-    var newDate = new Date(currentYear, currentMonth - 1 + change);
-    window.location.href = `/pmg/month/${newDate.getFullYear()}/${newDate.getMonth() + 1}`;
+    const currentYear = {{ year }};
+    const currentMonth = {{ month }};
+    const newDate = new Date(currentYear, currentMonth - 1 + change);
+    window.location.href = `/cal/month/${newDate.getFullYear()}/${newDate.getMonth() + 1}`;
 }
+
 
 document.addEventListener('DOMContentLoaded', function() {
     const today = '{{ today_date }}';

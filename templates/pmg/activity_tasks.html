@@ -30,10 +30,14 @@
                             <span class="shared-indicator">(Shared)</span>
                         {% endif %}
                         <div class="task-actions">
-                            <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
-                                <input type="hidden" name="origin" value="todo">
-                                <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
-                            </form>
+                        <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
+                            <input type="hidden" name="origin" value="todo">
+                            <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
+                        </form>
+
+                        <form method="POST" action="{{ url_for('pmg.delete_task', activity_id=activity.id, task_id=task.id) }}" style="display: inline;">
+                            <button type="submit" class="delete-btn" onclick="return confirm('Är du säker på att du vill radera denna task?')">🗑️</button>
+                        </form>
                         </div>
                 </div>
                 <!-- Subtasks-container (hidden by default) -->

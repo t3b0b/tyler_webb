@@ -104,6 +104,7 @@
             {% for streak in my_streaks %}
                 <div class="list-item">
                     <label>{{ streak.name }}</label>
+                    <label>Igår: {{ streak.yesterday_value }}</label>
                     <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post" style="display: flex; justify-content: center; align-items: center;">
                         {% if streak.type == "number" %}
                             <input type="number" name="amount" style="background: #f0f0f0; height: 20px; width: 40px; text-align: center; margin-right: 40px;">
