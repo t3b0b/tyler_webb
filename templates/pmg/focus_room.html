@@ -66,18 +66,18 @@
             </form>
         </div>
         {% endfor %}
-        <div class="new-notebook-form">
-            <h4>Create a New Notebook</h4>
+        {% endif %}
+        <div class="activity-notes-">
             <form method="POST" action="{{ url_for('pmg.create_notebook', activity_id=activity.id) }}">
                 <div>
-                    <label for="notebook-title">Notebook Title:</label>
+                    <label for="notebook-title">New Notebook:</label>
                     <input type="text" id="notebook-title" name="title" required>
                 </div>
                 <button type="submit" class="button-style">Create Notebook</button>
             </form>
         </div>
     </div>
-    {% endif %}
+
 </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>

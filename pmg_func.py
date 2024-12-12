@@ -272,8 +272,6 @@ def update_dagar(user_id, model):
                 completed_streaks=completed,
                 completed_streaks_names=streakNames,
                 total_points=total_points,
-                streak_points=streak_points,
-                activity_points=activity_points
             )
             db.session.add(dag)
         else:

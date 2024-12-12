@@ -19,13 +19,41 @@ from sqlalchemy.orm import scoped_session
 
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
-def get_user_activities(user_id):
-    # Hämta mål som användaren har tillgång till
-    all_goals = get_user_goals(user_id)
-    goal_ids = [goal.id for goal in all_goals]
+def create_streak_notification(streak, message):
+    participants = SharedStreak.query.filter_by(streak_id=streak.id, status='active').all()
+    for participant in participants:
+        if participant.user_id != current_user.id:
+            create_notification(
+                user_id=participant.user_id,
+                message=message,
+                related_item_id=streak.id,
+                item_type='streak'
+            )
 
-    # Hämta aktiviteter kopplade till dessa mål
-    return Activity.query.filter(Activity.goal_id.in_(goal_ids)).all()
+
+def notify_streak_status(streak_id):
+    shared_items = SharedItem.query.filter_by(item_type='streak', item_id=streak_id, status='active').all()
+
+    for shared_item in shared_items:
+        if shared_item.shared_with_id != current_user.id:
+            create_notification(
+                user_id=shared_item.shared_with_id,
+                message=f"{current_user.username} behöver hjälp med streak: {shared_item.streak.name}.",
+                related_item_id=shared_item.item_id,
+                item_type='streak'
+            )
+
+
+def get_activities_for_goal(user_id, goal_id):
+    # Kontrollera om målet finns bland användarens tillåtna mål
+    all_goals = get_user_goals(user_id)
+    allowed_goal_ids = [goal.id for goal in all_goals]
+
+    if goal_id not in allowed_goal_ids:
+        raise ValueError("Användaren har inte tillgång till detta mål.")
+
+    # Hämta aktiviteter kopplade till det specifika målet
+    return Activity.query.filter_by(goal_id=goal_id).all()
 
 def get_user_goals(user_id):
     # Hämta användarens egna mål
@@ -35,7 +63,7 @@ def get_user_goals(user_id):
     shared_goal_ids = db.session.query(SharedItem.item_id).filter(
         SharedItem.shared_with_id == user_id,
         SharedItem.item_type == 'goal',
-        SharedItem.status == 'accepted'
+        SharedItem.status == 'accepted'  # Endast accepterade mål
     ).all()
 
     # Konvertera shared_goal_ids till en lista av ID:n
@@ -47,13 +75,16 @@ def get_user_goals(user_id):
     # Kombinera egna och delade mål
     return own_goals + shared_goals
 
-def get_user_tasks(user_id, activity_id=None):
-    """
+
+def get_user_tasks(user_id,  model, activity_id=None):
+    """a
     Hämtar tasks för användaren (egna och delade aktiviteter).
     Om activity_id tillhandahålls, filtrera tasks tillhörande den specifika aktiviteten.
     """
+
     # Hämta alla aktiviteter som användaren har tillgång till
-    all_activities = get_user_activities(user_id)
+    all_activities = model.query.filter_by(user_id=user_id).all()
+
     activity_ids = [activity.id for activity in all_activities]
 
     # Om activity_id anges, filtrera på den specifika aktiviteten
@@ -63,6 +94,7 @@ def get_user_tasks(user_id, activity_id=None):
 
     # Sortera tasks (avklarade först, sedan alfabetiskt)
     return query.options(db.joinedload(ToDoList.subtasks)).order_by(ToDoList.completed.desc(), ToDoList.task.asc()).all()
+
 def get_daily_scores(user_id):
     today = datetime.now().date()
     yesterday = today - timedelta(days=1)
@@ -134,6 +166,52 @@ def create_activity_plot(activity_times):
     plot_url = base64.b64encode(img.getvalue()).decode('utf8')
     plt.close()
     return plot_url
+
+def update_shared_streak(streak_id, completed=True):
+    shared_items = SharedItem.query.filter_by(item_type='streak', item_id=streak_id, status='active').all()
+
+    for shared_item in shared_items:
+        streak = shared_item.streak
+        if completed:
+            streak.count += 1
+        else:
+            streak.count = 0
+        db.session.commit()
+
+        # Notifiera deltagarna
+        if shared_item.shared_with_id != current_user.id:
+            create_notification(
+                user_id=shared_item.shared_with_id,
+                message=f"{current_user.username} uppdaterade streak: {streak.name}.",
+                related_item_id=streak.id,
+                item_type='streak'
+            )
+def challenge_user_to_streak(streak_id, friend_id):
+    original_streak = Streak.query.get(streak_id)
+    if not original_streak:
+        raise ValueError("Ogiltig streak.")
+
+    # Kontrollera att användaren är en vän
+    friendship = Friendship.query.filter_by(user_id=current_user.id, friend_id=friend_id, status='accepted').first()
+    if not friendship:
+        raise ValueError("Användaren är inte din vän.")
+
+    new_streak = Streak(
+        name=f"Utmaning: {original_streak.name}",
+        user_id=friend_id,
+        interval=original_streak.interval,
+        count=0
+    )
+    db.session.add(new_streak)
+    db.session.commit()
+
+    create_notification(
+        user_id=friend_id,
+        message=f"{current_user.username} har utmanat dig med streak: '{original_streak.name}'.",
+        related_item_id=new_streak.id,
+        item_type='streak'
+    )
+
 @pmg_bp.route('/notifications/unread', methods=['GET'])
 @login_required
 def get_unread_notifications():
@@ -144,6 +222,7 @@ def get_unread_notifications():
         'created_at': notification.created_at.strftime('%Y-%m-%d %H:%M:%S')
     } for notification in notifications])
 
+
 @pmg_bp.route('/notifications/mark_as_read', methods=['POST'])
 @login_required
 def mark_notifications_as_read():
@@ -153,8 +232,8 @@ def mark_notifications_as_read():
     db.session.commit()
     return jsonify({'message': 'All notifications marked as read'})
 
-#region Streak
 
+#region Streak
 @pmg_bp.route('/streak',methods=['GET', 'POST'])
 @login_required
 def streak():
@@ -177,6 +256,38 @@ def streak():
     return render_template('pmg/streak.html',sida=sida,header=sida,
                            todayDate=current_date,streaks=myStreaks,sub_menu=sub_menu,
                        goals=myGoals)
+
+@pmg_bp.route('/streak/<int:shared_streak_id>/respond', methods=['POST'])
+@login_required
+def respond_to_streak_invitation(shared_streak_id):
+    shared_streak = SharedStreak.query.get_or_404(shared_streak_id)
+
+    if shared_streak.user_id != current_user.id:
+        flash("Du har inte rätt att svara på denna inbjudan.", "danger")
+        return redirect(url_for('pmg.streak'))
+
+    action = request.form.get('action')
+    if action == 'accept':
+        shared_streak.status = 'active'
+        create_notification(
+            user_id=shared_streak.owner_id,
+            message=f"{current_user.username} har accepterat streak-inbjudan!",
+            related_item_id=shared_streak.id,
+            item_type='streak'
+        )
+        flash("Du har accepterat inbjudan!", "success")
+    elif action == 'decline':
+        shared_streak.status = 'declined'
+        create_notification(
+            user_id=shared_streak.owner_id,
+            message=f"{current_user.username} har avböjt streak-inbjudan.",
+            related_item_id=shared_streak.id,
+            item_type='streak'
+        )
+        flash("Du har avböjt inbjudan.", "info")
+
+    db.session.commit()
+    return redirect(url_for('pmg.streak'))
 
 @pmg_bp.route('/streak/<int:streak_id>/details', methods=['GET'])
 def streak_details(streak_id):
@@ -500,7 +611,7 @@ def myday():
     activity_points = point_details.get("activity_points", 0)
     streak_points = point_details.get("streak_points", 0)
 
-    myActs = get_user_activities(current_user.id)
+    myActs = Activity.query.filter_by(user_id=current_user.id)
     my_Goals = get_user_goals(current_user.id)
     myStreaks = filter_mod(Streak, user_id=current_user.id)
 
@@ -558,7 +669,8 @@ def focus_room(activity_id):
     goal_id = activity.goal_id  # Hämta goal_id från aktiviteten
     today = date.today()
     current_date=today
-    tasks = get_user_tasks(current_user.id, activity_id)  # Hämta och sortera tasks
+    tasks = get_user_tasks(current_user.id, Activity,activity_id)  # Hämta och sortera tasks
+
     activity_notes = Notes.query.filter_by(user_id=current_user.id, activity_id=activity_id).all()
     if request.method == 'POST':
         if 'save-score' in request.form['action']:
@@ -624,7 +736,7 @@ def delete_activity(activity_id):
 
 @pmg_bp.route('/get_activities/<goal_id>')
 def get_activities(goal_id):
-    activities = get_user_activities(current_user.id)
+    activities = Activity.query.filter_by(goal_id=goal_id)
     activity_list = [{'id': activity.id, 'name': activity.name} for activity in activities]
 
     return jsonify(activity_list)
@@ -682,7 +794,7 @@ def activity_tasks(activity_id):
         return redirect(url_for('pmg.myday'))  # Omdirigera till en lämplig sida
 
     # Hämta tasks och subtasks kopplade till aktiviteten
-    todos = get_user_tasks(current_user.id,activity_id)  # Använd den uppdaterade funktionen
+    todos = get_user_tasks(current_user.id, Activity, activity_id)  # Använd den uppdaterade funktionen
 
     sida = f"{activity.name} ToDos"
     return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos, sida=sida, header=sida)
@@ -807,7 +919,6 @@ def get_subtasks(task_id):
     subtasks = SubTask.query.filter_by(task_id=task_id).all()
     return render_template('pmg/subtasks.html', task=task, subtasks=subtasks)
 
-
-#end region
+#endregion
 
 

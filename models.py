@@ -79,7 +79,8 @@ class SharedItem(db.Model):
     # Relationer
     goal = db.relationship('Goals', foreign_keys=[item_id],
                            primaryjoin="and_(SharedItem.item_id == Goals.id, SharedItem.item_type == 'goal')")
-    
+    streak = db.relationship('Streak', foreign_keys=[item_id],
+                             primaryjoin="and_(SharedItem.item_id == Streak.id, SharedItem.item_type == 'streak')")
     owner = db.relationship('User', foreign_keys=[owner_id], backref='shared_items_owned')
     shared_with = db.relationship('User', foreign_keys=[shared_with_id], backref='shared_with_items')
 
