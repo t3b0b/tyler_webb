@@ -16,7 +16,7 @@
 
     <div class="list-content">
         {% for activity in activities %}
-            <div class="list-item" data-goal-id="{{ activity.id }}" onclick="window.location.href = '/pmg/activity/{{ activity.id }}/tasks';">
+            <div class="list-item" data-goal-id="{{ activity.id }}" data-activity-id="{{ activity.id }}" data-start-activity="{{ start_activity }}" onclick="handleActivityClick(this)">
                 {{ activity.name }}
                 {% if activity.shared_item_id %}
                     <span class="shared-indicator">(Shared)</span>
@@ -39,6 +39,7 @@
         <button type="submit" name="action" value="addActivity">Save Activity</button>
     </form>
 </div>
+
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
 

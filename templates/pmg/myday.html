@@ -138,7 +138,9 @@
     </form>
 
     <div id="startaAktivitet" class="button-center" style="width: 45%">
-        <button class="button-style" type="submit">Starta Aktivitet</button>
+        <a  href="{{ url_for('pmg.goals', start_activity=1) }}" >
+            <button class="button-style" type="submit">Starta Aktivitet</button>
+        </a>
     </div>
 
     <div id="activityForm" class="form-container" style="display:none; border: none;">

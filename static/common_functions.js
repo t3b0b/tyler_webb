@@ -1,15 +1,28 @@
-var activityId; // Se till att denna variabel är korrekt inställd
+var activityId;
 var openTime;
 var closeTime;
 
+function handleActivityClick(element) {
+
+    const activityId = element.getAttribute('data-goal-id');
+    const newActivity = element.getAttribute('data-start-activity');
+
+    if (newActivity === "1") {
+        startActivity(activityId);
+
+    } else {
+        // Annars omdirigera till todos
+        window.location.href = `/pmg/activity/${activityId}/tasks`;
+    }
+}
+
 // Starta aktivitet
-function startActivity() {
+function startActivity(actId) {
     openTime = new Date(); // Spara starttiden
     localStorage.setItem('start', openTime.toISOString()); // Spara starttiden i localStorage om sidan laddas om
     localStorage.setItem('active', true);
-    activityId = document.getElementById('activitySelect').value;
-    localStorage.setItem('selectedActivityId', activityId);
-    window.location.href = `/pmg/focus_room/${activityId}`;
+    localStorage.setItem('selectedActivityId', actId);
+    window.location.href = `/pmg/focus_room/${actId}`;
 }
 
 // Stoppa aktivitet
@@ -21,12 +34,14 @@ function stopActivity() {
     // Kontrollera att start- och stopptiderna finns i localStorage innan de används
     const startStored = localStorage.getItem('start');
     const endStored = localStorage.getItem('end');
-    if (startStored && endStored) {
+    const activityId = localStorage.getItem('selectedActivityId');
+
+    if (startStored && endStored && activityId) {
         document.getElementById("start").value = new Date(startStored).toISOString().slice(0, 19).replace('T', ' ');
         document.getElementById("end").value = new Date(endStored).toISOString().slice(0, 19).replace('T', ' ');
+        document.getElementById("aID").value = activityId;
     }
 
-    document.getElementById("aID").value = localStorage.getItem('selectedActivityId');
     document.getElementById('stopButton').style.display = 'none';
     document.getElementById('continueButton').style.display = 'none';
 

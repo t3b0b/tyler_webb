@@ -30,7 +30,6 @@ def create_streak_notification(streak, message):
                 item_type='streak'
             )
 
-
 def notify_streak_status(streak_id):
     shared_items = SharedItem.query.filter_by(item_type='streak', item_id=streak_id, status='active').all()
 
@@ -43,6 +42,58 @@ def notify_streak_status(streak_id):
                 item_type='streak'
             )
 
+def get_weekly_scores(user_id):
+    today = datetime.utcnow()
+    start_of_this_week = today - timedelta(days=today.weekday())
+    start_of_last_week = start_of_this_week - timedelta(days=7)
+    end_of_last_week = start_of_this_week - timedelta(days=1)
+
+    # Hämta poäng från databasen
+    this_week_scores = db.session.query(
+        Score.Date, db.func.sum(Score.Time).label('total_points')
+    ).filter(
+        Score.user_id == user_id,
+        Score.Date >= start_of_this_week,
+        Score.Date <= today
+    ).group_by(Score.Date).all()
+
+    last_week_scores = db.session.query(
+        Score.Date, db.func.sum(Score.Time).label('total_points')
+    ).filter(
+        Score.user_id == user_id,
+        Score.Date >= start_of_last_week,
+        Score.Date <= end_of_last_week
+    ).group_by(Score.Date).all()
+
+    return this_week_scores, last_week_scores
+
+def create_week_comparison_plot(this_week_scores, last_week_scores):
+    days = ['Mån', 'Tis', 'Ons', 'Tors', 'Fre', 'Lör', 'Sön']
+    x = range(len(days))
+
+    # Konvertera datan till en form som passar grafer
+    this_week_data = {score.Date.weekday(): score.total_points for score in this_week_scores}
+    last_week_data = {score.Date.weekday(): score.total_points for score in last_week_scores}
+
+    this_week = [this_week_data.get(i, 0) for i in range(7)]
+    last_week = [last_week_data.get(i, 0) for i in range(7)]
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(x, last_week, alpha=0.2, label="Föregående vecka", color="blue",)
+    plt.bar(x, this_week, alpha=0.6, label="Aktuell vecka", color="orange")
+    plt.xticks(x, days, fontsize=14)
+#    plt.ylabel("Score")
+    plt.ylim(15, 350)  # Sätter y-axeln från 15 till 350
+    plt.yticks(range(0, 360, 30), fontsize=14)
+    plt.legend(fontsize=14)
+    plt.tight_layout(pad=2.0)
+    plt.grid(color='lightgray', linestyle='--', linewidth=0.5)  # Ställ in rutnätets stil och färg
+
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plt.close()
+    return base64.b64encode(img.getvalue()).decode('utf8')
 
 def get_activities_for_goal(user_id, goal_id):
     # Kontrollera om målet finns bland användarens tillåtna mål
@@ -75,12 +126,7 @@ def get_user_goals(user_id):
     # Kombinera egna och delade mål
     return own_goals + shared_goals
 
-
 def get_user_tasks(user_id,  model, activity_id=None):
-    """a
-    Hämtar tasks för användaren (egna och delade aktiviteter).
-    Om activity_id tillhandahålls, filtrera tasks tillhörande den specifika aktiviteten.
-    """
 
     # Hämta alla aktiviteter som användaren har tillgång till
     all_activities = model.query.filter_by(user_id=user_id).all()
@@ -123,6 +169,7 @@ def get_today_score(user_id):
         db.func.date(Score.Date) == today
     ).scalar() or 0
     return today_score
+
 def get_yesterday_score(user_id):
     """Hämta gårdagens score för en specifik användare."""
     yesterday = datetime.now().date() - timedelta(days=1)
@@ -131,6 +178,7 @@ def get_yesterday_score(user_id):
         db.func.date(Score.Date) == yesterday
     ).scalar() or 0
     return yesterday_score
+
 def get_week_activity_times(user_id):
     """Hämta total tid per aktivitet under aktuell vecka för en specifik användare."""
     today = datetime.now().date()
@@ -146,6 +194,7 @@ def get_week_activity_times(user_id):
     ).group_by(Activity.name).all()
 
     return activity_times
+
 def create_activity_plot(activity_times):
     """Generera en stående stapelgraf med unika färger för varje mål."""
     activity_names = [activity[0] for activity in activity_times]
@@ -186,6 +235,7 @@ def update_shared_streak(streak_id, completed=True):
                 related_item_id=streak.id,
                 item_type='streak'
             )
+
 def challenge_user_to_streak(streak_id, friend_id):
     original_streak = Streak.query.get(streak_id)
     if not original_streak:
@@ -347,6 +397,7 @@ def delete_streak(streak_id):
 def goals():
     sida, sub_menu = common_route("Mina Mål", ['/pmg/streak', '/pmg/goals', '/pmg/milestones'],
                                   ['Streaks', 'Goals', 'Milestones'])
+    start_activity = request.args.get('start_activity', None)
 
     if request.method == 'POST':
         if 'addGoal' in request.form['action']:
@@ -465,7 +516,8 @@ def goals():
                            personal_goals=personal_goals,
                            sub_menu=sub_menu,
                            friends=friends,
-                           shared_goals=shared_goals)
+                           shared_goals=shared_goals,
+                           start_activity=start_activity)
 
 @pmg_bp.route('/goal_request/<int:request_id>/<action>', methods=['POST'])
 @login_required
@@ -500,7 +552,8 @@ def goal_activities(goal_id):
     goal = Goals.query.get_or_404(goal_id)
     user = current_user.id
     shared_item = SharedItem.query.filter_by(item_id=goal_id, item_type='goal', status='active').first()
-    
+    start_activity = request.args.get('start_activity', None)
+
     if request.method == 'POST':
         # Hantera POST-begäran för att lägga till en aktivitet
         goalId = goal_id
@@ -537,7 +590,7 @@ def goal_activities(goal_id):
 
     # Hantera GET-begäran för att visa aktiviteterna
     activities = Activity.query.filter_by(goal_id=goal_id).all()
-    return render_template('pmg/activities.html', goal=goal, activities=activities)
+    return render_template('pmg/activities.html', goal=goal, start_activity=start_activity ,activities=activities)
 
 @pmg_bp.route('/goal/<int:goal_id>/delete', methods=['GET', 'POST'])
 @login_required
@@ -611,12 +664,17 @@ def myday():
     activity_points = point_details.get("activity_points", 0)
     streak_points = point_details.get("streak_points", 0)
 
+    this_week_scores, last_week_scores = get_weekly_scores(current_user.id)
+
+    plot_url = create_week_comparison_plot(this_week_scores, last_week_scores)
+#    plot_url = create_activity_plot(act_times)
+
     myActs = Activity.query.filter_by(user_id=current_user.id)
     my_Goals = get_user_goals(current_user.id)
     myStreaks = filter_mod(Streak, user_id=current_user.id)
 
     act_times = get_week_activity_times(current_user.id)
-    plot_url = create_activity_plot(act_times)
+
 
     aggregated_scores = {
         "activity_points": activity_points,

@@ -435,4 +435,259 @@ def getInfo(filename, page):
     else:
         return "Ingen information tillgänglig för den angivna sidan."
 
+
+def create_streak_notification(streak, message):
+    participants = SharedStreak.query.filter_by(streak_id=streak.id, status='active').all()
+    for participant in participants:
+        if participant.user_id != current_user.id:
+            create_notification(
+                user_id=participant.user_id,
+                message=message,
+                related_item_id=streak.id,
+                item_type='streak'
+            )
+
+
+def notify_streak_status(streak_id):
+    shared_items = SharedItem.query.filter_by(item_type='streak', item_id=streak_id, status='active').all()
+
+    for shared_item in shared_items:
+        if shared_item.shared_with_id != current_user.id:
+            create_notification(
+                user_id=shared_item.shared_with_id,
+                message=f"{current_user.username} behöver hjälp med streak: {shared_item.streak.name}.",
+                related_item_id=shared_item.item_id,
+                item_type='streak'
+            )
+
+
+def get_weekly_scores(user_id):
+    today = datetime.utcnow()
+    start_of_this_week = today - timedelta(days=today.weekday())
+    start_of_last_week = start_of_this_week - timedelta(days=7)
+    end_of_last_week = start_of_this_week - timedelta(days=1)
+
+    # Hämta poäng från databasen
+    this_week_scores = db.session.query(
+        Score.Date, db.func.sum(Score.Time).label('total_points')
+    ).filter(
+        Score.user_id == user_id,
+        Score.Date >= start_of_this_week,
+        Score.Date <= today
+    ).group_by(Score.Date).all()
+
+    last_week_scores = db.session.query(
+        Score.Date, db.func.sum(Score.Time).label('total_points')
+    ).filter(
+        Score.user_id == user_id,
+        Score.Date >= start_of_last_week,
+        Score.Date <= end_of_last_week
+    ).group_by(Score.Date).all()
+
+    return this_week_scores, last_week_scores
+
+
+def create_week_comparison_plot(this_week_scores, last_week_scores):
+    days = ['Mån', 'Tis', 'Ons', 'Tors', 'Fre', 'Lör', 'Sön']
+    x = range(len(days))
+
+    # Konvertera datan till en form som passar grafer
+    this_week_data = {score.Date.weekday(): score.total_points for score in this_week_scores}
+    last_week_data = {score.Date.weekday(): score.total_points for score in last_week_scores}
+
+    this_week = [this_week_data.get(i, 0) for i in range(7)]
+    last_week = [last_week_data.get(i, 0) for i in range(7)]
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(x, last_week, alpha=0.5, label="Föregående vecka", color="blue")
+    plt.bar(x, this_week, alpha=1, label="Aktuell vecka", color="orange")
+    plt.xticks(x, days)
+    plt.ylabel("Totala poäng")
+    plt.xlabel("Veckodag")
+    plt.legend()
+    plt.tight_layout()
+
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plt.close()
+    return base64.b64encode(img.getvalue()).decode('utf8')
+
+
+def get_activities_for_goal(user_id, goal_id):
+    # Kontrollera om målet finns bland användarens tillåtna mål
+    all_goals = get_user_goals(user_id)
+    allowed_goal_ids = [goal.id for goal in all_goals]
+
+    if goal_id not in allowed_goal_ids:
+        raise ValueError("Användaren har inte tillgång till detta mål.")
+
+    # Hämta aktiviteter kopplade till det specifika målet
+    return Activity.query.filter_by(goal_id=goal_id).all()
+
+
+def get_user_goals(user_id):
+    # Hämta användarens egna mål
+    own_goals = Goals.query.filter_by(user_id=user_id).all()
+
+    # Hämta delade mål via SharedItem
+    shared_goal_ids = db.session.query(SharedItem.item_id).filter(
+        SharedItem.shared_with_id == user_id,
+        SharedItem.item_type == 'goal',
+        SharedItem.status == 'accepted'  # Endast accepterade mål
+    ).all()
+
+    # Konvertera shared_goal_ids till en lista av ID:n
+    shared_goal_ids = [item[0] for item in shared_goal_ids]
+
+    # Hämta själva målen från deras ID:n
+    shared_goals = Goals.query.filter(Goals.id.in_(shared_goal_ids)).all()
+
+    # Kombinera egna och delade mål
+    return own_goals + shared_goals
+
+
+def get_user_tasks(user_id, model, activity_id=None):
+    # Hämta alla aktiviteter som användaren har tillgång till
+    all_activities = model.query.filter_by(user_id=user_id).all()
+
+    activity_ids = [activity.id for activity in all_activities]
+
+    # Om activity_id anges, filtrera på den specifika aktiviteten
+    query = ToDoList.query.filter(ToDoList.activity_id.in_(activity_ids))
+    if activity_id:
+        query = query.filter(ToDoList.activity_id == activity_id)
+
+    # Sortera tasks (avklarade först, sedan alfabetiskt)
+    return query.options(db.joinedload(ToDoList.subtasks)).order_by(ToDoList.completed.desc(),
+                                                                    ToDoList.task.asc()).all()
+
+
+def get_daily_scores(user_id):
+    today = datetime.now().date()
+    yesterday = today - timedelta(days=1)
+
+    # Hämta poäng för idag och igår
+    today_score = Score.query.filter_by(user_id=user_id, date=today).first()
+    yesterday_score = Score.query.filter_by(user_id=user_id, date=yesterday).first()
+
+    if today_score and yesterday_score:
+        if today_score > yesterday_score:
+            message = "Bra jobbat! Du har överträffat din poäng från igår."
+        else:
+            message = "Försök få en högre poäng imorgon!"
+    elif today_score:
+        message = "Bra start idag!"
+    else:
+        message = "Inga poäng registrerade för idag ännu."
+
+    return today_score, yesterday_score, message
+
+
+def get_today_score(user_id):
+    """Hämta dagens score för en specifik användare."""
+    today = datetime.now().date()
+    today_score = db.session.query(db.func.sum(Score.Time)).filter(
+        Score.user_id == user_id,
+        db.func.date(Score.Date) == today
+    ).scalar() or 0
+    return today_score
+
+
+def get_yesterday_score(user_id):
+    """Hämta gårdagens score för en specifik användare."""
+    yesterday = datetime.now().date() - timedelta(days=1)
+    yesterday_score = db.session.query(db.func.sum(Score.Time)).filter(
+        Score.user_id == user_id,
+        db.func.date(Score.Date) == yesterday
+    ).scalar() or 0
+    return yesterday_score
+
+
+def get_week_activity_times(user_id):
+    """Hämta total tid per aktivitet under aktuell vecka för en specifik användare."""
+    today = datetime.now().date()
+    start_of_week = today - timedelta(days=today.weekday())  # Måndag i denna vecka
+    end_of_week = start_of_week + timedelta(days=6)  # Söndag i denna vecka
+
+    activity_times = db.session.query(
+        Activity.name,
+        db.func.sum(Score.Time).label('total_time')
+    ).join(Score).filter(
+        Score.user_id == user_id,
+        Score.Date.between(start_of_week, end_of_week)
+    ).group_by(Activity.name).all()
+
+    return activity_times
+
+
+def create_activity_plot(activity_times):
+    """Generera en stående stapelgraf med unika färger för varje mål."""
+    activity_names = [activity[0] for activity in activity_times]
+    total_times = [activity[1] for activity in activity_times]
+
+    # Färger för varje stapel, genereras automatiskt för att vara unika
+    colors = plt.cm.get_cmap('tab20', len(activity_names))(range(len(activity_names)))
+    plt.figure(figsize=(10, 8), facecolor='none', edgecolor='k', )
+    plt.bar(activity_names, total_times, color=colors)  # Stående staplar
+    plt.ylabel('Total Tid (min)', fontsize=10)
+    plt.xlabel('Aktivitet', fontsize=10)
+    plt.xticks(rotation=0, ha='center', fontsize=14)
+    plt.yticks(rotation=0, ha='right', fontsize=14)
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    # Konvertera bilden till base64 för att inkludera den i HTML
+    plot_url = base64.b64encode(img.getvalue()).decode('utf8')
+    plt.close()
+    return plot_url
+
+
+def update_shared_streak(streak_id, completed=True):
+    shared_items = SharedItem.query.filter_by(item_type='streak', item_id=streak_id, status='active').all()
+
+    for shared_item in shared_items:
+        streak = shared_item.streak
+        if completed:
+            streak.count += 1
+        else:
+            streak.count = 0
+        db.session.commit()
+
+        # Notifiera deltagarna
+        if shared_item.shared_with_id != current_user.id:
+            create_notification(
+                user_id=shared_item.shared_with_id,
+                message=f"{current_user.username} uppdaterade streak: {streak.name}.",
+                related_item_id=streak.id,
+                item_type='streak'
+            )
+
+
+def challenge_user_to_streak(streak_id, friend_id):
+    original_streak = Streak.query.get(streak_id)
+    if not original_streak:
+        raise ValueError("Ogiltig streak.")
+
+    # Kontrollera att användaren är en vän
+    friendship = Friendship.query.filter_by(user_id=current_user.id, friend_id=friend_id, status='accepted').first()
+    if not friendship:
+        raise ValueError("Användaren är inte din vän.")
+
+    new_streak = Streak(
+        name=f"Utmaning: {original_streak.name}",
+        user_id=friend_id,
+        interval=original_streak.interval,
+        count=0
+    )
+    db.session.add(new_streak)
+    db.session.commit()
+
+    create_notification(
+        user_id=friend_id,
+        message=f"{current_user.username} har utmanat dig med streak: '{original_streak.name}'.",
+        related_item_id=new_streak.id,
+        item_type='streak'
+    )
+
 # endregion
