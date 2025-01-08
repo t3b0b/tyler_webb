@@ -42,6 +42,21 @@ def sync_titles():
     flash('Synkronisering av bloggrubriker till MyWords slutförd!', 'success')
     return redirect(url_for('txt.blog'))
 
+@txt_bp.route('/update_post/<int:post_id>', methods=['POST'])
+@login_required
+def update_post(post_id):
+    note = Notes.query.get_or_404(post_id)
+
+    # Kontrollera att användaren äger anteckningen
+    if note.user_id != current_user.id:
+        return jsonify({'error': 'Inte behörig'}), 403
+
+    data = request.get_json()
+    note.title = data.get('title', note.title)
+    note.content = data.get('content', note.content)
+
+    db.session.commit()
+    return jsonify({'success': 'Inlägget uppdaterades!'})
 
 @txt_bp.route('/journal', methods=['GET', 'POST'])
 @login_required
@@ -185,6 +200,7 @@ def get_new_word(section_id):
         ordet, ord_lista = getWord()
 
     return jsonify(ordet)
+
 
 @txt_bp.route('/blog/', defaults={'section_name': None}, methods=['GET', 'POST'])
 @txt_bp.route('/blog/<section_name>', methods=['GET', 'POST'])

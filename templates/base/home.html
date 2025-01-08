@@ -1,21 +1,50 @@
 {% extends 'base.html' %}
 
+
 {% block head %}
        <title> {{ sida }} </title>
+<style>
+.newsletter {
+    text-align: center;
+    margin: 20px auto;
+}
+.newsletter form {
+    display: inline-block;
+}
+.newsletter input {
+    margin-right: 10px;
+    padding: 5px;
+}
+.newsletter button {
+    padding: 5px 10px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+.newsletter button:hover {
+    background-color: #0056b3;
+}
+</style>
 {% endblock head %}
 
 {% block body %}
-    <div class="main-container">
-        <div class="info-box">
-            {% for header, content in start_info %}
-                <h1> {{ header }} </h1>
-                <p > {{ content }} </p>
-            {% endfor %}
-       </div>
-        <div class="image-with-text">
-            <img src="{{ url_for('static', filename='images/vb_NET-(svart).png') }}" class="image" width="auto", height="200" />
-            <h2>Ta dig till nästa nivå!</h2>
-            <p style="white-space: pre-wrap;">Lär dig att programmera i Solidworks. Denna kunskap är ovärderlig för den som jobbar med CAD</p>
-        </div>
-    </div>
+
+    <section class = "newsletter">
+        <h2>Håll dig uppdaterad!</h2>
+        <br>
+        <form action="/subscribe" method="POST">
+                <div class="name-fields">
+                    <input type="text" name="first-name" placeholder="First name:" class="input-half">
+                    <input type="text" name="last-name" placeholder="Last name:" class="input-half">
+                </div>
+
+
+                <input type="email" id="email" name="email" placeholder="E-postadress" required class="input-full">
+
+            <div class="btn-container">
+                <button class = blue-btn type="submit">Prenumerera</button>
+            </div>
+        </form>
+    </section>
 {% endblock body %}

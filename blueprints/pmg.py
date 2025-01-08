@@ -592,7 +592,7 @@ def goal_activities(goal_id):
     activities = Activity.query.filter_by(goal_id=goal_id).all()
     return render_template('pmg/activities.html', goal=goal, start_activity=start_activity ,activities=activities)
 
-@pmg_bp.route('/goal/<int:goal_id>/delete', methods=['GET', 'POST'])
+@pmg_bp.route('/goal/<int:goal_id>/delete', methods=['POST'])
 @login_required
 def delete_goal(goal_id):
     goal = Goals.query.get_or_404(goal_id)
@@ -603,31 +603,35 @@ def delete_goal(goal_id):
         return redirect(url_for('pmg.goals'))
 
     try:
-        # Radera alla relaterade aktiviteter och tasks
+        # Radera relaterade aktiviteter och tasks
         for activity in goal.activities:
-            for task in activity.todo_list:
-                db.session.delete(task)
+            # Ta bort relaterade tasks
+            ToDoList.query.filter_by(activity_id=activity.id).delete()
+
+            # Ta bort relaterade notes
+            Notes.query.filter_by(activity_id=activity.id).delete()
+
+            # Ta bort själva aktiviteten
             db.session.delete(activity)
-        
-        # Ta bort relaterade milstolpar (om de finns)
+
+        # Ta bort milstolpar
         for milestone in goal.milestones:
             db.session.delete(milestone)
 
-        # Ta bort delade objekt (om målet är delat)
-        shared_items = SharedItem.query.filter_by(item_type='goal', item_id=goal.id).all()
-        for shared_item in shared_items:
-            db.session.delete(shared_item)
+        # Ta bort delade objekt
+        SharedItem.query.filter_by(item_type='goal', item_id=goal.id).delete()
 
         # Radera själva målet
         db.session.delete(goal)
         db.session.commit()
-        flash("Målet har tagits bort.", "success")
 
+        flash("Målet har tagits bort.", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Något gick fel vid raderingen: {str(e)}", "danger")
 
     return redirect(url_for('pmg.goals'))
+
 
 
 @pmg_bp.route('pmg/goal_requests', methods=['GET'])
@@ -778,17 +782,27 @@ def update_task(activity_id, task_id):
     # Om ingen origin skickas med, omdirigera till standard-sidan
     return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
 
-@pmg_bp.route('/delete-activity/<int:activity_id>', methods=['GET','POST'])
+@pmg_bp.route('/delete-activity/<int:activity_id>', methods=['POST'])
+@login_required
 def delete_activity(activity_id):
     activity = Activity.query.get_or_404(activity_id)
-    if activity:
-        try:
-            db.session.delete(activity)
-            db.session.commit()
-            flash("Målet har tagits bort.", "success")  # Returnera en enkel sträng istället för JSON
-        except Exception as e:
-            db.session.rollback()
-            return "Internal server error", 500
+
+    try:
+        # Ta bort relaterade tasks
+        ToDoList.query.filter_by(activity_id=activity.id).delete()
+
+        # Ta bort relaterade notes
+        Notes.query.filter_by(activity_id=activity.id).delete()
+
+        # Ta bort själva aktiviteten
+        db.session.delete(activity)
+        db.session.commit()
+
+        flash("Aktiviteten har tagits bort.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Något gick fel vid raderingen: {str(e)}", "danger")
+
     return redirect(url_for('pmg.activities'))
 
 
@@ -858,9 +872,7 @@ def activity_tasks(activity_id):
     return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos, sida=sida, header=sida)
 
 
-
-
-@pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST', 'GET'])
+@pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST'])
 def add_task(activity_id):
     # Hämta aktiviteten
     activity = Activity.query.get_or_404(activity_id)
@@ -870,9 +882,10 @@ def add_task(activity_id):
         id=activity.shared_item_id
     ).first()
 
-    # Hämta task-namn från formuläret
+    # Hämta data från formuläret
     task_name = request.form.get('task_name')
-    origin = request.form.get('origin')
+    is_repeatable = request.form.get('is_repeatable') == 'true'
+    total_repeats = request.form.get('total_repeats', type=int)
 
     # Validera task-namn
     if not task_name:
@@ -883,7 +896,9 @@ def add_task(activity_id):
     new_task = ToDoList(
         task=task_name,
         completed=False,
-        user_id=current_user.id,  # Användaren som skapar tasken
+        is_repeatable=is_repeatable,
+        total_repeats=total_repeats if is_repeatable else None,
+        user_id=current_user.id,
         activity_id=activity.id,
         shared_item_id=shared_item.id if shared_item else None
     )
@@ -895,22 +910,15 @@ def add_task(activity_id):
         # Hämta alla användare som delar aktiviteten
         shared_users = SharedItem.query.filter_by(item_id=activity.id, item_type='activity', status='active').all()
         for shared_user in shared_users:
-            if shared_user.shared_with_id != current_user.id:  # Hoppa över nuvarande användare
+            if shared_user.shared_with_id != current_user.id:
                 create_notification(
-                    user_id=shared_user.shared_with_id,  # Mottagarens ID
+                    user_id=shared_user.shared_with_id,
                     message=f"{current_user.username} added the task '{task_name}' to '{activity.name}'.",
                     related_item_id=new_task.id,
                     item_type='task'
                 )
 
     flash("Task added successfully", "success")
-
-    # Omdirigera baserat på ursprung (origin)
-    if origin == 'todo':
-        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
-    elif origin == 'focus':
-        return redirect(url_for('pmg.focus_room', activity_id=activity_id))
-
     return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
 
 @pmg_bp.route('/activity/<int:activity_id>/delete_task/<int:task_id>', methods=['POST'])

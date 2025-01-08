@@ -3,44 +3,54 @@
     overflow-y: scroll;
 }
 
+
+
+.list-container {
+    display: flex;
+    padding: 10px 2px 10px 2px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    width: 65%;
+    height: 70%;
+    max-height: 1200px;
+    border: 2px solid #333;
+    box-sizing: border-box;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
 .list-header {
     display: flex;
+    flex-direction: row;
+    width: 90%;
     justify-content: space-between;
-    align-items: stretch;
-    margin-bottom: 10px;
+    align-items: flex-start;
+    justify-items: center;
+    margin-bottom: 8px;
 }
 
 .list-header h3 {
     margin: 0;
-    font-size: 20px;
+    font-size: 1.2rem;
     font-weight: bold;
     text-align: left;
-}
-.list-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 65%;
-    max-height: 700px;
-    border: 2px solid #333;
-    padding: 10px;
-    box-sizing: border-box;
-    background-color: #f5f5f5;
-    border-radius: 8px;
 }
 .list-content {
     flex-direction: column;
     align-items: center; /* Centrera text och knapp vertikalt */
     width: 90%;
-    height: 80%;
+    height: 90%;
     border-radius: 8px;
     overflow-y: auto; /* Endast vertikal scrollning tillåten */
     overflow-x: hidden; /* Förhindrar horisontell scrollning */
     border: 1px solid #535353;
     background-color: #ddd6be;
-    padding:  2px;
+    padding:  1px;
+    margin-bottom: 3%;
     box-sizing: border-box;
+    box-shadow: inset 0px 8px 10px rgba(0, 0, 0, 0.5);
+
 }
 /* Stil för varje list-item, nu är det en knapp */
 .list-item {
@@ -48,9 +58,9 @@
     justify-content: space-between; /* Gör så att innehållet sprids ut */
     align-items: center; /* Centrera text och knapp vertikalt */
     justify-items: center;
-    width:100%;
     border: 1px solid slategray;
-    padding: 5px;
+    padding: 5px 10px 5px 15px;
+    margin-bottom: 1px;
     border-bottom: 1px solid #ddd;
     cursor: pointer;
     height: 30px;
@@ -99,12 +109,6 @@
 
 .list-content::-webkit-scrollbar-thumb:hover {
     background-color: #555;
-}
-
-.list-header {
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 22px;
 }
 
 .expanded .list-content {

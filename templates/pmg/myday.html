@@ -69,33 +69,20 @@
 </div>
 
 <div id="day-section" class="grid-container">
-    <div id="goal-section" class="list-container" style="width: 75%;">
+    <div id="score-section" class="list-container" style="width: 80%; min-height:100%;">
         <div class="list-header">
-            <h3 onclick="window.location.href = '/pmg/goals';">Goals</h3>
+            <h3 onclick="window.location.href = '/pmg/streak';">My Week</h3>
         </div>
-        {% if sum_scores %}
         <div class="list-content">
-            {% for activity, score in sum_scores.items() %}
-            <li class="list-item">
-                {% if score.Goal %}
-                    <strong>{{ score.Goal }}</strong>
-                {% endif %}
-                {% if score.Activity %}
-                    <strong>{{ score.Activity }}</strong>
-                {% endif %}
-                {% if score.Streak %}
-                    <strong>{{ score.Streak }}</strong>
-                {% endif %}
-                <strong style="text-align: right; padding: 10px">{{ score.total_time }}</strong>
-            </li>
-            {% endfor %}
+            <img style=" width:100%; height: 100%" src="data:image/png;base64,{{ plot_url }}" alt="Aktivitetsgraf"/>
         </div>
-        {% endif %}
     </div>
-    <div id="score-section">
-        <img style="width:100%; height: 100%" src="data:image/png;base64,{{ plot_url }}" alt="Aktivitetsgraf"/>
+    <div id="startaAktivitet" class="button-center" style="width: 50%">
+        <a  href="{{ url_for('pmg.goals', start_activity=1) }}" >
+            <button class="button-style" type="submit">Starta Aktivitet</button>
+        </a>
     </div>
-    <div id="streak-section" class="list-container" style=" width: 75%">
+    <div id="streak-section" class="list-container" style=" width: 80%; min-height:100%;">
         <div class="list-header">
             <h3 onclick="window.location.href = '/pmg/streak';">Streaks</h3>
         </div>
@@ -136,13 +123,6 @@
             </div>
         </div>
     </form>
-
-    <div id="startaAktivitet" class="button-center" style="width: 45%">
-        <a  href="{{ url_for('pmg.goals', start_activity=1) }}" >
-            <button class="button-style" type="submit">Starta Aktivitet</button>
-        </a>
-    </div>
-
     <div id="activityForm" class="form-container" style="display:none; border: none;">
         <select id="goalSelect" name="goalSel" class="select-style">
             <option value="----"></option>

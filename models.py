@@ -161,8 +161,18 @@ class ToDoList(db.Model):
     confirmed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     confirmed_date = db.Column(db.DateTime, nullable=True)
 
-    shared_item = db.relationship('SharedItem', backref='tasks')  # Ny relation
+    is_repeatable = db.Column(db.Boolean, nullable=False, default=False)
+    total_repeats = db.Column(db.Integer, nullable=True)
+    completed_repeats = db.Column(db.Integer, nullable=True, default=0)
+
+    shared_item = db.relationship('SharedItem', backref='tasks')
     subtasks = db.relationship('SubTask', backref='task', lazy=True)
+
+    def add_repeat(self):
+        if self.is_repeatable:
+            self.completed_repeats += 1
+            if self.completed_repeats >= self.total_repeats:
+                self.completed = True
 
 class SubTask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -173,6 +183,13 @@ class SubTask(db.Model):
     def __repr__(self):
         return f"<SubTask {self.name}, Completed: {self.completed}>"
 
+class Subscriber(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Subscriber {self.email}>'
 
 class Streak(db.Model):
     id = db.Column(db.Integer, primary_key=True)

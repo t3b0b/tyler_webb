@@ -1,8 +1,21 @@
 {% extends 'base.html' %}
 
 {% block head %}
-
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<style>
+    .edit-icon {
+        cursor: pointer;
+        margin-right: 10px;
+        color: #007BFF;
+    }
+    .editable {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 5px;
+    }
+</style>
 {% endblock head %}
+
 {% block body %}
 <div class="blogg-container">
     {% if myPosts %}
@@ -12,13 +25,56 @@
                 <button class="page-toggle-btn" type="button" onclick="window.location.href='/txt/journal?section_name=Mina+Ord'">Journal</button>
             </div>
                 {% for post in myPosts %}
-                    <h3 class="post-title">{{ post.title }}</h3>
-                    <p class="post-content">{{ post.content }}</p>
-                    <p class="post-author">{{ post.author }} {{ post.date }}</p>
+                    <div class="post-item" id="post-{{ post.id }}">
+                        <i class="edit-icon fas fa-edit" onclick="makeEditable({{ post.id }})"></i>
+                        <h3 class="post-title" id="title-{{ post.id }}">{{ post.title }}</h3>
+                        <p class="post-content" id="content-{{ post.id }}">{{ post.content }}</p>
+                        <p class="post-author">{{ post.author }} {{ post.date }}</p>
+                        <button id="save-{{ post.id }}" class="save-btn" style="display: none;" onclick="saveChanges({{ post.id }})">Spara</button>
+                    </div>
                 {% endfor %}
             </div>
     {% endif %}
 </div>
 
-   <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
+<script src="{{ url_for('static', filename='common_functions.js') }}"></script>
+<script>
+    function makeEditable(postId) {
+        // Gör titeln och innehållet redigerbart
+        const title = document.getElementById(`title-${postId}`);
+        const content = document.getElementById(`content-${postId}`);
+        const saveBtn = document.getElementById(`save-${postId}`);
+
+        title.contentEditable = true;
+        content.contentEditable = true;
+
+        title.classList.add('editable');
+        content.classList.add('editable');
+
+        saveBtn.style.display = 'inline-block'; // Visa spara-knappen
+    }
+
+    function saveChanges(postId) {
+        const title = document.getElementById(`title-${postId}`).innerText;
+        const content = document.getElementById(`content-${postId}`).innerText;
+
+        // Skicka AJAX-begäran för att uppdatera inlägget
+        fetch(`/txt/update_post/${postId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}' // Lägg till CSRF-token om CSRF-skydd används
+            },
+            body: JSON.stringify({ title: title, content: content })
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Ändringarna sparades!');
+            } else {
+                alert('Ett fel inträffade. Försök igen.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
 {% endblock body %}
