@@ -9,13 +9,13 @@
 {% endblock head %}
 
 {% block body %}
-<div class="todo-list" id="todo-list-container" style="justify-content: center; align-items: center; max-height: 60%; width: 80%;">
+<div class="todo-list" id="todo-list-container">
     <h4 class="list-header">{{ activity.name }} To-Do</h4>
     <div class="list-content">
         <ul class="striped-list">
             {% for task in tasks %}
                 <li class="{% if task.completed %}completed-task{% endif %}">
-                    {{ task.task }}
+                    <span>{{ task.task }}</span>
                     <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
                         <input type="hidden" name="origin" value="focus">
                         <input type="checkbox" class="task-checkbox" name="completed"

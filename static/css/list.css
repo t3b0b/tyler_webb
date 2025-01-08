@@ -2,9 +2,6 @@
     max-height: 500px; /* Adjust height as needed */
     overflow-y: scroll;
 }
-
-
-
 .list-container {
     display: flex;
     padding: 10px 2px 10px 2px;
@@ -12,13 +9,14 @@
     justify-content: center;
     align-items: center;
     align-content: center;
-    width: 65%;
-    height: 70%;
+    width: 90%;
+    height: 90%;
     max-height: 1200px;
     border: 2px solid #333;
     box-sizing: border-box;
     background-color: #f5f5f5;
     border-radius: 8px;
+    margin-inline: auto;
 }
 .list-header {
     display: flex;
@@ -75,6 +73,7 @@
     color: black;
     line-height: 50px;
 }
+
 .list-item strong {
     justify-content: center;
     text-align: left;
@@ -114,46 +113,50 @@
 .expanded .list-content {
     display: flex;
 }
-
 .todo-list {
     display: flex;
     flex-direction: column;
-    width: 90%;
-    max-height: 70%;
-    justify-content: center;
-    align-items: center;
-    justify-items: center;
-    margin-top: 10px;
+
+    max-height: 60%; /* Begränsar höjden */
+    width: 60%;
+    overflow-y: auto; /* Scrollbar om listan är för lång */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+}
+.todo-list li {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between; /* Text till vänster och checkbox till höger */
+    align-items: center; /* Vertikal centrering av både text och checkbox */
+    padding: 0.5rem 1rem;
     margin-inline: auto;
+    max-width: 100%; /* Gör så att listan inte blir för bred */
+    height: 3rem;
+    border: 1px solid black;
+    margin: 0 auto;
+    background-color: #fff; /* Vit bakgrund */
+    border-radius: 8px; /* Rundade hörn */
+    box-sizing: border-box;
 }
 
-.striped-list {
-    list-style-type: none;
-    align-items: center; /* Ändra från center till flex-start */
-    width: 90%;
+.checkbox {
+    margin-left: 1rem; /* Mellanrum mellan texten och checkbox */
+    transform: scale(1.2); /* Gör checkboxen större */
+    cursor: pointer; /* Muspekaren ändras till en hand */
 }
 
+.striped-list li span {
+    flex-grow: 1; /* Gör så att texten tar upp det utrymme som finns tillgängligt */
+    text-align: left; /* Justera texten till vänster */
+    padding-right: 10px; /* Mellanrum mellan texten och checkbox */
+    font-size: 16px; /* Justera textens storlek */
+    color: #333; /* Textfärg */
+}
 .striped-list li:nth-child(odd) {
     background-color: #f2f2f2; /* Ljusgrå */
 }
 .striped-list li:nth-child(even) {
     background-color: #ffffff; /* Vit */
-}
-
-.todo-list li {
-    display: flex;
-    flex-direction: row;
-    justify-content: center; /* Centrera checkbox och text horisontellt */
-    align-items: center;
-    justify-items: center;
-    width: 100%;
-    padding-left: 5%;
-    margin-inline: auto;
-
-    max-height: 60%; /* Gör så att listan inte blir för bred */
-    height:1.5rem;
-    border: 1px solid black;
-    margin: 0 auto;
 }
 
 .todo-list form {
@@ -163,9 +166,10 @@
     align-items: center;
     width: 60%;
     gap: 10px;
-    height: 2rem;
+    height: 30px;
     margin-inline: auto;
 }
+
 .todo-list form,input[type="text"] {
     font-size: 18px;
     padding: 5px 0 5px 0;
@@ -187,6 +191,7 @@
     width: 90%;
     margin: 20px auto;
 }
+
 .completed-task {
     color: gray;
     text-decoration: line-through;

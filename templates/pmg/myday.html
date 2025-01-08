@@ -29,7 +29,7 @@
 
 {% block body %}
 
-<div class="top-five">
+<div class="top-five" style="display: none;">
     <div class="top5-container">
         <div class="head-list" onclick="toggleList(this)">Priorities</div>
         <div class="five-list-content hidden">
@@ -69,7 +69,7 @@
 </div>
 
 <div id="day-section" class="grid-container">
-    <div id="score-section" class="list-container" style="width: 80%; min-height:100%;">
+    <div id="score-section" class="list-container">
         <div class="list-header">
             <h3 onclick="window.location.href = '/pmg/streak';">My Week</h3>
         </div>
@@ -82,7 +82,7 @@
             <button class="button-style" type="submit">Starta Aktivitet</button>
         </a>
     </div>
-    <div id="streak-section" class="list-container" style=" width: 80%; min-height:100%;">
+    <div id="streak-section" class="list-container">
         <div class="list-header">
             <h3 onclick="window.location.href = '/pmg/streak';">Streaks</h3>
         </div>

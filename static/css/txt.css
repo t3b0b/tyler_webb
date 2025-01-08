@@ -11,7 +11,7 @@
     margin: 20px;
 }
 
-.blogg-post{
+.blogg-post {
     display: flex;
     flex-direction: column;
     width: 80%;
@@ -43,7 +43,7 @@
     line-height: 1.5;
     flex-wrap: wrap;
     font-size: 1rem;
-    min-height: 25lh;
+    min-height: 60vh;
     padding: 12px 20px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -61,13 +61,13 @@
 }
 .ordet label {
     font-family: 'Arial', sans-serif;
-    font-size: 22px;
+    font-size: 1rem;
     font-weight: bold;
 }
 
 .ordet input {
     margin-inline: auto;
-    height: 2rem;
+    height: 1rem;
     width: 100%;
     font-family: 'Arial', sans-serif;
     font-size: larger;

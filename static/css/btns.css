@@ -44,11 +44,11 @@
 }
 
 .button-center {
-    width: 40%;
+    width: 100%;
     display: flex;
     justify-content: center;
     align-items:center;
-    gap:15px;
+    gap:10%;
     margin: 20px 0;
 }
 .small-icon, img {
@@ -69,8 +69,8 @@
 
 .button-style {
     display: block;
-    max-height:80px;
-    width: 100%;
+    max-height:60px;
+    width: 50%;
     margin: 20px auto;
     padding: 10px;
     background-color: cornflowerblue;

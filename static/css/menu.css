@@ -60,7 +60,7 @@ footer .footer-icons a img, footer .footer-icons span {
     top:0;
     left: -180px; /* Dölj menyn utanför skärmen */
     width: 200px;
-    height: 100%;
+    height: 700px;
     background-color: #1c2d5b;
     color: #ffffff;
     padding: 20px;
@@ -69,6 +69,8 @@ footer .footer-icons a img, footer .footer-icons span {
 }
 
 .side-menu.expanded {
+    overflow-y: auto; /* Endast vertikal scrollning tillåten */
+    overflow-x: hidden;
     left: 0; /* Flytta menyn till synlig position när expanderad */
 }
 
@@ -85,7 +87,22 @@ footer .footer-icons a img, footer .footer-icons span {
     text-decoration: none;
     color: #ffffff;
 }
+.side-menu::-webkit-scrollbar {
+    width: 8px; /* Scrollbarens bredd */
+}
 
+.side-menu::-webkit-scrollbar-track {
+    background: #1c2d5b; /* Samma färg som bakgrunden */
+}
+
+.side-menu::-webkit-scrollbar-thumb {
+    background: #888; /* Scrollbarens färg */
+    border-radius: 4px; /* Rundade hörn */
+}
+
+.side-menu::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Scrollbarens färg vid hover */
+}
 .menu-toggle {
     display: none;
     font-size: 24px;

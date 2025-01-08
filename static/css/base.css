@@ -24,7 +24,7 @@ body {
     align-items: center;
     align-content:center;
     width: 100%; /* Se till att footern täcker hela skärmen */
-    min-height:50px;
+    max-height:50px;
     box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1);
     position: relative;
 }
@@ -45,8 +45,8 @@ body {
 }
 
 .header-icons img {
-    height: 40px;
-    width: 40px;
+    height: 35px;
+    width: 35px;
 }
 
 .header-icons a, .header-icons span {
@@ -177,9 +177,11 @@ body {
     left: -210px; /* Döljer menyn utanför skärmen */
     width: 180px;
     height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
     background-color: #2c3e50;
     color: white;
-    padding: 20px;
+    padding: 5px;
     transition: left 0.3s ease; /* Lägger till en smidig övergångseffekt */
     box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.2);
 }
@@ -194,7 +196,7 @@ body {
 }
 
 .side-menu ul li {
-    margin: 15px 0;
+    margin: 5px 0;
 }
 
 .side-menu ul li a {
