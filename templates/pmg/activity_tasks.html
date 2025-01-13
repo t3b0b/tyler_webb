@@ -2,6 +2,7 @@
 
 {% block head %}
 <style>
+
     .hidden {
         display: none;
     }
@@ -24,56 +25,54 @@
     <div class="list-content">
         {% if tasks %}
             {% for task in tasks %}
-                <div class="list-item" data-target="subtasks-{{ task.id }}">
-    <span>{{ task.task }}</span>
+        <div class="striped-list">
+            <div class="list-item" data-target="subtasks-{{ task.id }}">
+                <span>{{ task.task }}</span>
+                <!-- Om task är upprepningsbar, visa repetitionstatus -->
+                {% if task.is_repeatable %}
+                    <span class="repeat-status">Repetitioner: {{ task.completed_repeats }} / {{ task.total_repeats }}</span>
+                {% endif %}
 
-    <!-- Om task är upprepningsbar, visa repetitionstatus -->
-    {% if task.is_repeatable %}
-        <span class="repeat-status">Repetitioner: {{ task.completed_repeats }} / {{ task.total_repeats }}</span>
-    {% endif %}
-
-    {% if task.shared_item_id %}
-        <span class="shared-indicator">(Shared)</span>
-    {% endif %}
-        <div class="task-actions">
-            <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
-                <input type="hidden" name="origin" value="todo">
-                <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
-            </form>
-
-            <form method="POST" action="{{ url_for('pmg.delete_task', activity_id=activity.id, task_id=task.id) }}" style="display: inline;">
-                <button type="submit" class="delete-btn" onclick="return confirm('Är du säker på att du vill radera denna task?')">🗑️</button>
-            </form>
-        </div>
-    </div>
-                <!-- Subtasks-container (hidden by default) -->
-                <ul id="subtasks-{{ task.id }}" class="todo-list hidden">
-                    {% for subtask in task.subtasks %}
-                        <li>
-                            {{ subtask.name }}
-                            <form method="POST" action="{{ url_for('pmg.update_subtask', subtask_id=subtask.id) }}">
-                                <input type="checkbox" name="completed" onchange="this.form.submit()" {% if subtask.completed %}checked{% endif %}>
-                            </form>
-                        </li>
-                    {% endfor %}
-                    <!-- Form to add new subtask -->
-                    <form method="POST" action="{{ url_for('pmg.add_subtask', task_id=task.id) }}">
-                        <input type="hidden" name="actId" value="{{ activity.id }}" style="display: none">
-                        <input type="hidden" name="todo" value="focus" style="display: none">
-                        <input type="text" name="task_name" placeholder="Enter new task" required>
-                        <button onclick="" type="submit" name="action" style="height: 1.5rem;" value="addTodo">Add</button>
+                {% if task.shared_item_id %}
+                    <span class="shared-indicator">(Shared)</span>
+                {% endif %}
+                <div class="task-actions">
+                    <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
+                        <input type="hidden" name="origin" value="todo">
+                        <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
                     </form>
-                </ul>
+                    <form method="POST" action="{{ url_for('pmg.delete_task', activity_id=activity.id, task_id=task.id) }}" style="display: inline;">
+                        <button type="submit" class="delete-btn" onclick="return confirm('Är du säker på att du vill radera denna task?')">🗑️</button>
+                    </form>
+                </div>
+            </div>
+            <ul id="subtasks-{{ task.id }}" class="subtask-list hidden">
+                {% for subtask in task.subtasks %}
+                    <li class="list-item">
+                        <span>{{ subtask.name }}</span>
+                        <form method="POST" action="{{ url_for('pmg.update_subtask', subtask_id=subtask.id) }}">
+                            <input type="checkbox" name="completed" onchange="this.form.submit()" {% if subtask.completed %}checked{% endif %}>
+                        </form>
+                    </li>
+                {% endfor %}
+
+                <!-- Form för att lägga till ny subtask -->
+                <form method="POST" action="{{ url_for('pmg.add_subtask', task_id=task.id) }}" class="add-form-container">
+                    <input type="text" name="subtask_name" placeholder="Enter new subtask" required>
+                    <button type="submit">Add</button>
+                </form>
+            </ul>
+        </div>
             {% endfor %}
-    </div>
         {% else %}
             <p>No tasks found for this activity.</p>
         {% endif %}
     </div>
-<div class="add-form-container" style="display:flex; flex-direction: row; justify-content: center; align-items: center; width:100%; margin-inline: auto">
+</div>
+<div class="add-form-container">
     <form action="{{ url_for('pmg.add_task', activity_id=activity.id) }}" method="POST" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
         <input type="hidden" name="origin" value="todo">
-        <input style="text-align: left; width: 500px; height: 20px; padding:5px; border: black solid 1px;" type="text" name="task_name" placeholder="New Task Name" required>
+        <input type="text" name="task_name" placeholder="New Task Name" required>
 
         <!-- Checkbox för upprepningsbarhet -->
         <label>
@@ -87,30 +86,32 @@
             <input type="number" id="total_repeats" name="total_repeats" min="1" placeholder="Ange antal repetitioner">
         </div>
 
-        <button style="margin: 20px; color: white; font-weight: bold; background-color: #4caf50; border-radius: 3px;" type="submit">Add</button>
+        <button type="submit">Add</button>
     </form>
 </div>
+
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.list-item').forEach(item => {
-            item.addEventListener('click', (event) => {
-                // Förhindra klick om checkboxen klickas
-                if (event.target.tagName === 'INPUT') return;
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.list-item').forEach(item => {
+        item.addEventListener('click', (event) => {
+            // Förhindra klick om checkboxen klickas
+            if (event.target.tagName === 'INPUT') return;
 
-                const targetId = item.getAttribute('data-target');
-                const targetList = document.getElementById(targetId);
+            const targetId = item.getAttribute('data-target');
+            const targetList = document.getElementById(targetId);
 
-                if (targetList.classList.contains('hidden')) {
-                    targetList.classList.remove('hidden');
-                } else {
-                    targetList.classList.add('hidden');
-                }
-            });
+            if (targetList.classList.contains('hidden')) {
+                targetList.classList.remove('hidden');
+            } else {
+                targetList.classList.add('hidden');
+            }
         });
     });
-        function toggleRepeatField(checkbox) {
-        const repeatField = document.getElementById('repeat-field');
-        repeatField.style.display = checkbox.checked ? 'block' : 'none';
-    }
+});
+
+function toggleRepeatField(checkbox) {
+    const repeatField = document.getElementById('repeat-field');
+    repeatField.style.display = checkbox.checked ? 'block' : 'none';
+}
 </script>
 {% endblock body %}

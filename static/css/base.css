@@ -9,6 +9,7 @@ body {
     display: flex;
     flex-direction: column;
 }
+
 .main-container {
     flex-grow: 1;
     flex-direction: column;
@@ -16,6 +17,11 @@ body {
     align-items: center;
     justify-items: center;
 }
+
+.hidden {
+    display: none;
+}
+
 .top-header {
     background-color: darkkhaki;
     padding: 10px;
@@ -45,8 +51,8 @@ body {
 }
 
 .header-icons img {
-    height: 35px;
-    width: 35px;
+    min-height: 35px;
+    min-width: 35px;
 }
 
 .header-icons a, .header-icons span {
@@ -55,68 +61,7 @@ body {
 }
 
 .header-icons span {
-    font-size: 22px;
-    font-weight: bold;
-}
-
-.footer {
-    background-color: #ecf0f1;
-    padding: 10px;
-    display: none;
-    justify-content: center; /* Sprid ut ikonerna */
-    align-items: center;
-    align-content:center;
-    width: 100%; /* Se till att footern täcker hela skärmen */
-    max-height:50px;
-    box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1);
-    position: relative;
-}
-
-.footer-icons a, .footer-icons span {
-    flex: 1; /* Sprid ut elementen jämnt */
-    text-align: center; /* Centrera ikonerna */
-}
-
-.footer-icons img {
-    height: 40px;
-    width: 40px;
-}
-
-.footer-icons {
-    display: none;
-    flex-direction:row;
-    justify-content: center;
-    align-items: center;
-    width: 100%; /* Gör så att alla ikoner täcker hela bredden av footern */
-}
-
-.left-icons {
-    display:none;
-    flex-direction:row;
-    width: 40%;
-    justify-content:space-between;
-}
-
-.right-icons {
-    display:none;
-    flex-direction:row;
-    width: 40%;
-    justify-content:space-between;
-}
-
-.footer-icons img:hover {
-    height: 40px;
-    width: 40px;
-    color:black;
-}
-
-.footer-icons a, .footer-icons span {
-    flex: 1; /* Sprid ut elementen jämnt */
-    text-align: center; /* Centrera ikonerna */
-}
-
-.footer-icons span {
-    font-size: 30px;
+    font-size: 18px;
     font-weight: bold;
 }
 
@@ -133,7 +78,7 @@ body {
 /* Dölj texten som standard */
 .icon-text .icon-label {
     display: none;
-    font-size: 14px;
+    font-size: 1rem;
     color: #333;
     margin-top: 5px; /* Liten marginal ovanför texten för bättre visning */
 }
@@ -152,12 +97,6 @@ body {
 /* När användaren hovrar, döljs bilden och texten visas */
 .icon-text:hover img {
     display: none;
-}
-
-.icon-text:hover .icon-label {
-    display: inline;
-    font-size: 20px;
-    font-weight: bold;
 }
 
 .search-button {
@@ -351,3 +290,68 @@ nav a.active {
     opacity: 0;
     bottom: 20px; /* Flyttar tillbaka vid försvinnande */
 }
+.footer {
+    display: none;
+}
+@media (max-width: 720px) {
+    .top-header {
+        display: none;
+    }
+
+    .footer {
+        position: fixed; /* Fäster footern längst ner på skärmen */
+        display: flex; /* Gör det enkelt att arrangera ikoner */
+        flex-direction: row;
+        justify-content: space-evenly; /* Sprid ut ikonerna jämnt */
+        align-items: center; /* Centrera ikonerna vertikalt */
+        justify-items: center;
+        bottom: 0; /* Placera den längst ner */
+        left: 0; /* Gör den lika bred som skärmen */
+        width: 100%; /* Full bredd */
+        background-color: #ecf0f1; /* Bakgrundsfärg */
+        box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1); /* Liten skugga för bättre synlighet */
+        z-index: 1000; /* Se till att footern alltid är över andra element */
+    }
+
+    .header-icons {
+        display: flex;
+         justify-content: space-around;
+         justify-items: center;
+         align-items: center;
+        width: 100%;
+    }
+
+     .left-icons {
+         display: flex;
+         flex-direction: row;
+         justify-content: space-evenly;
+         justify-items: center;
+         align-items: center;
+         width: 40%;
+     }
+
+     .right-icon {
+         display: flex;
+         flex-direction: row;
+         justify-content: center;
+         justify-items: center;
+         align-items: center;
+         width: 40%;
+     }
+
+    .header-icons img {
+        max-height: 25px; /* Storlek på ikoner */
+        max-width: 25px;
+
+    }
+
+    .header-icons span {
+        width: 10%;
+        font-size: 10px; /* Anpassa textstorleken */
+    }
+
+    .header-icons a:hover {
+        color: #007BFF; /* Gör en hover-effekt för bättre användarupplevelse */
+    }
+}
+

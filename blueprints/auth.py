@@ -270,21 +270,47 @@ def profile():
     my_user = User.query.filter_by(id=uID).first()
     notifications = Notification.query.filter_by(user_id=my_user.id).order_by(Notification.created_at.desc()).all()
     print(my_user)
+
     sida, sub_menu = common_route(f'{my_user.firstName} {my_user.lastName}', ['/pmg/streak', '/pmg/goals', '/pmg/milestones'], ['Streaks','Goals','Milestones'])
     return render_template('auth/profile.html', user=my_user, sida = sida, header=sida, notifications=notifications)
 
+@auth_bp.route('/upload_profile_picture', methods=['POST'])
+@login_required
+def upload_profile_picture():
+    from main import app  # Säkerställ att du importerar app-konfiguration
 
-@auth_bp.route('/upload', methods=['POST'])
-def upload_file():
-    from main import app
+    # Definiera tillåtna filtyper om det inte redan är gjort
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    UPLOAD_FOLDER = 'static/uploads'  # Sökväg för att spara filer
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+    me = User.query.filter_by(id=current_user.id).first()
+    # Kontrollera om filen finns i requesten
     if 'profile-pic' not in request.files:
-        return redirect(request.url)
+        flash('Ingen fil valdes.', 'error')
+        return redirect(url_for('auth.profile'))
+
     file = request.files['profile-pic']
+
+    # Kontrollera om filnamnet inte är tomt
     if file.filename == '':
-        return redirect(request.url)
-    if file:
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        return redirect(url_for('profile'))
+        flash('Ingen fil valdes.', 'error')
+        return redirect(url_for('auth.profile'))
+
+    # Kontrollera filtyp
+    if '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS:
+        flash('Filtypen är inte tillåten. Använd PNG, JPG, JPEG eller GIF.', 'error')
+        return redirect(url_for('auth.profile'))
+
+    # Säkra filnamnet och spara filen
+    filename = secure_filename(file.filename)
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+    # Uppdatera användarens profilbild i databasen
+    current_user.profilePic = filename
+    db.session.commit()
+
+    flash('Profilbilden har laddats upp framgångsrikt!', 'success')
+    return redirect(url_for('auth.profile'))
+
 # endregion

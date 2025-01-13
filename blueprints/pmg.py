@@ -676,15 +676,21 @@ def myday():
     myActs = Activity.query.filter_by(user_id=current_user.id)
     my_Goals = get_user_goals(current_user.id)
     myStreaks = filter_mod(Streak, user_id=current_user.id)
-
     act_times = get_week_activity_times(current_user.id)
-
+    streaks = []
 
     aggregated_scores = {
         "activity_points": activity_points,
         "streak_points": streak_points,
         "total_points": total
     }
+
+    for streak in myStreaks:
+        if streak.count == 0:
+            streaks.append(streak)
+            if streak.lastReg != date_now and streak.lastReg + timedelta(days=streak.interval) == date_now:
+                print(f'{streak.name} {streak.lastReg} {streak.interval}')
+                streaks.append(streak)
 
     # Hantera POST-begäran, exempel
     if request.method == 'POST':
@@ -693,7 +699,7 @@ def myday():
             pass
 
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
-                           acts=myActs, my_goals=my_Goals, my_streaks=myStreaks,
+                           acts=myActs, my_goals=my_Goals, my_streaks=streaks,
                            total_score=total, aggregated_scores=aggregated_scores,
                            sub_menu=sub_menu, plot_url=plot_url)
 
@@ -704,8 +710,10 @@ def myday_date(date):
     session = scoped_session(db.session)
     today = datetime.now().date()
     completed_streakNames = completed_streaks(selected_date.strftime('%Y-%m-%d'),Dagar)
+
     for name in completed_streakNames:
         print(name)
+
     with session.begin():
         myGoals = filter_mod(Goals, user_id = current_user.id)
         myStreaks = Streak.query.filter(Streak.user_id == current_user.id, Streak.lastReg != today).all()

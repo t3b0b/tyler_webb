@@ -3,42 +3,102 @@
 {% block head %}
 <style>
 
+.subtask-item input[type="checkbox"] {
+    margin-left: 10px;
+    transform: scale(1.2);
+    cursor: pointer;
+}
 
+.subtask-item span {
+    flex-grow: 1;
+    text-align: left;
+    padding-right: 10px;
+    font-size: 16px;
+    color: #333;
+}
+
+/* Indrag för subtasks för att indikera hierarki */
+.subtask-list {
+    padding: 5px; /* Indrag */
+    margin: 10px 0;
+    border-left: 2px dashed #ccc; /* Visuellt skilja subtasks */
+}
+.hidden {
+    display: none;
+}
+
+.list-item:hover {
+    background-color: #f0f0f0; /* Lägg till hover-effekt */
+}
+.task-actions {
+    display: flex;
+    align-items: center;
+}
 
 </style>
 {% endblock head %}
 
 {% block body %}
-<div class="todo-list" id="todo-list-container">
-    <h4 class="list-header">{{ activity.name }} To-Do</h4>
-    <div class="list-content">
-        <ul class="striped-list">
+<div class="list-container">
+    <div class="list-header">
+        <h3>{{ activity.name }} - Tasks</h3>
+    </div>
+   <div class="list-content">
+        {% if tasks %}
             {% for task in tasks %}
-                <li class="{% if task.completed %}completed-task{% endif %}">
-                    <span>{{ task.task }}</span>
+        <div class="striped-list">
+            <div class="list-item" data-target="subtasks-{{ task.id }}">
+                <span>{{ task.task }}</span>
+                <!-- Om task är upprepningsbar, visa repetitionstatus -->
+                {% if task.is_repeatable %}
+                    <span class="repeat-status">Repetitioner: {{ task.completed_repeats }} / {{ task.total_repeats }}</span>
+                {% endif %}
+                {% if task.shared_item_id %}
+                    <span class="shared-indicator">(Shared)</span>
+                {% endif %}
+                <div class="task-actions">
                     <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
-                        <input type="hidden" name="origin" value="focus">
-                        <input type="checkbox" class="task-checkbox" name="completed"
-                            onchange="this.form.submit()"  {% if task.completed %} checked {% endif %}>
+                        <input type="hidden" name="origin" value="todo">
+                        <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
                     </form>
-                </li>
-            {% endfor %}
-        </ul>
-        <form
-              action="{{ url_for('pmg.add_task', activity_id=activity.id) }}" method="POST">
+                    <form method="POST" action="{{ url_for('pmg.delete_task', activity_id=activity.id, task_id=task.id) }}" style="display: inline;">
+                        <button type="submit" class="delete-btn" onclick="return confirm('Är du säker på att du vill radera denna task?')">🗑️</button>
+                    </form>
+                </div>
+            </div>
+            <ul id="subtasks-{{ task.id }}" class="subtask-list hidden">
+                {% for subtask in task.subtasks %}
+                    <li class="list-item">
+                        <span>{{ subtask.name }}</span>
+                        <form method="POST" action="{{ url_for('pmg.update_subtask', subtask_id=subtask.id) }}">
+                            <input type="checkbox" name="completed" onchange="this.form.submit()" {% if subtask.completed %}checked{% endif %}>
+                        </form>
+                    </li>
+                {% endfor %}
 
+                <!-- Form för att lägga till ny subtask -->
+                <form method="POST" action="{{ url_for('pmg.add_subtask', task_id=task.id) }}" class="add-form-container">
+                    <input type="text" name="subtask_name" placeholder="Enter new subtask" required>
+                    <button type="submit">Add</button>
+                </form>
+            </ul>
+        </div>
+            {% endfor %}
+        {% else %}
+            <p>No tasks found for this activity.</p>
+        {% endif %}
+
+        <form action="{{ url_for('pmg.add_task', activity_id=activity.id) }}" method="POST">
             <input type="hidden" name="actId" value="{{ activity.id }}" style="display: none">
             <input type="hidden" name="origin" value="focus" style="display: none">
             <input type="text" name="task_name" placeholder="Enter new task" required>
             <button onclick="" type="submit" name="action" style="height: 1.5rem;" value="addTodo">Add</button>
         </form>
-    </div>
-</div>
+
     <div class="button-center">
             <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
             <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
     </div>
-
     <form method="POST" class="form-container" id="completed-form">
         <div>
             <input type="text" id="aID" name="aID" style="display: none">
@@ -51,7 +111,7 @@
             </div>
         </div>
     </form>
-
+</div>
 <div class="activity-notes" style="margin-left: 0; max-width:30%; max-height: 80%; align-items:center; text-align: left;">
  {% if activity_notes %}
     <div class="right-container">
@@ -67,6 +127,7 @@
             </div>
         {% endfor %}
         {% endif %}
+    </div>
         <div class="activity-notes-">
             <form method="POST" action="{{ url_for('pmg.create_notebook', activity_id=activity.id) }}">
                 <div>
@@ -76,11 +137,28 @@
                 <button type="submit" class="button-style">Create Notebook</button>
             </form>
         </div>
-    </div>
-
 </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
+
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.list-item').forEach(item => {
+        item.addEventListener('click', (event) => {
+            // Förhindra klick om checkboxen klickas
+            if (event.target.tagName === 'INPUT') return;
+
+            const targetId = item.getAttribute('data-target');
+            const targetList = document.getElementById(targetId);
+
+            if (targetList.classList.contains('hidden')) {
+                targetList.classList.remove('hidden');
+            } else {
+                targetList.classList.add('hidden');
+            }
+        });
+    });
+});
+
     function toggleList(element) {
         const content = element.nextElementSibling;
         content.style.display = content.style.display === 'none' || content.style.display === '' ? 'block' : 'none';

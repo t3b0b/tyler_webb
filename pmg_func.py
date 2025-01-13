@@ -221,7 +221,6 @@ def add2db(db_model, request, form_fields, model_fields, user):
     except:
         db.session.rollback()  # Lägg till detta för att säkerställa rollback på fel
 
-
 def filter_mod(model, **filters):
 
     query = model.query
@@ -241,7 +240,6 @@ def filter_mod(model, **filters):
         db.session.rollback()  # Rollback till senaste fungerande state
         print(f"Error during query execution: {str(e)}")
         return None
-
 
 def unique(db, by_db):
     unique_data = [post.title for post in db.query.with_entities(by_db).distinct().all()]
@@ -282,8 +280,6 @@ def update_dagar(user_id, model):
             dag.streak_points = streak_points
             dag.activity_points = activity_points
         db.session.commit()
-
-
 
 def completed_streaks(day, model=Dagar):
     dag = model.query.filter_by(user_id=current_user.id, date=day).first()

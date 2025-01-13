@@ -22,6 +22,7 @@ class User(db.Model, UserMixin):
     firstName = db.Column(db.String(50), nullable=False)
     lastName = db.Column(db.String(50), nullable=False)
     verified = db.Column(db.Boolean, default=False)
+    profilePic = db.Column(db.String(150), default=None, nullable=True)  # Kolumn för profilbild
 
     # Justera namnet på backref till 'user_friendships' istället för 'user'
     friendships = db.relationship('Friendship', foreign_keys='Friendship.user_id', backref='user_friendships', lazy=True)
@@ -99,6 +100,7 @@ class ActivityTracking(db.Model):
     item = db.relationship('SharedItem', backref='activities')
     user = db.relationship('User', backref='activities')
 
+
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -114,6 +116,7 @@ class Message(db.Model):
 
 class Goals(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    streakCount = db.Column(db.Integer, default=0, nullable=True)
     name = db.Column(db.String(50), nullable=False)
     deadline = db.Column(db.String, nullable=True)
     timeLimit = db.Column(db.Integer, nullable=True)

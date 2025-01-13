@@ -4,20 +4,6 @@
 <style>
 
 
-/* Lista som en del av innehållet */
-
-
-.streak-form {
-    display: flex;
-    align-items: center;
-}
-.streak-input {
-    background: #f0f0f0;
-    height: 20px;
-    width: 40px;
-    text-align: center;
-    margin-right: 10px;
-}
 .streak-icon {
     border: none;
     background: none;
@@ -44,7 +30,7 @@
     </div>
     <div class="top5-container">
         <div class="head-list" onclick="toggleList(this)">Keep in mind</div>
-        <ul class="five-list-content hidden">
+        <div class="five-list-content hidden">
             <form method="POST">
                 <li class="tab-title">Keep in mind</li>
                 {% for num in range(1, 6) %}
@@ -52,7 +38,7 @@
                 {% endfor %}
                 <button type="submit" name="save_think">Spara</button>
             </form>
-        </ul>
+        </div>
     </div>
     <div class="top5-container">
         <div class="head-list" onclick="toggleList(this)">Remember</div>
@@ -77,11 +63,13 @@
             <img style=" width:100%; height: 100%" src="data:image/png;base64,{{ plot_url }}" alt="Aktivitetsgraf"/>
         </div>
     </div>
-    <div id="startaAktivitet" class="button-center" style="width: 50%">
+
+    <div id="startaAktivitet" class="button-center">
         <a  href="{{ url_for('pmg.goals', start_activity=1) }}" >
-            <button class="button-style" type="submit">Starta Aktivitet</button>
+            <button class="button-style" style="border-radius: 50%; min-height: 150px; min-width: 150px; background-color: mediumseagreen" type="submit">New</button>
         </a>
     </div>
+
     <div id="streak-section" class="list-container">
         <div class="list-header">
             <h3 onclick="window.location.href = '/pmg/streak';">Streaks</h3>
@@ -108,38 +96,6 @@
             </div>
         {% endif %}
         </div>
-
-
-    <form method="POST">
-        <div id="completed-form" class="form-container">
-            <input type="hidden" id="gID" name="gID" style="display: none;">
-            <input type="hidden" id="aID" name="aID" style="display: none;">
-            <input type="hidden" id="aDate" name="aDate" value="{{ current_date }}" style="display: none;">
-            <input type="hidden" id="start" name="start" style="display: none;">
-            <input type="hidden" id="end" name="end" style="display: none;">
-            <input type="text" id="score" name="score" style="display: none;">
-            <div class="button-center" id="complete-form" style="display: none">
-                <button type="submit" name="action" id="save-btn" class="button-style" value="save-score">Save</button>
-            </div>
-        </div>
-    </form>
-    <div id="activityForm" class="form-container" style="display:none; border: none;">
-        <select id="goalSelect" name="goalSel" class="select-style">
-            <option value="----"></option>
-            {% for goal in my_goals %}
-            <option  value="{{ goal.id }}">{{ goal.name }}</option>
-            {% endfor %}
-        </select>
-        <select id="activitySelect" class="select-style">
-            <!-- Aktiviteter kommer att laddas här -->
-        </select>
-
-        <button id="start-timer" onclick="startActivity()" class="button-style" style="display:none;">Starta</button>
-    </div>
-    <div class="button-center" style="width:30%">
-        <button id="stopButton" class="button-style" style="display: none; background-color: red" onclick="stopActivity()">Stop</button>
-        <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
-    </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -189,27 +145,6 @@ function toggleList(element) {
         list.style.pointerEvents = 'auto';
     }
 }
-
-
-    var maxScore = 0
-    var myScore = 0
-    var percentage = 0
-
-    function updateProgress(myScore, maxScore) {
-        const progressFill = document.getElementById('Progstroke');
-        const gearContainer = document.getElementById('Gear');
-        const percentage = myScore / maxScore;
-
-        progressFill.style.strokeDashoffset = `${170 - percentage * 170}`;
-        gearContainer.style.transform = `translateX(${percentage * 100}%)`;
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const myScore = {{ total_score }};
-        const maxScore = 350;
-        updateProgress(myScore, maxScore);
-    });
-
     // Kör funktionen när sidan laddas
     document.addEventListener("DOMContentLoaded", function() {
         if (localStorage.getItem('active') === 'true') {
@@ -217,9 +152,6 @@ function toggleList(element) {
             console.log("En aktivitet är redan aktiv.");
             window.location.href = `/pmg/focus_room/${activityId}`;
         }
-        myScore = {{ total_score }} // Ersätt med den faktiska variabeln
-        maxScore = 350; // Sätt max poäng
-        updateProgress(myScore, maxScore);
     });
 
 </script>

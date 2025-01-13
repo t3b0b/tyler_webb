@@ -2,6 +2,19 @@ var activityId;
 var openTime;
 var closeTime;
 
+document.querySelectorAll('.add-subtask-form').forEach(form => {
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form)
+        });
+        if (response.ok) {
+            location.reload();
+        }
+    });
+});
+
 function handleActivityClick(element) {
 
     const activityId = element.getAttribute('data-goal-id');
@@ -48,6 +61,7 @@ function stopActivity() {
     // Beräkna och visa förfluten tid
     const elapsedTimeMs = closeTime - new Date(startStored);
     const elapsedTimeMin = Math.floor(elapsedTimeMs / 60000);
+
     saveActivity(elapsedTimeMin);
 }
 
@@ -78,7 +92,6 @@ function toggleTodoList(actId) {
     }
 
 }
-
 
 function expandNewStreakForm() {
     document.getElementById('new-streak-button').style.display = 'none';
@@ -208,4 +221,5 @@ document.querySelectorAll('.add-subtask-form').forEach(form => {
         }
     });
 });
+
 

@@ -47,6 +47,12 @@ app.config['MAIL_PASSWORD'] = "gygfvycgvmjybgse"
 app.config[('SQLALCHEMY_TRACK_MODIFICATI.- )'
             'ONS')] = False
 
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Konfigurera uppladdningsmappen
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 csrf = CSRFProtect(app)
 handler = RotatingFileHandler('error.log', maxBytes=10000, backupCount=1)
 handler.setLevel(logging.ERROR)

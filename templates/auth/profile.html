@@ -2,8 +2,9 @@
 
 {% block head %}
 <style>
+
 .profile-container {
-    width: 90%;
+    width: 100%;
     height: 100%;
     margin: 0 auto;
     padding: 20px;
@@ -19,8 +20,12 @@
 }
 
 .profile-picture {
-    width: 120px;
-    height: 120px;
+    width: 20vw; /* 20% av visningsbredden */
+    height: 20vw; /* 20% av visningsbredden (gör det alltid kvadratiskt) */
+    max-width: 150px; /* Maxstorlek för stora skärmar */
+    max-height: 150px; /* Maxstorlek för stora skärmar */
+    min-width: 80px;
+    min-height: 80px;
     border-radius: 50%;
     border: 2px solid #000;
     overflow: hidden;
@@ -28,13 +33,35 @@
     align-items: center;
     justify-content: center;
     color: #007BFF;
+    cursor: pointer; /* Gör bilden klickbar */
+    transition: transform 0.3s ease;
     background-color: #007BFF;
 }
 
+.profile-picture:hover {
+    transform: scale(1.05); /* Liten förstoring vid hover */
+}
+
 .profile-picture img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    width: 100%; /* Anpassa bilden till behållarens bredd */
+    height: 100%; /* Anpassa bilden till behållarens höjd */
+    object-fit: cover; /* Gör att bilden täcker hela behållaren utan att förvrängas */
+    border-radius: 50%; /* Gör att även bilden är cirkulär */
+}
+
+/* Responsivitet */
+@media (max-width: 768px) {
+    .profile-picture {
+        width: 100px; /* Minska storleken på mindre skärmar */
+        height: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-picture {
+        width: 80px; /* Ännu mindre på riktigt små skärmar */
+        height: 80px;
+    }
 }
 
 .profile-details {
@@ -64,16 +91,24 @@
 {% block body %}
 <div class="profile-container">
         <div class="profile-header">
-            <div class="profile-picture">
-                <!-- Placeholder for profile picture -->
-                <img src="profile-pic-placeholder.png">
+            <div class="profile-picture" id="profile-picture-container" onclick="triggerFileInput()">
+                {% if user.profilePic %}
+                    <img src="{{ url_for('static', filename='uploads/' + user.profilePic) }}" alt="Profile Picture" id="profile-pic">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/profile-pic-placeholder.png') }}" alt="Placeholder Picture" id="profile-pic">
+                {% endif %}
             </div>
+        <form id="upload-form" action="{{ url_for('auth.upload_profile_picture') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+            <input type="file" name="profile-pic" id="profile-pic-input" onchange="handleFileSelect(this)" style="display: none;" accept="image/png, image/jpeg, image/jpg, image/gif">
+        </form>
+
+
             <div class="profile-details">
                 <h2>{{ user.username }}</h2>
                 <p>{{ user.email }}</p>
             </div>
             <div>
-                <h2>Your Notifications</h2>
+                <h2>Notifications</h2>
                     <ul>
                         {% for notification in notifications %}
                             <li>
@@ -89,8 +124,42 @@
         </div>
 
         <div class="profile-info">
-            <h3>Info</h3>
+            <h3>Posts</h3>
             <p>This is where additional information about the user can be displayed.</p>
         </div>
     </div>
+<script>
+    // Trigga filväljaren när bilden klickas
+    function triggerFileInput() {
+        document.getElementById('profile-pic-input').click();
+    }
+
+    // Hantera filval och automatiskt uppladdning
+    function handleFileSelect(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const allowedExtensions = ['png', 'jpg', 'jpeg', 'gif'];
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+
+            // Kontrollera filtyp
+            if (!allowedExtensions.includes(fileExtension)) {
+                alert('Filtypen är inte tillåten. Använd PNG, JPG, JPEG eller GIF.');
+                return;
+            }
+
+            // Förhandsvisa bilden
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('profile-pic').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            // Ladda upp filen automatiskt
+            if (confirm('Vill du ladda upp denna profilbild?')) {
+                document.getElementById('upload-form').submit();
+            }
+        }
+    }
+</script>
+
 {% endblock body %}
