@@ -47,7 +47,8 @@
         {% if tasks %}
             {% for task in tasks %}
         <div class="striped-list">
-            <div class="list-item" data-target="subtasks-{{ task.id }}">
+            <div class="list-item" draggable="true" data-target="subtasks-{{ task.id }}"
+            ondragstart="dragStart(event)" ondragover="allowDrop(event)" ondrop="dropTask(event)">
                 <span>{{ task.task }}</span>
                 <!-- Om task är upprepningsbar, visa repetitionstatus -->
                 {% if task.is_repeatable %}
@@ -68,7 +69,8 @@
             </div>
             <ul id="subtasks-{{ task.id }}" class="subtask-list hidden">
                 {% for subtask in task.subtasks %}
-                    <li class="list-item">
+                    <li class="subtask-item" id="subtask-{{ subtask.id }}" draggable="true"
+                    ondragstart="dragStart(event)" ondragover="allowDrop(event)" ondrop="dropTask(event)">
                         <span>{{ subtask.name }}</span>
                         <form method="POST" action="{{ url_for('pmg.update_subtask', subtask_id=subtask.id) }}">
                             <input type="checkbox" name="completed" onchange="this.form.submit()" {% if subtask.completed %}checked{% endif %}>
@@ -141,33 +143,98 @@
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 
 <script>
+        let draggedItem = null;
+
+        function dragStart(event) {
+        draggedItem = event.target;
+        event.dataTransfer.setData("text/plain", event.target.id);
+    }
+
+        function allowDrop(event) {
+        event.preventDefault();
+    }
+
+        function dropTask(event) {
+        event.preventDefault();
+        const targetId = event.target.closest('.list-item, .subtask-item').id;
+        const targetElement = document.getElementById(targetId);
+
+        if (draggedItem.classList.contains('list-item')) {
+        // Hantera flytt av en task
+        if (targetElement.classList.contains('list-item')) {
+        targetElement.parentNode.insertBefore(draggedItem, targetElement.nextSibling);
+    }
+    } else if (draggedItem.classList.contains('subtask-item')) {
+        // Hantera flytt av en subtask
+        if (targetElement.classList.contains('list-item')) {
+        // Flytta en subtask till en ny task
+        const subtaskList = targetElement.querySelector('.subtask-list');
+        subtaskList.appendChild(draggedItem);
+    } else if (targetElement.classList.contains('subtask-item')) {
+        // Flytta mellan subtasks
+        targetElement.parentNode.insertBefore(draggedItem, targetElement.nextSibling);
+    }
+    }
+
+        updateOrderOnServer();
+    }
+
+        function updateOrderOnServer() {
+        const taskList = document.getElementById('task-list');
+        const tasks = Array.from(taskList.children).map((task, index) => {
+        const subtasks = Array.from(task.querySelectorAll('.subtask-item')).map((subtask, subIndex) => {
+        return {id: subtask.id.replace('subtask-', ''), order: subIndex};
+    });
+        return {
+        id: task.id.replace('task-', ''),
+        order: index,
+        subtasks: subtasks
+    };
+    });
+
+        fetch('pmg/update-task-order', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    },
+        body: JSON.stringify(tasks)
+    }).then(response => {
+        if (response.ok) {
+        console.log('Order updated successfully!');
+    } else {
+        console.error('Error updating order.');
+    }
+    });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.list-item').forEach(item => {
-        item.addEventListener('click', (event) => {
-            // Förhindra klick om checkboxen klickas
-            if (event.target.tagName === 'INPUT') return;
+    item.addEventListener('click', (event) => {
+    // Förhindra klick om checkboxen klickas
+    if (event.target.tagName === 'INPUT') return;
 
-            const targetId = item.getAttribute('data-target');
-            const targetList = document.getElementById(targetId);
+    const targetId = item.getAttribute('data-target');
+    const targetList = document.getElementById(targetId);
 
-            if (targetList.classList.contains('hidden')) {
-                targetList.classList.remove('hidden');
-            } else {
-                targetList.classList.add('hidden');
-            }
-        });
+    if (targetList.classList.contains('hidden')) {
+    targetList.classList.remove('hidden');
+    } else {
+    targetList.classList.add('hidden');
+    }
     });
-});
+    });
+    });
 
     function toggleList(element) {
-        const content = element.nextElementSibling;
-        content.style.display = content.style.display === 'none' || content.style.display === '' ? 'block' : 'none';
+    const content = element.nextElementSibling;
+    content.style.display = content.style.display === 'none' || content.style.display === '' ? 'block' : 'none';
     }
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
 
     if (localStorage.getItem('active') === 'true') {
-        console.log("En aktivitet är redan aktiv.");
-        return;  // Avsluta om en aktivitet redan pågår
+    console.log("En aktivitet är redan aktiv.");
+    return; // Avsluta om en aktivitet redan pågår
     }
 
     // Skrolla till botten av
@@ -176,31 +243,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Hämta alla note-titlar och lägg till en event listener för klick
     document.querySelectorAll('.note-title').forEach(title => {
-        title.addEventListener('click', function() {
-            const noteForm = this.nextElementSibling; // Formen som ligger direkt efter titeln
+    title.addEventListener('click', function() {
+    const noteForm = this.nextElementSibling; // Formen som ligger direkt efter titeln
 
-            // Kontrollera om formen är dold eller inte, växla visning
-            if (noteForm.style.display === 'none' || noteForm.style.display === '') {
-                noteForm.style.display = 'block';
-            } else {
-                noteForm.style.display = 'none';
-            }
-        });
+    // Kontrollera om formen är dold eller inte, växla visning
+    if (noteForm.style.display === 'none' || noteForm.style.display === '') {
+    noteForm.style.display = 'block';
+    } else {
+    noteForm.style.display = 'none';
+    }
+    });
     });
 
     // Visa spara-knappen när texten ändras
     document.querySelectorAll('textarea').forEach(textarea => {
-        textarea.addEventListener('input', function() {
-            const saveButton = this.closest('form').querySelector('button[type="submit"]');
-            saveButton.style.display = 'inline-block';  // Visa spara-knappen när text ändras
-        });
+    textarea.addEventListener('input', function() {
+    const saveButton = this.closest('form').querySelector('button[type="submit"]');
+    saveButton.style.display = 'inline-block'; // Visa spara-knappen när text ändras
+    });
     });
 
     // Lägg till event listeners för uppgifter
     document.querySelectorAll('.task-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', function () {
-            const taskId = this.dataset.taskId;
-            const isCompleted = this.checked;
+    checkbox.addEventListener('change', function () {
+    const taskId = this.dataset.taskId;
+    const isCompleted = this.checked;
             updateTaskStatus(taskId, isCompleted);
         });
     });

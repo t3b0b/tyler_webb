@@ -732,6 +732,30 @@ def myday_date(date):
 # endregion
 
 #region Activity
+
+@pmg_bp.route('/update-task-order', methods=['POST'])
+@login_required
+def update_task_order():
+    data = request.get_json()
+
+    # Uppdatera ordningen för varje task och subtask
+    for task_data in data:
+        task_id = int(task_data['id'])
+        task = ToDoList.query.get(task_id)
+        if task:
+            task.order = task_data['order']
+            db.session.add(task)
+
+        for subtask_data in task_data['subtasks']:
+            subtask_id = int(subtask_data['id'])
+            subtask = SubTask.query.get(subtask_id)
+            if subtask:
+                subtask.order = subtask_data['order']
+                db.session.add(subtask)
+
+    db.session.commit()
+    return jsonify({'success': True})
+
 @pmg_bp.route('/focus_room/<int:activity_id>', methods=['GET', 'POST'])
 @login_required
 def focus_room(activity_id):

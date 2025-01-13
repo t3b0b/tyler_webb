@@ -163,6 +163,7 @@ class ToDoList(db.Model):
     marked_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     confirmed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     confirmed_date = db.Column(db.DateTime, nullable=True)
+    order = db.Column(db.Integer, default=0)
 
     is_repeatable = db.Column(db.Boolean, nullable=False, default=False)
     total_repeats = db.Column(db.Integer, nullable=True)
@@ -181,6 +182,7 @@ class SubTask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)  # Namnet på subtasken
     completed = db.Column(db.Boolean, default=False)  # Om subtasken är klar
+    order = db.Column(db.Integer, default=0)
     task_id = db.Column(db.Integer, db.ForeignKey('to_do_list.id'), nullable=False)  # Koppling till huvudtasken
 
     def __repr__(self):
