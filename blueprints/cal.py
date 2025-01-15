@@ -203,6 +203,7 @@ def week():
         to_think_list = to_think_list.content.split(',')
     else:
         to_think_list = []
+
     remember_list = TopFive.query.filter_by(user_id=current_user.id, title="Remember").first()
     if remember_list:
         remember_list = remember_list.content.split(',')

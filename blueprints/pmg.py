@@ -659,49 +659,79 @@ def milestones(goal_id):
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 @login_required
 def myday():
-    sida, sub_menu = common_route("Min Grind", ['/pmg/timebox', '/pmg/streak', '/pmg/goals'],
-                                  ['My Day', 'Streaks', 'Goals'])
+    sida, sub_menu = common_route("Min Grind", ['/pmg/timebox'], ['My Day'])
     date_now = date.today()
+    now = datetime.now()
+    today = datetime.now().date()  # Hämta aktuell tid
+    tomorrow = today + timedelta(days=1)
+    hour = now.hour  # Aktuell timme
 
-    # Använd den uppdaterade myDayScore
+    # Hämta och beräkna poäng
     total, point_details = myDayScore(date_now, current_user.id)
     activity_points = point_details.get("activity_points", 0)
     streak_points = point_details.get("streak_points", 0)
 
     this_week_scores, last_week_scores = get_weekly_scores(current_user.id)
-
     plot_url = create_week_comparison_plot(this_week_scores, last_week_scores)
-#    plot_url = create_activity_plot(act_times)
 
+    # Hämta aktiviteter
     myActs = Activity.query.filter_by(user_id=current_user.id)
-    my_Goals = get_user_goals(current_user.id)
-    myStreaks = filter_mod(Streak, user_id=current_user.id)
-    act_times = get_week_activity_times(current_user.id)
-    streaks = []
 
     aggregated_scores = {
         "activity_points": activity_points,
         "streak_points": streak_points,
         "total_points": total
     }
+    # Bestäm fråga och lista baserat på tid
+    if hour < 14:
+        message = "Vad är det viktigaste för dig idag?"
+        list_type = "priorities"
+        list_date = today
+    else:
+        message = "Vad kan vara viktigt att tänka på till imorgon?"
+        list_type = "priorities"
+        list_date = tomorrow
 
-    for streak in myStreaks:
-        if streak.count == 0:
-            streaks.append(streak)
-            if streak.lastReg != date_now and streak.lastReg + timedelta(days=streak.interval) == date_now:
-                print(f'{streak.name} {streak.lastReg} {streak.interval}')
-                streaks.append(streak)
+    list_title = "Priorities"
+    topFive = TopFive.query.filter_by(title=list_title, user_id=current_user.id, list_type=list_type, date=list_date).first()
+    if topFive:
+        topFiveList = topFive.content.split(',')
+    else:
+        topFive = TopFive(user_id=current_user.id, list_type=list_type, title=list_title,
+                          date=list_date)
+        db.session.add(topFive)
+        db.session.commit()
+        topFiveList = []
 
-    # Hantera POST-begäran, exempel
-    if request.method == 'POST':
-        if 'save-score' in request.form['action']:
-            # Hantera sparad poäng
-            pass
+    # Hantera POST-begäran för att spara prioriteringar
+    if 'my_list' in request.form:
+        # Hämta användarens inmatningar
+        my_list = [request.form.get(f'Prio_{i}') for i in range(1, 6) if request.form.get(f'Prio_{i}')]
+        topFive = TopFive.query.filter_by(title=list_title, user_id=current_user.id, list_type=list_type, date=list_date).first()
+
+        if topFive:
+            topFive.content = ','.join(my_list)
+        else:
+            # Skapa en ny post om den inte finns
+            topFive = TopFive(title=list_title, content=','.join(my_list), user_id=current_user.id,
+                              list_type=list_type, date=list_date)
+            db.session.add(topFive)
+
+
+        # Spara ändringar i databasen
+        try:
+            db.session.commit()
+            flash("Dina prioriteringar har sparats!", "success")
+        except Exception as e:
+            db.session.rollback()
+            print("Fel vid sparning:", str(e))
+            flash("Ett fel inträffade vid sparningen.", "danger")
+
 
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
-                           acts=myActs, my_goals=my_Goals, my_streaks=streaks,
-                           total_score=total, aggregated_scores=aggregated_scores,
-                           sub_menu=sub_menu, plot_url=plot_url)
+                           acts=myActs, total_score=total, aggregated_scores=aggregated_scores,
+                           sub_menu=sub_menu, plot_url=plot_url, message=message, topFiveList=topFiveList,topFive=topFive)
+
 
 @pmg_bp.route('/myday/<date>')
 @login_required
