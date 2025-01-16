@@ -695,13 +695,14 @@ def myday():
     list_title = "Priorities"
     topFive = TopFive.query.filter_by(title=list_title, user_id=current_user.id, list_type=list_type, date=list_date).first()
     if topFive:
-        topFiveList = topFive.content.split(',')
-    else:
-        topFive = TopFive(user_id=current_user.id, list_type=list_type, title=list_title,
-                          date=list_date)
-        db.session.add(topFive)
-        db.session.commit()
-        topFiveList = []
+    # Om content är None, använd en tom sträng som standard
+    topFiveList = topFive.content.split(',') if topFive.content else []
+else:
+    # Om topFive inte finns, skapa en ny
+    topFive = TopFive(user_id=current_user.id, list_type=list_type, title=list_title, date=list_date)
+    db.session.add(topFive)
+    db.session.commit()
+    topFiveList = []
 
     # Hantera POST-begäran för att spara prioriteringar
     if 'my_list' in request.form:
