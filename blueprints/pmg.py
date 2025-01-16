@@ -694,9 +694,12 @@ def myday():
 
     list_title = "Priorities"
     topFive = TopFive.query.filter_by(title=list_title, user_id=current_user.id, list_type=list_type, date=list_date).first()
-    if topFive:
+
+    if topFive.content:
         topFiveList = topFive.content.split(',')
+        show = 0
     else:
+        show = 1
         topFive = TopFive(user_id=current_user.id, list_type=list_type, title=list_title,
                           date=list_date)
         db.session.add(topFive)
@@ -729,7 +732,7 @@ def myday():
 
 
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
-                           acts=myActs, total_score=total, aggregated_scores=aggregated_scores,
+                           acts=myActs, total_score=total, aggregated_scores=aggregated_scores,show=show,
                            sub_menu=sub_menu, plot_url=plot_url, message=message, topFiveList=topFiveList,topFive=topFive)
 
 

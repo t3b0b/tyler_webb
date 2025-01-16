@@ -14,11 +14,12 @@
 {% endblock head %}
 
 {% block body %}
+<input type="hidden" id="show" value="{{ show }}">
+
 <div class="top-five">
     <div class="top5-container">
-        <!-- Visa listan bara om det inte finns värden i top_five.items -->
         <div class="head-list" onclick="toggleList(this)">Priorities</div>
-        <div class="five-list-content">
+        <div class="five-list-content active">
             <form method="POST">
                 <div class="tab-title">{{message}}</div>
                 {% for num in range(1, 6) %}
@@ -100,20 +101,7 @@
         }
     });
 
-document.addEventListener("DOMContentLoaded", function () {
-    // Hämta topFiveList från servern via Jinja2
-    const topFiveList = {{ topFiveList | tojson }};
-    const headList = document.querySelector('.head-list');
-    const listContent = headList.nextElementSibling;
 
-    // Kontrollera om topFiveList är tom
-    if (topFiveList.length === 0) {
-        // Lägg till 'active'-klassen direkt och visa innehållet
-        headList.classList.add('active');
-        listContent.style.opacity = '1';
-        listContent.style.pointerEvents = 'auto';
-    }
-});
 
 function toggleList(element) {
     // Stäng andra öppna element
@@ -124,8 +112,6 @@ function toggleList(element) {
             activeElement.nextElementSibling.style.pointerEvents = 'none';
         }
     });
-
-    // Växla synlighet för det klickade elementet
     const list = element.nextElementSibling;
     if (element.classList.contains('active')) {
         element.classList.remove('active');
@@ -139,12 +125,22 @@ function toggleList(element) {
 }
     // Kör funktionen när sidan laddas
     document.addEventListener("DOMContentLoaded", function() {
+        const show = document.getElementById('show').value;
+        const headLists = document.querySelectorAll('.head-list.active');
         if (localStorage.getItem('active') === 'true') {
             let activityId = localStorage.getItem('selectedActivityId')
             console.log("En aktivitet är redan aktiv.");
             window.location.href = `/pmg/focus_room/${activityId}`;
         }
+        headLists.forEach(headList => {
+        const listContent = headList.nextElementSibling; // Hämta dess efterföljande syskon-element
+        if (show === "1") { // Kontrollera som sträng
+            headList.classList.add('active');
+            listContent.style.opacity = '1';
+            listContent.style.pointerEvents = 'auto';
+        }
     });
+});
 
 </script>
 {% endblock body %}
