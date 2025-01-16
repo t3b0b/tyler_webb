@@ -3,12 +3,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 80%;
+    height: 90%;
     max-width: 100%;
 }
 
 .blogg-container label textarea {
-    margin: 20px;
+    margin: 10px;
 }
 
 .blogg-post {
@@ -21,8 +21,8 @@
 
 .post-content {
     white-space: pre-wrap;
-
 }
+
 .post-title {
     text-align: left; /* Vänsterjustera rubriken */
     margin-bottom: 8px;
@@ -38,8 +38,7 @@
 
 .blogg-container textarea {
     min-width: 60%;
-    width: 800px;
-    max-width: 100%;
+    max-width: 85%;
     line-height: 1.5;
     flex-wrap: wrap;
     font-size: 1rem;
@@ -55,10 +54,11 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding-top: 15px;
-    padding-bottom: 15px;
-    width: 100%;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    max-width: 85%;
 }
+
 .ordet label {
     font-family: 'Arial', sans-serif;
     font-size: 1rem;
@@ -68,7 +68,7 @@
 .ordet input {
     margin-inline: auto;
     height: 1rem;
-    width: 100%;
+    max-width: 85%;
     font-family: 'Arial', sans-serif;
     font-size: larger;
     font-weight: bold;
@@ -96,7 +96,8 @@
 
 @media (max-width: 720px) {
     textarea {
-        width: 80%;
+
+        max-width: 80%;
         max-height:50%;
     }
 }
