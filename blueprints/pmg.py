@@ -682,6 +682,40 @@ def myday():
         "streak_points": streak_points,
         "total_points": total
     }
+    valid_streaks = []
+
+    goal_id = request.args.get('goalSel')  # Om du skickar goal_id som en parameter
+    if goal_id:
+        current_goal = Goals.query.get('goalSel')
+    else:
+        current_goal = None
+
+    for streak in myStreaks:
+        interval_days = timedelta(days=streak.interval, hours=23, minutes=59, seconds=59)
+        if streak.lastReg:
+            try:
+                last_reg_date = streak.lastReg
+                streak_interval = last_reg_date + interval_days
+                if streak.count == 0:
+                    valid_streaks.append(streak)
+                elif streak.count >= 1:
+                    if today.date() == streak_interval.date():
+                        valid_streaks.append(streak)
+                    elif streak_interval.date() < today.date():
+                        continue
+                elif streak_interval.date() < today.date():
+                    streak.active = False
+                    streak.count = 0
+                    db.session.commit()
+            except (ValueError, TypeError) as e:
+                print(f'Hantera ogiltigt datum: {e}, streak ID: {streak.id}, lastReg: {streak.lastReg}')
+        else:
+            valid_streaks.append(streak)
+
+    if myScore:
+        sorted_myScore = sorted([score for score in myScore if score[0] is not None], key=lambda score: score[0])
+
+
     # Bestäm fråga och lista baserat på tid
     if hour < 14:
         message = "Vad är det viktigaste för dig idag?"
