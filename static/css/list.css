@@ -9,9 +9,9 @@
     justify-content: center;
     align-items: center;
     align-content: center;
-    width: 90%;
-    height: 90%;
-    max-height: 1200px;
+    width: 75%;
+    max-width: 100%;
+    max-height: 90%;
     border: 2px solid #333;
     box-sizing: border-box;
     background-color: #f5f5f5;
@@ -289,7 +289,7 @@
     color: #000;
     border: 1px solid #ccc;
     border-radius: 8px;
-    font-size: 1.3rem;
+    font-size: 1rem;
     cursor: pointer;
     transition: background-color 0.3s ease;
     font-weight: bold;
@@ -306,18 +306,22 @@
 }
 
 @media (max-width: 720px) {
+    .list-container {
+        width: 90%;
+        max-height: 85%;
+    }
 
     .five-list-content form {
-    font-size: 16px;
+    font-size: 1rem;
     }
     .five-list-content form input[type="text"] {
-    font-size: 16px;
+    font-size: 1rem;
     }
     .five-list-content form button {
-    font-size: 16px;
+    font-size: 1rem;
     }
     .head-list {
-        font-size: 18px;
+        font-size: 1.2rem;
         font-weight: bold;
     }
 
@@ -325,13 +329,13 @@
         min-height: fit-content;
         max-height: 1.2rem;
         max-width: 20%;
-        font-size: 16px;
+        font-size: 1rem;
         font-weight: bold;
     }
 
     .scrollable-list {
         height: 50%;  /* Höjd på listan */
-        width: 80%;    /* Full bredd */
+        width: 90%;    /* Full bredd */
         border: 1px solid #000;
         overflow-y: auto;  /* Vertikal scrollning */
         padding: 5px;
@@ -343,6 +347,6 @@
     }
 
     .list-item {
-        font-size: 14px;
+        font-size: 1rem;
     }
 }

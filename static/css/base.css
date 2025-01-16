@@ -1,4 +1,3 @@
-
 html, body {
     height: 100%;
     margin: 0;
@@ -8,6 +7,9 @@ html, body {
 body {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    justify-items: center;
+    align-items: center;
 }
 
 .main-container {
@@ -340,8 +342,8 @@ nav a.active {
      }
 
     .header-icons img {
-        max-height: 25px; /* Storlek på ikoner */
-        max-width: 25px;
+        max-height: 30px; /* Storlek på ikoner */
+        max-width: 30px;
 
     }
 

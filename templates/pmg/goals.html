@@ -7,13 +7,12 @@
 
 {% block body %}
 
-<div style="display: flex; flex-direction: row; width: 90%; height: 80%; justify-content: center; align-items: center; margin-top: 3%">
-    <div class="list-container" style="width: 60%">
+    <div class="list-container">
         <div class="list-header">
             <h3>My Goals</h3>
             <div class="view-toggle" style="justify-content: center; align-items: center; top: 0; background-color:white">
-                <button style="font-size: 14px" id="team-goals" class="page-toggle-btn" onclick="toggleGoals('shared')">Shared Goals</button>
-                <button style="font-size: 14px" id="my-goals" class="page-toggle-btn active-view" onclick="toggleGoals('personal')">My Goals</button>
+                <button style="font-size: 0.8rem" id="team-goals" class="page-toggle-btn" onclick="toggleGoals('shared')">Shared Goals</button>
+                <button style="font-size: 0.8rem" id="my-goals" class="page-toggle-btn active-view" onclick="toggleGoals('personal')">My Goals</button>
             </div>
             <button class="new-button" id="new-goal-button" onclick="expandNewGoalForm()">New Goal</button>
         </div>

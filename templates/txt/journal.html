@@ -32,7 +32,7 @@
                     </div>
                     {% if sida == "Mina Ord" or sida == "Dagbok" or sida == "Mina Mål" %}
                         <div class="ordet">
-                            <button name="option" style="width: 60px" onclick="fetchNewWord()">New</button>
+                            <button name="option" style="width: 60px; margin-left: 3%" onclick="fetchNewWord()">New</button>
                             <label id="ordet-label" name="post-ord">{{ ordet }}</label>
                             <input type="hidden" name="goal" value="{{ why_G }}">
                             <input type="text" id="ordet-input" class="hidden" name="post-ord" value="{{ ordet }}">
