@@ -19,6 +19,22 @@ from sqlalchemy.orm import scoped_session
 
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
+Questions = {
+    "priorities": "Vad är viktigt för dig att prioritera idag?",
+    "tacksam": "Vad har du att vara tacksam för?",
+    "tankar": "Vilka tankar/insikter vill du påminna dig själv om?",
+    "bättre": "Vad ska du se till att göra bättre idag?",
+    "känslor": "Hur känner du dig just nu, och varför?",
+    "mål": "Vilka mål vill du nå idag?",
+    "relationer": "Finns det någon du vill ge extra uppmärksamhet till idag?",
+    "lärande": "Vad vill du lära dig eller utforska idag?",
+    "hälsa": "Vad kan du göra idag för att ta hand om din hälsa och energi?",
+    "uppskattning": "Vad eller vem kan du visa uppskattning för idag?",
+    "kreativitet": "Hur kan du uttrycka din kreativitet idag?",
+    "utmaningar": "Finns det någon utmaning du kan ta itu med idag?",
+    "avslappning": "Vad kan du göra för att slappna av och återhämta dig idag?",
+    "för_imorgon": "Vad kan du göra idag för att underlätta morgondagen?",
+}
 def create_streak_notification(streak, message):
     participants = SharedStreak.query.filter_by(streak_id=streak.id, status='active').all()
     for participant in participants:
@@ -41,6 +57,32 @@ def notify_streak_status(streak_id):
                 related_item_id=shared_item.item_id,
                 item_type='streak'
             )
+
+def SortStreaks(Streaks):
+    valid_streaks = []
+    now = datetime.now()
+    for streak in Streaks:
+        interval_days = timedelta(days=streak.interval, hours=23, minutes=59, seconds=59)
+        if streak.lastReg:
+            try:
+                last_reg_date = streak.lastReg
+                streak_interval = last_reg_date + interval_days
+                if streak.count == 0:
+                    valid_streaks.append(streak)
+                elif streak.count >= 1:
+                    if now.date() == streak_interval.date():
+                        valid_streaks.append(streak)
+                    elif streak_interval.date() < now.date():
+                        continue
+                elif streak_interval.date() < now.date():
+                    streak.active = False
+                    streak.count = 0
+                    db.session.commit()
+            except (ValueError, TypeError) as e:
+                print(f'Hantera ogiltigt datum: {e}, streak ID: {streak.id}, lastReg: {streak.lastReg}')
+        else:
+            valid_streaks.append(streak)
+    return valid_streaks
 
 def get_weekly_scores(user_id):
     today = datetime.utcnow()
@@ -261,6 +303,7 @@ def challenge_user_to_streak(streak_id, friend_id):
         related_item_id=new_streak.id,
         item_type='streak'
     )
+
 
 @pmg_bp.route('/notifications/unread', methods=['GET'])
 @login_required
@@ -665,8 +708,10 @@ def myday():
     today = datetime.now().date()  # Hämta aktuell tid
     tomorrow = today + timedelta(days=1)
     hour = now.hour  # Aktuell timme
-
-    # Hämta och beräkna poäng
+    myStreaks = filter_mod(Streak, user_id=current_user.id)
+    myScore, total = myDayScore(date_now, current_user.id)
+    today_score = get_today_score(current_user.id)
+    yesterday_score = get_yesterday_score(current_user.id)
     total, point_details = myDayScore(date_now, current_user.id)
     activity_points = point_details.get("activity_points", 0)
     streak_points = point_details.get("streak_points", 0)
@@ -682,43 +727,11 @@ def myday():
         "streak_points": streak_points,
         "total_points": total
     }
-    valid_streaks = []
 
-    goal_id = request.args.get('goalSel')  # Om du skickar goal_id som en parameter
-    if goal_id:
-        current_goal = Goals.query.get('goalSel')
-    else:
-        current_goal = None
+    valid_streaks=SortStreaks(myStreaks)
 
-    for streak in myStreaks:
-        interval_days = timedelta(days=streak.interval, hours=23, minutes=59, seconds=59)
-        if streak.lastReg:
-            try:
-                last_reg_date = streak.lastReg
-                streak_interval = last_reg_date + interval_days
-                if streak.count == 0:
-                    valid_streaks.append(streak)
-                elif streak.count >= 1:
-                    if today.date() == streak_interval.date():
-                        valid_streaks.append(streak)
-                    elif streak_interval.date() < today.date():
-                        continue
-                elif streak_interval.date() < today.date():
-                    streak.active = False
-                    streak.count = 0
-                    db.session.commit()
-            except (ValueError, TypeError) as e:
-                print(f'Hantera ogiltigt datum: {e}, streak ID: {streak.id}, lastReg: {streak.lastReg}')
-        else:
-            valid_streaks.append(streak)
-
-    if myScore:
-        sorted_myScore = sorted([score for score in myScore if score[0] is not None], key=lambda score: score[0])
-
-
-    # Bestäm fråga och lista baserat på tid
     if hour < 14:
-        message = "Vad är det viktigaste för dig idag?"
+        message = "Vad är viktigt för dig att tänka på idag?"
         list_type = "priorities"
         list_date = today
     else:
@@ -766,7 +779,7 @@ def myday():
 
 
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
-                           acts=myActs, total_score=total, aggregated_scores=aggregated_scores,show=show,
+                           acts=myActs, total_score=total, aggregated_scores=aggregated_scores,show=show, my_streaks=valid_streaks,
                            sub_menu=sub_menu, plot_url=plot_url, message=message, topFiveList=topFiveList,topFive=topFive)
 
 
