@@ -1,4 +1,4 @@
-from random import choice
+from random import choice, random
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, session
 from models import (User, db, Streak, Goals, Friendship, Notes, SharedItem, ActivityTracking, Notification,
                     Activity, Score, Dagar, ToDoList, TopFive, SubTask)
@@ -729,17 +729,20 @@ def myday():
     }
 
     valid_streaks=SortStreaks(myStreaks)
+    random.seed(today)  # Säkerställer samma fråga varje dag
+    list_type = random.choice(list(Questions.keys()))
+    message = Questions[list_type]  # Hämta frågan baserat på list_typ
 
     if hour < 14:
-        message = "Vad är viktigt för dig att tänka på idag?"
-        list_type = "priorities"
+        message = Questions[list_type]
+        list_type = list_type
         list_date = today
     else:
         message = "Vad kan vara viktigt att tänka på till imorgon?"
         list_type = "priorities"
         list_date = tomorrow
 
-    list_title = "Priorities"
+    list_title =list_type.capitalize()
     topFive = TopFive.query.filter_by(title=list_title, user_id=current_user.id, list_type=list_type, date=list_date).first()
 
     if topFive.content:
