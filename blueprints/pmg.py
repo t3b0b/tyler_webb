@@ -1,4 +1,5 @@
-from random import choice, random
+from random import choice
+import random
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, session
 from models import (User, db, Streak, Goals, Friendship, Notes, SharedItem, ActivityTracking, Notification,
                     Activity, Score, Dagar, ToDoList, TopFive, SubTask)
