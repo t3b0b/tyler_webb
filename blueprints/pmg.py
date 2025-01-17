@@ -1,4 +1,4 @@
-from random import choice, random
+qqqqqqqqqqqq from random import choice, random
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, session
 from models import (User, db, Streak, Goals, Friendship, Notes, SharedItem, ActivityTracking, Notification,
                     Activity, Score, Dagar, ToDoList, TopFive, SubTask)
@@ -729,7 +729,7 @@ def myday():
     }
 
     valid_streaks=SortStreaks(myStreaks)
-    random.seed(today)  # Säkerställer samma fråga varje dag
+    random.seed(str(today))  # Säkerställer samma fråga varje dag
     list_type = random.choice(list(Questions.keys()))
     message = Questions[list_type]  # Hämta frågan baserat på list_typ
 
