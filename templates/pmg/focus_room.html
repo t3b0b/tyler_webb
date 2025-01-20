@@ -57,6 +57,9 @@
                 {% if task.shared_item_id %}
                     <span class="shared-indicator">(Shared)</span>
                 {% endif %}
+                <span class="subtask-count">
+                    {{ task.completed_subtasks }} / {{ task.subtask_count }} avklarade
+                </span>
                 <div class="task-actions">
                     <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
                         <input type="hidden" name="origin" value="todo">
@@ -96,7 +99,7 @@
             <input type="text" name="task_name" placeholder="Enter new task" required>
             <button onclick="" type="submit" name="action" style="height: 1.5rem;" value="addTodo">Add</button>
         </form>
-
+</div>
     <div class="button-center">
             <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
             <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>

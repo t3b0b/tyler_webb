@@ -61,6 +61,7 @@ def notify_streak_status(streak_id):
 
 def SortStreaks(Streaks):
     valid_streaks = []
+    
     now = datetime.now()
     for streak in Streaks:
         interval_days = timedelta(days=streak.interval, hours=23, minutes=59, seconds=59)
@@ -86,7 +87,7 @@ def SortStreaks(Streaks):
     return valid_streaks
 
 def get_weekly_scores(user_id):
-    today = datetime.utcnow()
+    today = datetime.now(timezone('Europe/Stockholm'))  # Anpassa till din lokala tidszon
     start_of_this_week = today - timedelta(days=today.weekday())
     start_of_last_week = start_of_this_week - timedelta(days=7)
     end_of_last_week = start_of_this_week - timedelta(days=1)
@@ -96,16 +97,16 @@ def get_weekly_scores(user_id):
         Score.Date, db.func.sum(Score.Time).label('total_points')
     ).filter(
         Score.user_id == user_id,
-        Score.Date >= start_of_this_week,
-        Score.Date <= today
+        db.func.date(Score.Date) >= start_of_this_week.date(),
+        db.func.date(Score.Date) <= today.date()
     ).group_by(Score.Date).all()
 
     last_week_scores = db.session.query(
         Score.Date, db.func.sum(Score.Time).label('total_points')
     ).filter(
         Score.user_id == user_id,
-        Score.Date >= start_of_last_week,
-        Score.Date <= end_of_last_week
+        db.func.date(Score.Date) >= start_of_last_week.date(),
+        db.func.date(Score.Date) <= end_of_last_week.date()
     ).group_by(Score.Date).all()
 
     return this_week_scores, last_week_scores
@@ -169,11 +170,9 @@ def get_user_goals(user_id):
     # Kombinera egna och delade mål
     return own_goals + shared_goals
 
-def get_user_tasks(user_id,  model, activity_id=None):
-
+def get_user_tasks(user_id, model, activity_id=None):
     # Hämta alla aktiviteter som användaren har tillgång till
     all_activities = model.query.filter_by(user_id=user_id).all()
-
     activity_ids = [activity.id for activity in all_activities]
 
     # Om activity_id anges, filtrera på den specifika aktiviteten
@@ -181,8 +180,18 @@ def get_user_tasks(user_id,  model, activity_id=None):
     if activity_id:
         query = query.filter(ToDoList.activity_id == activity_id)
 
-    # Sortera tasks (avklarade först, sedan alfabetiskt)
-    return query.options(db.joinedload(ToDoList.subtasks)).order_by(ToDoList.completed.desc(), ToDoList.task.asc()).all()
+    # Ladda subtasks och sortera tasks
+    tasks = query.options(db.joinedload(ToDoList.subtasks)).order_by(
+        ToDoList.completed.desc(), ToDoList.task.asc()
+    ).all()
+
+    # Lägg till antalet avklarade och oavklarade deluppgifter
+    for task in tasks:
+        task.subtask_count = len(task.subtasks)  # Totalt antal deluppgifter
+        task.completed_subtasks = sum(1 for subtask in task.subtasks if subtask.completed)
+        task.pending_subtasks = task.subtask_count - task.completed_subtasks  # Oavklarade deluppgifter
+
+    return tasks
 
 def get_daily_scores(user_id):
     today = datetime.now().date()
@@ -718,6 +727,7 @@ def myday():
     streak_points = point_details.get("streak_points", 0)
 
     this_week_scores, last_week_scores = get_weekly_scores(current_user.id)
+
     plot_url = create_week_comparison_plot(this_week_scores, last_week_scores)
 
     # Hämta aktiviteter
@@ -746,15 +756,15 @@ def myday():
     list_title =list_type.capitalize()
     topFive = TopFive.query.filter_by(title=list_title, user_id=current_user.id, list_type=list_type, date=list_date).first()
 
-    if topFive.content:
+    if topFive and topFive.content:
         topFiveList = topFive.content.split(',')
         show = 0
     else:
         show = 1
-        topFive = TopFive(user_id=current_user.id, list_type=list_type, title=list_title,
-                          date=list_date)
-        db.session.add(topFive)
-        db.session.commit()
+        if not topFive:
+            topFive = TopFive(user_id=current_user.id, list_type=list_type, title=list_title, date=list_date)
+            db.session.add(topFive)
+            db.session.commit()
         topFiveList = []
 
     # Hantera POST-begäran för att spara prioriteringar
@@ -784,7 +794,7 @@ def myday():
 
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
                            acts=myActs, total_score=total, aggregated_scores=aggregated_scores,show=show, my_streaks=valid_streaks,
-                           sub_menu=sub_menu, plot_url=plot_url, message=message, topFiveList=topFiveList,topFive=topFive)
+                           sub_menu=sub_menu, plot_url=plot_url, message=message, topFiveList=topFiveList,topFive=topFive,title=list_title)
 
 
 @pmg_bp.route('/myday/<date>')
@@ -983,6 +993,7 @@ def activity_tasks(activity_id):
 
     # Hämta tasks och subtasks kopplade till aktiviteten
     todos = get_user_tasks(current_user.id, Activity, activity_id)  # Använd den uppdaterade funktionen
+    
 
     sida = f"{activity.name} ToDos"
     return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos, sida=sida, header=sida)
@@ -1085,13 +1096,14 @@ def add_subtask(task_id):
     return redirect(url_for('pmg.activity_tasks', activity_id=task.activity_id))
 
 @pmg_bp.route('/subtask/<int:subtask_id>/update', methods=['POST'])
-@login_required
 def update_subtask(subtask_id):
     subtask = SubTask.query.get_or_404(subtask_id)
-    subtask.completed = not subtask.completed
+    subtask.completed = not subtask.completed  # Växla status
     db.session.commit()
-    flash("Subtask updated successfully!", "success")
-    return redirect(url_for('pmg.get_subtasks', task_id=subtask.task_id))
+
+    # Omdirigera tillbaka till sidan där subtasks visas
+    return redirect(url_for('pmg.activity_tasks', activity_id=subtask.task.activity_id))
+
 
 
 @pmg_bp.route('/task/<int:task_id>/subtasks', methods=['GET'])
