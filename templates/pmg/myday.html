@@ -16,24 +16,8 @@
 {% block body %}
 <input type="hidden" id="show" value="{{ show }}">
 
-<div class="top-five">
-    <div class="top5-container">
-        <div class="head-list" onclick="toggleList(this)">{{ title }}</div>
-        <div class="five-list-content active">
-            <form method="POST">
-                <div class="tab-title">{{message}}</div>
-                {% for num in range(1, 6) %}
-                <input type="text" name="Prio_{{ num }}" placeholder="Prio {{ num }}:"
-                       value="{{ topFiveList[num-1] if topFiveList|length >= num else '' }}">
-                {% endfor %}
-                <button type="submit" name="my_list">Spara</button>
-            </form>
-        </div>
-    </div>
-</div>
-
 <div id="day-section" class="grid-container">
-    <div id="score-section" class="list-container">
+    <div id="score-section" class="list-container" style="width: 90%;height: 60vh;">
         <div class="list-header">
             <h3 onclick="window.location.href = '/pmg/streak';">My Week</h3>
         </div>
@@ -44,11 +28,11 @@
 
     <div id="startaAktivitet" class="button-center">
         <a  href="{{ url_for('pmg.goals', start_activity=1) }}" >
-            <button class="button-style" style="border-radius: 50%; min-height: 150px; min-width: 150px; background-color: mediumseagreen" type="submit">New</button>
+            <button class="button-style" style="border-radius: 50%; min-height: 15vh; min-width: 15vh; background-color: mediumseagreen; font-size: 0.7rem" type="submit">New</button>
         </a>
     </div>
 
-    <div id="streak-section" class="list-container">
+    <div id="streak-section" class="list-container" style="width: 90%; height: 60vh;">
         <div class="list-header">
             <h3 onclick="window.location.href = '/pmg/streak';">Streaks</h3>
         </div>

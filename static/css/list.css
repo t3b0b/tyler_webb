@@ -2,6 +2,7 @@
     max-height: 500px; /* Adjust height as needed */
     overflow-y: scroll;
 }
+
 .list-container {
     display: flex;
     padding: 10px 2px 10px 2px;
@@ -9,15 +10,15 @@
     justify-content: center;
     align-items: center;
     align-content: center;
-    width: 75%;
+    width: 50%;
     max-width: 100%;
-    max-height: 90%;
+    max-height: 80%;
     border: 2px solid #333;
     box-sizing: border-box;
     background-color: #f5f5f5;
     border-radius: 8px;
-    margin-inline: auto;
 }
+
 .list-header {
     display: flex;
     flex-direction: row;
@@ -30,7 +31,7 @@
 
 .list-header h3 {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: bold;
     text-align: left;
 }
@@ -68,10 +69,10 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     appearance: none;
-    font-size: 18px;
+    font-size: 1rem;
     font-family: inherit;
     color: black;
-    line-height: 50px;
+    line-height: 1rem;
 }
 
 .list-item strong {
