@@ -105,7 +105,10 @@ def friends():
     # Hämta användarna baserat på id-listorna
     pending_users = User.query.filter(User.id.in_(pending_user_ids)).all()
     friends = User.query.filter(User.id.in_(accepted_user_ids)).all()
-    users = User.query.filter(User.id != current_user.id).all()
+    users = User.query.filter(
+        User.id != current_user.id,  # Exkludera den inloggade användaren
+        ~User.id.in_(accepted_user_ids)  # Exkludera accepterade vänner
+    ).all()
 
     return render_template('/friends/friends.html', sida=sida, sub_menu=sub_menu, pending_users=pending_users, friends=friends, users=users)
 

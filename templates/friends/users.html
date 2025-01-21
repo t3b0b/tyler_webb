@@ -1,20 +1,21 @@
 {% extends 'base.html' %}
 
-{% block head %}
-
-{% endblock head %}
-
 {% block body %}
-<div class="list-container" style="display:flex; width: 60%;" >
-    <div class="list-content"
+
+<div class="list-container">
+    <div class="list-header">
+        <h3>Add Friends</h3>
+    </div>
+    <div class="list-content">
         {% for user in users %}
-    <div class="list-item" onclick="window.location.href = '/friends/friend_profile/{{ user.id }}';">
-            <h3>{{ user.username }}</h3>
+        <div class="list-item" onclick="window.location.href = '/friends/friend_profile/{{ user.id }}';">
+            <label>{{ user.username }}</label>
             <form method="POST" action="{{ url_for('friends.add_friend', friend_id=user.id) }}">
                 <button style="border-radius: 50%; width: 20px; height: 20px; font-size: 12px; font-weight: bold; color: #f0f0f0;background-color: #2ecc71" type="submit">+</button>
             </form>
-    </div>
+        </div>
         {% endfor %}
     </div>
 </div>
+
 {% endblock body %}

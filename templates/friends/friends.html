@@ -5,12 +5,13 @@
 {% endblock head %}
 
 {% block body %}
+
+{% if pending_users %}
 <div class="list-container">
     <div class="list-header">
         <h3>Friend Requests</h3>
     </div>
     <div class="list-content">
-        {% if pending_users %}
             {% for user in pending_users %}
             <li class="list-item">
                 {{ user.username }}
@@ -24,21 +25,35 @@
                 </form>
             </li>
             {% endfor %}
-        {% else %}
-            <p>No friend requests found.</p>
-        {% endif %}
     </div>
 </div>
+{% endif %}
+
 <div class="list-container">
     <div class="list-header">
         <h3>Friends</h3>
     </div>
     <div class="list-content">
         {% for friend in friends %}
-            <li class="list-item">
-                    {{ friend.username }}
+            <div class="list-item" onclick="window.location.href = '/friends/friend_profile/{{ friend.id }}';">
+                 <label> {{ friend.firstname }} {{ friend.lastname }} {{ friend.username }} </label>
                 <a href="{{ url_for('friends.send_message', recipient_id=(friend.id if friend.id == current_user.id else friend.id)) }}">Message</a>
-            </li>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+<div class="list-container">
+    <div class="list-header">
+        <h3>Add Friends</h3>
+    </div>
+    <div class="list-content">
+        {% for user in users %}
+            <div class="list-item" onclick="window.location.href = '/friends/friend_profile/{{ user.id }}';">
+                <label>{{ user.firstname }} {{ user.lastname }} {{ user.username }}</label>
+                <form method="POST" action="{{ url_for('friends.add_friend', friend_id=user.id) }}">
+                    <button style="border-radius: 50%; width: 20px; height: 20px; font-size: 12px; font-weight: bold; color: #f0f0f0;background-color: #2ecc71" type="submit">+</button>
+                </form>
+            </div>
         {% endfor %}
     </div>
 </div>
