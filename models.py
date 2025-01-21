@@ -293,7 +293,7 @@ class Notes(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, unique=False, nullable=False)
     author = db.Column(db.String(50), nullable=True)
-    type = db.Column(db.Integer, nullable=False)
+    type = db.Column(db.Integer, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)
 

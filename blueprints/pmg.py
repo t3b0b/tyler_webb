@@ -1120,9 +1120,10 @@ def update_subtask(subtask_id):
     subtask = SubTask.query.get_or_404(subtask_id)
     subtask.completed = not subtask.completed  # Växla status
     db.session.commit()
-
-    # Omdirigera tillbaka till sidan där subtasks visas
-    return redirect(url_for('pmg.activity_tasks', activity_id=subtask.task.activity_id))
+    if 'fokus' in request.form.get('page'):
+        return redirect(url_for('pmg.focus_room', activity_id=subtask.task.activity_id))
+    elif 'list' in request.form.get('page'):
+        return redirect(url_for('pmg.activity_tasks', activity_id=subtask.task.activity_id))
 
 
 

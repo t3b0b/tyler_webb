@@ -3,6 +3,7 @@
     justify-content: center;
     align-items: center;
     background-color: #e3e0c5;
+    font-size: 0.6rem;
     border-radius: 5px;  /* Tar bort rundade hörn */
 }
 
@@ -11,7 +12,7 @@
     font-weight: bold;
     border: 1px solid #ccc;
     color: #ffffff;
-    font-size: 16px;
+    font-size: 0.6rem;
     width: 100px;
     transition: background-color 0.3s;
     border-radius: 2px;  /* Tar bort rundade hörn */
@@ -20,7 +21,7 @@
 .tgl-btn {
     background-color: #fdfdfd;
     border: none;
-    font-size: 16px;
+    font-size: 0.6rem;
     cursor: pointer;
     color: red;
     margin-left: auto;
@@ -110,7 +111,7 @@ button#addEventButton {
     background-color: #f0f0f0;
     border: 1px solid #ccc;
     color: black;
-    font-size: 16px;
+    font-size: 0.6rem;
     width: 100px;
     cursor: pointer;
     transition: background-color 0.3s;

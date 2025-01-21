@@ -2,7 +2,6 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cal.css')}}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css')}}">
 {% endblock head %}
 
 {% block body %}
@@ -15,9 +14,8 @@
     <div class="calendar-grid">
         <div class="calendar-header">
             <button onclick="changeMonth(-1)" class="nav-btn">&lt;</button>
-            <span>{{ month_name }} {{ year }}</span>
+            <span class="month-name">{{ month_name }} {{ year }}</span>
             <button onclick="changeMonth(1)" class="nav-btn">&gt;</button>
-
         </div>
         <div class="day-header">Måndag</div>
         <div class="day-header">Tisdag</div>
@@ -59,8 +57,8 @@
             {% endfor %}
         {% endfor %}
     </div>
-
 </div>
+
 <script>
 function onDateClick(element, date) {
     if (!element.classList.contains('other-month')) {

@@ -76,6 +76,7 @@
                     ondragstart="dragStart(event)" ondragover="allowDrop(event)" ondrop="dropTask(event)">
                         <span>{{ subtask.name }}</span>
                         <form method="POST" action="{{ url_for('pmg.update_subtask', subtask_id=subtask.id) }}">
+                            <input type="hidden" name="page" value="fokus">
                             <input type="checkbox" name="completed" onchange="this.form.submit()" {% if subtask.completed %}checked{% endif %}>
                         </form>
                     </li>
