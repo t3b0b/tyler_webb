@@ -1,6 +1,6 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
-
+from sqlalchemy.orm import joinedload, aliased  # Lägg till denna rad
 from models import (User, db, Streak, Goals,
                     Activity, Score,
                     Event,TopFive,Dagar)
@@ -58,10 +58,34 @@ def day_view(date):
     except ValueError:
         flash("Ogiltigt datumformat. Använd 'YYYY-MM-DD'.", 'danger')
         return redirect(url_for('cal.month_view'))
+    myGoals=Goals.query.filter_by(user_id=current_user.id)
+    Goal = aliased(Goals)
+    event_goal_data = db.session.query(
+        Event.id.label('event_id'),
+        Event.name.label('event_name'),
+        Event.start_time,
+        Event.end_time,
+        Event.location,
+        Goal.id.label('goal_id'),
+        Goal.name.label('goal_name')
+    ).outerjoin(
+        Goal, Event.goal_id == Goal.id
+    ).filter(
+        Event.user_id == current_user.id
+    ).all()
 
-    events = Event.query.filter_by(user_id=current_user.id, date=date).all()
-    goals = Goals.query.filter_by(user_id=current_user.id).all()
-
+    # Strukturera data för mallen
+    event_data = []
+    for row in event_goal_data:
+        event_data.append({
+            "event_id": row.event_id,
+            "event_name": row.event_name,
+            "start_time": row.start_time.strftime('%H:%M') if row.start_time else None,
+            "end_time": row.end_time.strftime('%H:%M') if row.end_time else None,
+            "location": row.location,
+            "goal_id": row.goal_id,
+            "goal_name": row.goal_name
+        })
     if request.method == 'POST':
         # Hantera POST för att skapa event eller deadline
         event_name = request.form.get('event-name')
@@ -88,7 +112,7 @@ def day_view(date):
 
         return redirect(url_for('cal.day_view', date=date.strftime('%Y-%m-%d')))
 
-    return render_template('cal/day_view.html', date=date, events=events, goals=goals)
+    return render_template('cal/day_view.html', date=date,events=event_data, goals=myGoals)
 
 @cal_bp.route('/month', methods=['GET', 'POST'])
 @cal_bp.route('/month/<int:year>/<int:month>')

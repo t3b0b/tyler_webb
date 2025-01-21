@@ -240,9 +240,7 @@ class Event(db.Model):
     event_type = db.Column(db.String(20))  # event, milestone, deadline
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=True)
-
     location = db.Column(db.String(255), nullable=True)  # Lägg till plats som en sträng
-
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=True)

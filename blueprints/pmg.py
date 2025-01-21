@@ -21,21 +21,39 @@ from sqlalchemy.orm import scoped_session
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
 Questions = {
-    "priorities": "Vad är viktigt för dig att prioritera idag?",
-    "tacksam": "Vad har du att vara tacksam för?",
-    "tankar": "Vilka tankar/insikter vill du påminna dig själv om?",
-    "bättre": "Vad ska du se till att göra bättre idag?",
-    "känslor": "Hur känner du dig just nu, och varför?",
-    "mål": "Vilka mål vill du nå idag?",
-    "relationer": "Finns det någon du vill ge extra uppmärksamhet till idag?",
-    "lärande": "Vad vill du lära dig eller utforska idag?",
-    "hälsa": "Vad kan du göra idag för att ta hand om din hälsa och energi?",
-    "uppskattning": "Vad eller vem kan du visa uppskattning för idag?",
-    "kreativitet": "Hur kan du uttrycka din kreativitet idag?",
-    "utmaningar": "Finns det någon utmaning du kan ta itu med idag?",
-    "avslappning": "Vad kan du göra för att slappna av och återhämta dig idag?",
-    "för_imorgon": "Vad kan du göra idag för att underlätta morgondagen?",
+    "priorities": ["Viktigt att prioritera idag",
+                   'Viktigt att prioritera imorgon'],
+    "tacksam": ["Vad har du att vara tacksam för?"],
+    "tankar": ["Tankar/insikter värda att påminnas om",
+               "Tankar/insikter att ta med till imorgon"],
+    "bättre": ["Vad ska du se till att göra bättre idag?",
+               "Vad ska du se till att göra bättre imorgon?"],
+    "känslor": ["Hur känner du dig just nu?",
+                "Vad känner du inför imorgon?"],
+    "mål": ["Vilka mål vill du nå idag?",
+            "Vilka mål vill du nå imorgon?"],
+    "relationer": ["Finns det någon du vill ge extra uppmärksamhet till idag?",
+                   "Finns det någon du vill ge extra uppmärksamhet till imorgon?"],
+    "lärande": ["Vad vill du lära dig eller utforska idag?",
+                "Vad vill du lära dig eller utforska imorgon?"],
+    "hälsa": ["Vad kan du göra idag för att ta hand om din hälsa och energi?",
+              "Vad kan du göra imorgon för att ta hand om din hälsa och energi?"],
+    "uppskattning": ["Vad eller vem kan du visa uppskattning för idag?",
+                     "Vad eller vem kan du visa uppskattning för imorgon?"],
+    "kreativitet": ["Hur kan du uttrycka din kreativitet idag?",
+                    "Hur kan du uttrycka din kreativitet imorgon?"],
+    "utmaningar": ["Finns det någon utmaning du kan ta itu med idag?",
+                   "Finns det någon utmaning du kan ta itu med imorgon?"],
+    "avslappning": ["Vad kan du göra för att slappna av och återhämta dig idag?",
+                    "Vad kan du göra för att slappna av och återhämta dig imorgon?"],
+    "underlätta": ["Vad kan du göra idag för att underlätta morgondagen?",
+                    "Vad kan du göra för att underlätta den här dagen?"],
 }
+
+STOCKHOLM_TZ = timezone('Europe/Stockholm')
+def getSwetime():
+    now = datetime.now(STOCKHOLM_TZ)
+    return now
 def create_streak_notification(streak, message):
     participants = SharedStreak.query.filter_by(streak_id=streak.id, status='active').all()
     for participant in participants:
@@ -61,8 +79,8 @@ def notify_streak_status(streak_id):
 
 def SortStreaks(Streaks):
     valid_streaks = []
-    
-    now = datetime.now()
+    now = getSwetime()
+
     for streak in Streaks:
         interval_days = timedelta(days=streak.interval, hours=23, minutes=59, seconds=59)
         if streak.lastReg:
@@ -87,7 +105,7 @@ def SortStreaks(Streaks):
     return valid_streaks
 
 def get_weekly_scores(user_id):
-    today = datetime.now(timezone('Europe/Stockholm'))  # Anpassa till din lokala tidszon
+    today = getSwetime()  # Anpassa till din lokala tidszon
     start_of_this_week = today - timedelta(days=today.weekday())
     start_of_last_week = start_of_this_week - timedelta(days=7)
     end_of_last_week = start_of_this_week - timedelta(days=1)
@@ -224,7 +242,8 @@ def get_today_score(user_id):
 
 def get_yesterday_score(user_id):
     """Hämta gårdagens score för en specifik användare."""
-    yesterday = datetime.now().date() - timedelta(days=1)
+    now=getSwetime()
+    yesterday = now.date() - timedelta(days=1)
     yesterday_score = db.session.query(db.func.sum(Score.Time)).filter(
         Score.user_id == user_id,
         db.func.date(Score.Date) == yesterday
@@ -233,7 +252,8 @@ def get_yesterday_score(user_id):
 
 def get_week_activity_times(user_id):
     """Hämta total tid per aktivitet under aktuell vecka för en specifik användare."""
-    today = datetime.now().date()
+    now = getSwetime()
+    today = now.date()
     start_of_week = today - timedelta(days=today.weekday())  # Måndag i denna vecka
     end_of_week = start_of_week + timedelta(days=6)  # Söndag i denna vecka
 
@@ -714,8 +734,8 @@ def milestones(goal_id):
 def myday():
     sida, sub_menu = common_route("Min Grind", ['/pmg/timebox'], ['My Day'])
     date_now = date.today()
-    now = datetime.now()
-    today = datetime.now().date()  # Hämta aktuell tid
+    now = getSwetime()
+    today = now.date()  # Hämta aktuell tid
     tomorrow = today + timedelta(days=1)
     hour = now.hour  # Aktuell timme
     myStreaks = filter_mod(Streak, user_id=current_user.id)
@@ -740,20 +760,19 @@ def myday():
     }
 
     valid_streaks=SortStreaks(myStreaks)
+
     random.seed(str(today))  # Säkerställer samma fråga varje dag
-    list_type = random.choice(list(Questions.keys()))
-    message = Questions[list_type]  # Hämta frågan baserat på list_typ
+    list_type = random.choice(list(Questions.keys()))  # Välj en slumpmässig nyckel
 
     if hour < 14:
-        message = Questions[list_type]
-        list_type = list_type
+        message = Questions[list_type][0]  # Första elementet i listan
         list_date = today
     else:
-        message = "Vad kan vara viktigt att tänka på till imorgon?"
-        list_type = "priorities"
+        message = Questions[list_type][1] if len(Questions[list_type]) > 1 else Questions[list_type][
+            0]  # Andra elementet, eller det första om bara ett finns
         list_date = tomorrow
 
-    list_title =list_type.capitalize()
+    list_title = list_type.capitalize()
     topFive = TopFive.query.filter_by(title=list_title, user_id=current_user.id, list_type=list_type, date=list_date).first()
 
     if topFive and topFive.content:
@@ -802,7 +821,8 @@ def myday():
 def myday_date(date):
     selected_date = datetime.strptime(date, '%Y-%m-%d').date()
     session = scoped_session(db.session)
-    today = datetime.now().date()
+    now=getSwetime()
+    today = now.date()
     completed_streakNames = completed_streaks(selected_date.strftime('%Y-%m-%d'),Dagar)
 
     for name in completed_streakNames:
@@ -856,7 +876,7 @@ def focus_room(activity_id):
     activity = Activity.query.get_or_404(activity_id)
     goal_id = activity.goal_id  # Hämta goal_id från aktiviteten
     today = date.today()
-    current_date=today
+    current_date = today
     tasks = get_user_tasks(current_user.id, Activity,activity_id)  # Hämta och sortera tasks
 
     activity_notes = Notes.query.filter_by(user_id=current_user.id, activity_id=activity_id).all()

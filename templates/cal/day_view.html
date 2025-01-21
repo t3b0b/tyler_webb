@@ -12,12 +12,12 @@
         {% if events %}
             {% for event in events %}
                 <div class="event-item">
-                    <span>{{ event.name }} ({{ event.start_time }} - {{ event.end_time }})</span>
+                    <span>{{ event.event_name }} ({{ event.start_time }} - {{ event.end_time }})</span>
                     {% if event.location %}
                         <p>Location: {{ event.location }}</p>
                     {% endif %}
                     {% if event.goal_id %}
-                        <p>Linked to Goal: {{ event.goal.name }}</p>
+                        <p>Goal:{{ event.goal_name }}</p>
                     {% endif %}
                 </div>
             {% endfor %}
