@@ -2,7 +2,7 @@
     display: grid;
     width: 100%;
     grid-template-columns: 2fr 1fr 2fr;
-    height:100%;
+    height:90vh;
     gap: 10px;
     margin-left:10px;
     margin-right:10px;
@@ -106,9 +106,9 @@ th {
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        max-height:90vh ;
+        max-height:90% ;
         width:95%;
-        margin-top: 1rem;
+        margin-top: 5%;
     }
 
     .two-grid-container{

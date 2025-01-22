@@ -217,6 +217,7 @@
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 100%;
+    padding: 5px;
     cursor: pointer;
     transition: all 0.5s ease-in-out;
     text-align: center;
@@ -309,7 +310,7 @@
 @media (max-width: 720px) {
     .list-container {
         width: 90%;
-        max-height: 50vh;
+        max-height: 85%;
     }
     .list-content{
         height: 100%;
