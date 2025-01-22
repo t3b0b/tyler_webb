@@ -208,7 +208,7 @@
 }
 .top5-container {
     max-height: 50px;
-    max-width: 200px;
+    max-width: 40vw;
     margin-top: 5%;
 }
 .head-list {
@@ -217,7 +217,6 @@
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 100%;
-    padding: 10px 15px;
     cursor: pointer;
     transition: all 0.5s ease-in-out;
     text-align: center;
@@ -310,9 +309,11 @@
 @media (max-width: 720px) {
     .list-container {
         width: 90%;
-        max-height: 85%;
+        max-height: 50vh;
     }
-
+    .list-content{
+        height: 100%;
+    }
     .five-list-content form {
     font-size: 1rem;
     }
@@ -323,7 +324,7 @@
     font-size: 1rem;
     }
     .head-list {
-        font-size: 1.2rem;
+        font-size: 1rem;
         font-weight: bold;
     }
 
@@ -345,10 +346,19 @@
     }
 
     .list-header h3 {
-        font-size: 16px;
+        font-size: 1rem;
     }
-
+    .tab-title{
+        font-size: 1rem;
+    }
     .list-item {
         font-size: 1rem;
+    }
+    .head-list.active + .list-content {
+        opacity: 1;
+        pointer-events: auto; /* Tillåter interaktion när aktiv */
+        font-size: 1rem;
+        font-weight: bold;
+        text-align: left;
     }
 }
