@@ -310,7 +310,7 @@
 @media (max-width: 720px) {
     .list-container {
         width: 90%;
-        max-height: 85%;
+        max-height: 40%;
     }
     .list-content{
         height: 100%;
