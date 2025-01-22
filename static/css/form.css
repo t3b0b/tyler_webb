@@ -85,3 +85,8 @@ input:focus {
     transform: scale(1); /* Gör kryssrutan lite större om nödvändigt */
 }
 
+@media (max-width: 720px) {
+.form-container {
+width: fit-content;
+}
+}

@@ -3,6 +3,8 @@ html, body {
     margin: 0;
     padding: 0;
     font-size: 16px;
+    display: flex;
+    flex-direction: column;
 }
 
 .main-container {
@@ -10,7 +12,7 @@ html, body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 90vh;
+    height: 90%;
 
 }
 
@@ -292,7 +294,9 @@ nav a.active {
     display: none;
 }
 @media (max-width: 720px) {
-
+    .main-container {
+        max-height: 90%;
+    }
 
     .header-icons {
         display: flex;
