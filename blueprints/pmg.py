@@ -54,6 +54,7 @@ STOCKHOLM_TZ = timezone('Europe/Stockholm')
 def getSwetime():
     now = datetime.now(STOCKHOLM_TZ)
     return now
+
 def create_streak_notification(streak, message):
     participants = SharedStreak.query.filter_by(streak_id=streak.id, status='active').all()
     for participant in participants:
@@ -1135,5 +1136,3 @@ def get_subtasks(task_id):
     return render_template('pmg/subtasks.html', task=task, subtasks=subtasks)
 
 #endregion
-
-

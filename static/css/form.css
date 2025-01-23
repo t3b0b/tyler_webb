@@ -86,7 +86,8 @@ input:focus {
 }
 
 @media (max-width: 720px) {
-.form-container {
-width: fit-content;
-}
+    .form-container {
+        width: fit-content;
+        padding: 10px;
+    }
 }

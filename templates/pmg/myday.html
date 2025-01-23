@@ -54,9 +54,10 @@
             {% for streak in my_streaks %}
                 <div class="list-item">
                     <label>{{ streak.name }}</label>
-                    <label>Igår: {{ streak.yesterday_value }}</label>
+                    <label>Count: {{ streak.count }}</label>
                     <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post" style="display: flex; justify-content: center; align-items: center;">
                         {% if streak.type == "number" %}
+                            <label>Igår: {{ streak.yesterday_value }}</label>
                             <input type="number" name="amount" style="background: #f0f0f0; height: 20px; width: 40px; text-align: center; margin-right: 40px;">
                         {% endif %}
                             <button class="streak-icon" type="submit" style="border: none; background: none; margin-right: 10px;">
@@ -72,6 +73,7 @@
         {% endif %}
         </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>

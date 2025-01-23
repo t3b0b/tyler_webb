@@ -135,3 +135,8 @@ button#addEventButton {
 .blue-btn:hover {
     background-color: #0056b3;
 }
+@media (max-width: 720px) {
+    .blue-btn {
+        font-size: 1rem;
+    }
+}
