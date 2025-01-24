@@ -137,6 +137,13 @@ button#addEventButton {
 }
 @media (max-width: 720px) {
     .blue-btn {
+        display: flex; /* Gör knappen till en flexbox */
+        justify-content: center; /* Centrera innehållet horisontellt */
+        align-items: center; /* Centrera innehållet vertikalt */
+        text-align: center; /* Säkerställ att texten är centrerad */
+        line-height: normal; /* Se till att texten inte sträcker ut sig vertikalt */
         font-size: 1rem;
+        height: 1.6rem;
+
     }
 }

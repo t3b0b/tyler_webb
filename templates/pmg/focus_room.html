@@ -66,6 +66,7 @@
                         <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
                     </form>
                     <form method="POST" action="{{ url_for('pmg.delete_task', activity_id=activity.id, task_id=task.id) }}" style="display: inline;">
+                        <input type="hidden" name="page" value="fokus">
                         <button type="submit" class="delete-btn" onclick="return confirm('Är du säker på att du vill radera denna task?')">🗑️</button>
                     </form>
                 </div>
@@ -84,6 +85,7 @@
 
                 <!-- Form för att lägga till ny subtask -->
                 <form method="POST" action="{{ url_for('pmg.add_subtask', task_id=task.id) }}" class="add-form-container">
+                    <input type="hidden" name="page" value="fokus">
                     <input type="text" name="subtask_name" placeholder="Enter new subtask" required>
                     <button type="submit">Add</button>
                 </form>
@@ -96,7 +98,7 @@
 
         <form action="{{ url_for('pmg.add_task', activity_id=activity.id) }}" method="POST">
             <input type="hidden" name="actId" value="{{ activity.id }}" style="display: none">
-            <input type="hidden" name="origin" value="focus" style="display: none">
+            <input type="hidden" name="page" value="fokus" style="display: none">
             <input type="text" name="task_name" placeholder="Enter new task" required>
             <button onclick="" type="submit" name="action" style="height: 1.5rem;" value="addTodo">Add</button>
         </form>

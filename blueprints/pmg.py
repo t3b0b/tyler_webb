@@ -189,6 +189,7 @@ def get_user_goals(user_id):
     # Kombinera egna och delade mål
     return own_goals + shared_goals
 
+
 def get_user_tasks(user_id, model, activity_id=None):
     # Hämta alla aktiviteter som användaren har tillgång till
     all_activities = model.query.filter_by(user_id=user_id).all()
@@ -822,7 +823,7 @@ def myday():
 def myday_date(date):
     selected_date = datetime.strptime(date, '%Y-%m-%d').date()
     session = scoped_session(db.session)
-    now=getSwetime()
+    now = getSwetime()
     today = now.date()
     completed_streakNames = completed_streaks(selected_date.strftime('%Y-%m-%d'),Dagar)
 
@@ -897,6 +898,7 @@ def focus_room(activity_id):
                 print("Score field is empty")
 
     if request.method == 'POST':
+
         task_id = request.json.get('taskId')
         completed = request.json.get('completed')
 
@@ -914,16 +916,16 @@ def update_task(activity_id, task_id):
 
     # Hämta den nya statusen från formuläret
     completed = 'completed' in request.form  # Checkbox skickar bara värde om den är markerad
-    origin = request.form.get('origin')  # Hämta ursprungssidan
+    page = request.form.get('page')  # Hämta ursprungssidan
 
     # Uppdatera task status
     task.completed = completed
     db.session.commit()
 
     # Omdirigera till rätt sida baserat på ursprungssidan
-    if origin == 'todo':
+    if page == 'todo':
         return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
-    elif origin == 'focus':
+    elif page == 'focus':
         return redirect(url_for('pmg.focus_room', activity_id=activity_id))
 
     # Om ingen origin skickas med, omdirigera till standard-sidan
@@ -1065,9 +1067,13 @@ def add_task(activity_id):
                     related_item_id=new_task.id,
                     item_type='task'
                 )
-
-    flash("Task added successfully", "success")
-    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+    if 'fokus' in request.form.get('page'):
+        flash("Task added successfully", "success")
+        return redirect(url_for('pmg.focus_room', activity_id=activity_id))
+    elif 'list' in request.form.get('page'):
+        flash("Task added successfully", "success")
+        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+    
 
 @pmg_bp.route('/activity/<int:activity_id>/delete_task/<int:task_id>', methods=['POST'])
 @login_required
@@ -1113,8 +1119,13 @@ def add_subtask(task_id):
     db.session.add(new_subtask)
     db.session.commit()
 
-    flash("Subtask added successfully!", "success")
-    return redirect(url_for('pmg.activity_tasks', activity_id=task.activity_id))
+    if 'fokus' in request.form.get('page'):
+        flash("Subtask added successfully!", "success")
+        return redirect(url_for('pmg.focus_room', activity_id=task.activity_id))
+    elif 'list' in request.form.get('page'):
+        flash("Subtask added successfully!", "success")
+        return redirect(url_for('pmg.activity_tasks', activity_id=task.activity_id))
+
 
 @pmg_bp.route('/subtask/<int:subtask_id>/update', methods=['POST'])
 def update_subtask(subtask_id):
@@ -1132,7 +1143,8 @@ def update_subtask(subtask_id):
 @login_required
 def get_subtasks(task_id):
     task = ToDoList.query.get_or_404(task_id)
-    subtasks = SubTask.query.filter_by(task_id=task_id).all()
+    subtasks = SubTask.query.filter_by(task_id=task_id).order_by(SubTask.completed.asc()).all()
+
     return render_template('pmg/subtasks.html', task=task, subtasks=subtasks)
 
 #endregion
