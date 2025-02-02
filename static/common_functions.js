@@ -53,6 +53,9 @@ function stopActivity() {
         document.getElementById("start").value = new Date(startStored).toISOString().slice(0, 19).replace('T', ' ');
         document.getElementById("end").value = new Date(endStored).toISOString().slice(0, 19).replace('T', ' ');
         document.getElementById("aID").value = activityId;
+        document.getElementById("end").classList.remove("hidden")
+        document.getElementById("start").classList.remove("hidden")
+        document.getElementById("start").classList.remove("hidden")
     }
 
     document.getElementById('stopButton').style.display = 'none';
@@ -69,7 +72,7 @@ function stopActivity() {
 function saveActivity(time) {
     document.getElementById('completed-form').style.display = "block";
     document.getElementById('complete-form').style.display = "block";
-    document.getElementById('elapsedTime').style.display = "block";
+    document.getElementById('elapsedTime').classList.remove("hidden");
     document.getElementById("elapsedTime").value = time; // Använd rätt element-ID
     localStorage.setItem('active', false);
 }
@@ -221,5 +224,6 @@ document.querySelectorAll('.add-subtask-form').forEach(form => {
         }
     });
 });
+
 
 

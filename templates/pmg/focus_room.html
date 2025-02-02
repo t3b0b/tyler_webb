@@ -2,7 +2,15 @@
 
 {% block head %}
 <style>
-
+#container1 {
+    position: absolute;
+}
+#container3 {
+    position: absolute;
+}
+#container2 {
+    position: absolute;
+}
 .subtask-item input[type="checkbox"] {
     margin-left: 10px;
     transform: scale(1.2);
@@ -34,12 +42,45 @@
     display: flex;
     align-items: center;
 }
+.frontPos {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 
+
+.middlePos {
+  top: 50%;
+  left: 65%;
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+
+.backPos {
+  top: 50%;
+  left: 35%;
+  transform: translate(-50%, -50%) rotate(-0deg);
+}
+
+  /* Front = ligger överst */
+  .front {
+    z-index: 2;
+    box-shadow: -5px 0px 2px rgba(0, 0, 0, 0.3),
+                5px 0px 2px rgba(0, 0, 0, 0.3),
+                0px 3px 2px rgba(0, 0, 0, 0.3),
+                0px -3px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Back = ligger under */
+  .back {
+    z-index: 1;
+  }
 </style>
 {% endblock head %}
 
 {% block body %}
-<div class="list-container">
+
+<div id="container1" class="list-container">
     <div class="list-header">
         <h3>{{ activity.name }} - Tasks</h3>
     </div>
@@ -101,39 +142,24 @@
             <button onclick="" type="submit" name="action" style="height: 1.5rem;" value="addTodo">Add</button>
         </form>
 </div>
-    <div class="button-center">
-            <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
-            <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
-    </div>
-    <form method="POST" class="form-container" id="completed-form">
-        <div>
-            <input type="text" id="aID" name="aID" style="display: none">
-            <input type="text" id="aDate" name="aDate" value="{{ current_date }}" style="display: none">
-            <input type="text" id="start" name="start" style="display: none">
-            <input type="text" id="end" name="end" style="display: none">
-            <input type="number" id="elapsedTime" name="score" style="display: none">
-            <div class="button-center" id="complete-form" style="width:40%; display: none">
-                <button type="submit" onclick="turnOff()" name="action" id="save-btn" class="button-style" value="save-score">Save</button>
-            </div>
-        </div>
-    </form>
+
 </div>
-<div class="activity-notes" style="margin-left: 0; max-width:30%; max-height: 80%; align-items:center; text-align: left;">
+
+<div id="container2" class="list-container" style="margin-left: 0; align-items:center; text-align: left; position: absolute;">
  {% if activity_notes %}
-    <div class="right-container">
-        {% for note in activity_notes %}
-            <div class="collapsed-notes">
-                <h5 class="note-title" onclick="toggleList(this)" style="cursor: pointer;" data-note-id="{{ note.id }}">{{ note.title }}</h5>
-                <form method="POST" action="{{ url_for('pmg.update_note', note_id=note.id) }}" class="note-form" style="display:inline;">
-                    <div>
-                        <textarea name="content" style="height:300px; max-height: 60%">{{ note.content }}</textarea>
-                    </div>
-                    <button type="submit" class="button-style">Save</button>
-                </form>
-            </div>
-        {% endfor %}
+    <div class="list-content">
+            {% for note in activity_notes %}
+                <div class="list-item">
+                    <h5 class="note-title" onclick="toggleList(this)" style="cursor: pointer;" data-note-id="{{ note.id }}">{{ note.title }}</h5>
+                    <form method="POST" action="{{ url_for('pmg.update_note', note_id=note.id) }}" class="note-form" style="display:inline;">
+                        <div>
+                            <textarea name="content" style="height:300px; max-height: 60%">{{ note.content }}</textarea>
+                        </div>
+                        <button type="submit" class="button-style">Save</button>
+                    </form>
+                </div>
+            {% endfor %}
         {% endif %}
-    </div>
         <div class="activity-notes-">
             <form method="POST" action="{{ url_for('pmg.create_notebook', activity_id=activity.id) }}">
                 <div>
@@ -143,6 +169,29 @@
                 <button type="submit" class="button-style">Create Notebook</button>
             </form>
         </div>
+    </div>
+
+</div>
+<div id ="container3" class="list-container">
+    <div class="list-header">
+        <h3>Score</h3>
+    </div>
+<div class="button-center">
+            <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
+            <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
+    </div>
+    <form method="POST" class="form-container"  id="completed-form" style="border: none; background-color: #f0f0f0;">
+        <div>
+            <input type="text" id="aID" name="aID" style="display: none">
+            <input class="hidden" type="text" id="aDate" name="aDate" value="{{ current_date }}">
+            <input class="hidden" type="text" id="start" name="start">
+            <input class="hidden" type="text" id="end" name="end">
+            <input class="hidden" type="number" id="elapsedTime" name="score">
+            <div class="button-center hidden" id="complete-form" style="width:40%;">
+                <button type="submit" onclick="turnOff()" name="action" id="save-btn" class="button-style" value="save-score">Save</button>
+            </div>
+        </div>
+    </form>
 </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 
@@ -300,5 +349,61 @@ function updateTaskStatus(taskId, isCompleted) {
         }
     }))
 }
+
+const box1 = document.getElementById("container1");
+const box2 = document.getElementById("container2");
+const box3 = document.getElementById("container3");
+
+// Lägg in dessa i en array i önskad "startordning"
+let containers = [box1, box2, box3];
+
+/**
+ * Sätter klasser för position (x/y) och z-index baserat på
+ * array-ordningen: [0] = front, [1] = middle, [2] = back.
+ */
+function setPositionsAndZIndex() {
+  // Ta först bort alla position-/z-klasser på samtliga
+  containers.forEach((el) => {
+    el.classList.remove(
+      "front", "middle", "back",
+      "frontPos", "middlePos", "backPos"
+    );
+  });
+
+  // Sätt "front" + "frontPos" på index 0
+  containers[0].classList.add("front", "frontPos");
+
+  // Sätt "middle" + "middlePos" på index 1
+  containers[1].classList.add("middle", "middlePos");
+
+  // Sätt "back" + "backPos" på index 2
+  containers[2].classList.add("back", "backPos");
+}
+
+// Anropa funktionen en gång från start
+setPositionsAndZIndex();
+
+/**
+ * När man klickar på en container ska den flyttas till
+ * första platsen i arrayen (dvs bli "front").
+ */
+function bringToFront(clickedEl) {
+  // Hitta index för det klickade elementet
+  const i = containers.indexOf(clickedEl);
+  if (i > -1) {
+    // Ta ur den från sin nuvarande position ...
+    // ... och lägg den i början (unshift)
+    containers.unshift(...containers.splice(i, 1));
+  }
+  // Uppdatera klasser
+  setPositionsAndZIndex();
+}
+
+// Sätt klick-lyssnare på alla containrar
+containers.forEach(el => {
+  el.addEventListener("click", () => {
+    bringToFront(el);
+  });
+});
 </script>
 {% endblock body %}
