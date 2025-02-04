@@ -1,43 +1,139 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rotating Globe Animation</title>
-    <style>
-        .globe-container {
-            width: 200px; /* Anpassa storlek */
-            height: 200px;
-            position: relative;
-            overflow: hidden;
-            margin: auto;
-            margin-top: 50px;
-        }
+  <meta charset="utf-8">
+  <title>Byta plats på två containrar</title>
+  <style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+      }
 
-        #globe-image {
-            width: 100%;
-            height: 100%;
-            animation: rotateGlobe 1s steps(8) infinite; /* 1 sekund för att gå genom alla bilder */
-        }
+/* Gemensamma stilar för "korten" */
+.card {
+  position: absolute;
+  width: 200px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 
-        @keyframes rotateGlobe {
-            0% { content: url('static\images/1.png'); }
-            12.5% { content: url('static\images/2.png'); }
-            25% { content: url('static\images/3.png'); }
-            37.5% { content: url('static\images/4.png'); }
-            50% { content: url('static\images/5.png'); }
-            62.5% { content: url('static\images/6.png'); }
-            75% { content: url('static\images/7.png'); }
-            87.5% { content: url('static\images/8.png'); }
-            100% { content: url('static\images/1.png'); }
-        }
-    </style>
+.frontPos {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+
+.middlePos {
+  top: 50%;
+  left: 65%;
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+
+.backPos {
+  top: 50%;
+  left: 35%;
+  transform: translate(-50%, -50%) rotate(-0deg);
+}
+
+  /* Front = ligger överst */
+  .front {
+    z-index: 2;
+    box-shadow: -5px 0px 2px rgba(0, 0, 0, 0.3),
+                5px 0px 2px rgba(0, 0, 0, 0.3),
+                0px 3px 2px rgba(0, 0, 0, 0.3),
+                0px -3px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Back = ligger under */
+  .back {
+    z-index: 1;
+  }
+  </style>
 </head>
 <body>
 
-    <div class="globe-container">
-        <img id="globe-image" src="static\images\1.png" alt="Rotating Globe">
-    </div>
 
+  <div id="container1" class="card">
+    Container 1
+  </div>
+
+  <div id="container2" class="card">
+    Container 2
+  </div>
+
+  <div id="container3" class="card">
+    Container 3
+  </div>
+
+  <script>
+
+// Hämta referenser till de tre containrarna
+const box1 = document.getElementById("container1");
+const box2 = document.getElementById("container2");
+const box3 = document.getElementById("container3");
+
+// Lägg in dessa i en array i önskad "startordning"
+let containers = [box1, box2, box3];
+
+/**
+ * Sätter klasser för position (x/y) och z-index baserat på
+ * array-ordningen: [0] = front, [1] = middle, [2] = back.
+ */
+function setPositionsAndZIndex() {
+  // Ta först bort alla position-/z-klasser på samtliga
+  containers.forEach((el) => {
+    el.classList.remove(
+      "front", "middle", "back",
+      "frontPos", "middlePos", "backPos"
+    );
+  });
+
+  // Sätt "front" + "frontPos" på index 0
+  containers[0].classList.add("front", "frontPos");
+
+  // Sätt "middle" + "middlePos" på index 1
+  containers[1].classList.add("middle", "middlePos");
+
+  // Sätt "back" + "backPos" på index 2
+  containers[2].classList.add("back", "backPos");
+}
+
+// Anropa funktionen en gång från start
+setPositionsAndZIndex();
+
+/**
+ * När man klickar på en container ska den flyttas till
+ * första platsen i arrayen (dvs bli "front").
+ */
+function bringToFront(clickedEl) {
+  // Hitta index för det klickade elementet
+  const i = containers.indexOf(clickedEl);
+  if (i > -1) {
+    // Ta ur den från sin nuvarande position ...
+    // ... och lägg den i början (unshift)
+    containers.unshift(...containers.splice(i, 1));
+  }
+  // Uppdatera klasser
+  setPositionsAndZIndex();
+}
+
+// Sätt klick-lyssnare på alla containrar
+containers.forEach(el => {
+  el.addEventListener("click", () => {
+    bringToFront(el);
+  });
+});
+  </script>
 </body>
 </html>
