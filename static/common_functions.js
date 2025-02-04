@@ -50,14 +50,15 @@ function stopActivity() {
     const activityId = localStorage.getItem('selectedActivityId');
 
     if (startStored && endStored && activityId) {
-        document.getElementById("start").value = new Date(startStored).toISOString().slice(0, 19).replace('T', ' ');
-        document.getElementById("end").value = new Date(endStored).toISOString().slice(0, 19).replace('T', ' ');
+        document.getElementById("startValue").value = new Date(startStored).toISOString().slice(0, 19).replace('T', ' ');
+        document.getElementById("endValue").value = new Date(endStored).toISOString().slice(0, 19).replace('T', ' ');
+        
         document.getElementById("aID").value = activityId;
         document.getElementById("end").classList.remove("hidden");
         document.getElementById("start").classList.remove("hidden");
         document.getElementById("elapsedTime").classList.remove("hidden");
         document.getElementById("aDate").classList.remove("hidden");
-
+        
     }
 
     document.getElementById('stopButton').style.display = 'none';
@@ -66,6 +67,7 @@ function stopActivity() {
     // Beräkna och visa förfluten tid
     const elapsedTimeMs = closeTime - new Date(startStored);
     const elapsedTimeMin = Math.floor(elapsedTimeMs / 60000);
+    document.getElementById("scoreValue").value = elapsedTimeMin; // Använd rätt element-ID
 
     saveActivity(elapsedTimeMin);
 }
@@ -75,7 +77,7 @@ function saveActivity(time) {
     document.getElementById('completed-form').style.display = "block";
     document.getElementById('complete-form').style.display = "block";
     document.getElementById('elapsedTime').classList.remove("hidden");
-    document.getElementById("elapsedTime").value = time; // Använd rätt element-ID
+    document.getElementById("scoreValue").value = time; // Använd rätt element-ID
     localStorage.setItem('active', false);
 }
 
