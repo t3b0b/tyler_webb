@@ -185,12 +185,26 @@
     <form method="POST" class="form-container"  id="completed-form" style="border: none; background-color: #f0f0f0;">
         <div>
             <input type="text" id="aID" name="aID" style="display: none">
-            <input class="hidden" type="text" id="aDate" name="aDate" value="{{ current_date }}">
-            <input class="hidden" type="text" id="start" name="start">
-            <input class="hidden" type="text" id="end" name="end">
-            <input class="hidden" type="number" id="elapsedTime" name="score">
-            <div class="button-center hidden" id="complete-form" style="width:40%;">
-                <button type="submit" onclick="turnOff()" name="action" id="save-btn" class="button-style" value="save-score">Save</button>
+            <div class="input-group hidden" id = aDate>
+                <label for="aDate">Date:</label>
+                <input type="text" name="aDate" value="{{ current_date }}">
+            </div>
+            <div class="input-group hidden" id="start">
+                <label for="start">Start:</label>
+                <input type="text" name="start">
+            </div>
+            <div class="input-group hidden" id="end">
+                <label for="end">End:</label>
+                <input type="text" id="end" name="end" class="input-half">
+            </div>
+            <div class="input-group hidden" id="elapsedTime">
+                <label for="score">Score:</label>
+                <input type="number" id="elapsedTime" name="score" class="input-half">
+            </div>
+            <div class="input-group">
+                <div class="button-center hidden" id="complete-form">
+                    <button type="submit" onclick="turnOff()" name="action" id="save-btn" class="button-style" value="save-score">Save</button>
+                </div>
             </div>
         </div>
     </form>

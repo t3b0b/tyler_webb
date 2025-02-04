@@ -53,9 +53,11 @@ function stopActivity() {
         document.getElementById("start").value = new Date(startStored).toISOString().slice(0, 19).replace('T', ' ');
         document.getElementById("end").value = new Date(endStored).toISOString().slice(0, 19).replace('T', ' ');
         document.getElementById("aID").value = activityId;
-        document.getElementById("end").classList.remove("hidden")
-        document.getElementById("start").classList.remove("hidden")
-        document.getElementById("start").classList.remove("hidden")
+        document.getElementById("end").classList.remove("hidden");
+        document.getElementById("start").classList.remove("hidden");
+        document.getElementById("elapsedTime").classList.remove("hidden");
+        document.getElementById("aDate").classList.remove("hidden");
+
     }
 
     document.getElementById('stopButton').style.display = 'none';
