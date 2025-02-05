@@ -57,16 +57,18 @@
                     <label>Count: {{ streak.count }}</label>
                     <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post" style="display: flex; justify-content: center; align-items: center;">
                         {% if streak.type == "number" %}
-                            <label>Igår: {{ streak.yesterday_value }}</label>
+                            <label>{{ streak.yesterday_value }}</label>
                             <input type="number" name="amount" style="background: #f0f0f0; height: 20px; width: 40px; text-align: center; margin-right: 40px;">
-                        {% endif %}
+                        {% else %}
+                            <label>{{ streak.best }}</label>
                             <button class="streak-icon" type="submit" style="border: none; background: none; margin-right: 10px;">
                                 <svg id="checkbox-{{ streak.id }}" class="checkbox" xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 242 216">
                                     <ellipse id="background-{{ streak.id }}" class="background" cx="121" cy="108" rx="121" ry="108" fill="green"/>
                                     <path id="check" d="M38.5133 122.529L65.1039 95.7875L107.94 135.826L215.29 52.7692L101.124 171.413L38.5133 122.529Z" fill="white"/>
                                 </svg>
                             </button>
-                    </form>
+                    {% endif %}
+                        </form>
                 </div>
             {% endfor %}
             </div>

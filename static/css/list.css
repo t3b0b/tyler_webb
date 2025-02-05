@@ -54,9 +54,10 @@
 }
 /* Stil för varje list-item, nu är det en knapp */
 .list-item {
-    display: flex;
+    display: grid;
+    grid-template-columns: 3fr 2fr 1fr 1fr;
     justify-content: space-between; /* Gör så att innehållet sprids ut */
-    align-items: center; /* Centrera text och knapp vertikalt */
+    align-items: flex-start; /* Centrera text och knapp vertikalt */
     justify-items: center;
     border: 1px solid slategray;
     padding: 5px 10px 5px 15px;
@@ -75,7 +76,16 @@
     color: black;
     line-height: 1rem;
 }
+.list-item-1 {
+    flex: 3;
+}
+.list-item-2 {
+    flex: 2;
+}
 
+.list-item-3 {
+    flex: 1;
+}
 .list-item strong {
     justify-content: center;
     text-align: left;
