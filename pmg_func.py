@@ -11,6 +11,12 @@ from sqlalchemy.exc import IntegrityError
 
 # region Functions
 
+STOCKHOLM_TZ = timezone('Europe/Stockholm')
+
+def getSwetime():
+    now = datetime.now(STOCKHOLM_TZ)
+    return now
+
 def delete_old_notifications():
     cutoff_date = datetime.utcnow() - timedelta(days=30)
     Notification.query.filter(Notification.created_at < cutoff_date).delete()
@@ -84,7 +90,6 @@ def get_activities_for_user(user_id, start_date, end_date):
         Score.End <= end_date
     ).all()
 
-
 def getWord():
     ord_lista = MyWords.query.filter_by(user_id=current_user.id).all()
     ordet = None
@@ -97,7 +102,6 @@ def getWord():
             ordet = ord.word
             break
     return ordet, ord_lista
-
 
 def organize_activities_by_time(activities):
     activities_dict = {}
@@ -115,10 +119,8 @@ def organize_activities_by_time(activities):
         })
     return activities_dict
 
-
 def parse_date(date_str):
     return datetime.strptime(date_str, '%Y-%m-%d')
-
 
 def process_weekly_scores(scores, start_week, end_week):
     week_days = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
@@ -144,7 +146,6 @@ def process_weekly_scores(scores, start_week, end_week):
 
     return weekly_data
 
-
 def readWords(filename):
     encodings = ['utf-8', 'latin-1', 'iso-8859-1', 'utf-8-sig']
     for encoding in encodings:
@@ -158,7 +159,6 @@ def readWords(filename):
             continue
     raise UnicodeDecodeError(f"Could not decode the file {filename} with any of the tried encodings.")
 
-
 def common_route(title, sub_url, sub_text):
     sida = title
     sub_menu = []
@@ -171,7 +171,6 @@ def common_route(title, sub_url, sub_text):
         return sida, sub_menu
     else:
         return sida, None
-
 
 def add2db(db_model, request, form_fields, model_fields, user):
     new_entry = db_model()
@@ -245,7 +244,6 @@ def unique(db, by_db):
     unique_data = [post.title for post in db.query.with_entities(by_db).distinct().all()]
     list = [item[0] for item in unique_data]
     return list
-
 
 def update_dagar(user_id, model):
     today = date.today()
@@ -367,33 +365,6 @@ def myDayScore(date, user_id):
         "activity_points": activity_points
     }
 
-
-def myDayScore2(date, user_id):
-    total = 0
-    myScore = db.session.query(
-        Goals.name.label('goal_name'),
-        Activity.name.label('activity_name'),
-        Score.Date,
-        Score.Time,
-        Streak.name.label('streak_name')
-    ).outerjoin(
-        Goals, Goals.id == Score.Goal
-    ).outerjoin(
-        Activity, Activity.id == Score.Activity
-    ).outerjoin(
-        Streak, Streak.id == Score.Streak
-    ).filter(
-        Score.Date == date
-    ).filter(
-        Score.user_id == user_id
-    ).all()
-
-    for score in myScore:
-        total += float(score.Time)
-        total = int(total)
-    return myScore, total
-
-
 def generate_calendar_weeks(year, month):
     first_day_of_month = datetime(year, month, 1)
     days = []
@@ -422,7 +393,6 @@ def generate_calendar_weeks(year, month):
 
     return weeks
 
-
 def getInfo(filename, page):
     df = pd.read_csv(filename)
     row = df.loc[df['Page'] == page]
@@ -431,59 +401,56 @@ def getInfo(filename, page):
     else:
         return "Ingen information tillgänglig för den angivna sidan."
 
-
-def create_streak_notification(streak, message):
-    participants = SharedStreak.query.filter_by(streak_id=streak.id, status='active').all()
-    for participant in participants:
-        if participant.user_id != current_user.id:
-            create_notification(
-                user_id=participant.user_id,
-                message=message,
-                related_item_id=streak.id,
-                item_type='streak'
-            )
-
-
-def notify_streak_status(streak_id):
+def send_streak_notifications(streak_id, message, request_help=False):
+    """Notifierar användare om en streak, kan även be om hjälp att rädda den."""
     shared_items = SharedItem.query.filter_by(item_type='streak', item_id=streak_id, status='active').all()
 
     for shared_item in shared_items:
         if shared_item.shared_with_id != current_user.id:
+            if request_help:
+                message = f"{current_user.username} behöver hjälp med streak: {shared_item.streak.name}."
             create_notification(
                 user_id=shared_item.shared_with_id,
-                message=f"{current_user.username} behöver hjälp med streak: {shared_item.streak.name}.",
-                related_item_id=shared_item.item_id,
+                message=message,
+                related_item_id=streak_id,
                 item_type='streak'
             )
 
-
 def get_weekly_scores(user_id):
-    today = datetime.utcnow()
-    start_of_this_week = today - timedelta(days=today.weekday())
-    start_of_last_week = start_of_this_week - timedelta(days=7)
-    end_of_last_week = start_of_this_week - timedelta(days=1)
+    today = datetime.now()  # Byt från utcnow() till now()
+    start_of_this_week = today - timedelta(days=today.weekday())  # Får måndag denna vecka (kl 00:00)
+    start_of_last_week = start_of_this_week - timedelta(days=7)  # Måndag förra veckan
+    end_of_last_week = start_of_this_week - timedelta(days=1)  # Söndag förra veckan
 
     # Hämta poäng från databasen
     this_week_scores = db.session.query(
         Score.Date, db.func.sum(Score.Time).label('total_points')
     ).filter(
         Score.user_id == user_id,
-        Score.Date >= start_of_this_week,
-        Score.Date <= today
+        Score.Date >= start_of_this_week.date(),  # Fixar måndagsproblemet
+        Score.Date <= today.date()  # Endast till idag, ej framtida poster
     ).group_by(Score.Date).all()
 
     last_week_scores = db.session.query(
         Score.Date, db.func.sum(Score.Time).label('total_points')
     ).filter(
         Score.user_id == user_id,
-        Score.Date >= start_of_last_week,
-        Score.Date <= end_of_last_week
+        Score.Date >= start_of_last_week.date(),  # Använder .date() för att jämföra rätt
+        Score.Date <= end_of_last_week.date()
     ).group_by(Score.Date).all()
 
-    return this_week_scores, last_week_scores
+    activity_times = db.session.query(
+        Activity.name,
+        db.func.sum(Score.Time).label('total_time')
+    ).join(Score).filter(
+        Score.user_id == user_id,
+        Score.Date.between(start_of_this_week.date(), today.date())
+    ).group_by(Activity.name).all()
 
+    return this_week_scores, last_week_scores, activity_times
 
 def create_week_comparison_plot(this_week_scores, last_week_scores):
+
     days = ['Mån', 'Tis', 'Ons', 'Tors', 'Fre', 'Lör', 'Sön']
     x = range(len(days))
 
@@ -508,7 +475,6 @@ def create_week_comparison_plot(this_week_scores, last_week_scores):
     img.seek(0)
     plt.close()
     return base64.b64encode(img.getvalue()).decode('utf8')
-
 
 def get_activities_for_goal(user_id, goal_id):
     # Kontrollera om målet finns bland användarens tillåtna mål
@@ -580,41 +546,13 @@ def get_daily_scores(user_id):
     return today_score, yesterday_score, message
 
 
-def get_today_score(user_id):
-    """Hämta dagens score för en specifik användare."""
-    today = datetime.now().date()
-    today_score = db.session.query(db.func.sum(Score.Time)).filter(
+def get_score_for_day(user_id, day_offset=0):
+    """Hämta score för en viss dag. day_offset=0 för idag, day_offset=1 för igår osv."""
+    target_date = datetime.now().date() - timedelta(days=day_offset)
+    return db.session.query(db.func.sum(Score.Time)).filter(
         Score.user_id == user_id,
-        db.func.date(Score.Date) == today
+        db.func.date(Score.Date) == target_date
     ).scalar() or 0
-    return today_score
-
-
-def get_yesterday_score(user_id):
-    """Hämta gårdagens score för en specifik användare."""
-    yesterday = datetime.now().date() - timedelta(days=1)
-    yesterday_score = db.session.query(db.func.sum(Score.Time)).filter(
-        Score.user_id == user_id,
-        db.func.date(Score.Date) == yesterday
-    ).scalar() or 0
-    return yesterday_score
-
-
-def get_week_activity_times(user_id):
-    """Hämta total tid per aktivitet under aktuell vecka för en specifik användare."""
-    today = datetime.now().date()
-    start_of_week = today - timedelta(days=today.weekday())  # Måndag i denna vecka
-    end_of_week = start_of_week + timedelta(days=6)  # Söndag i denna vecka
-
-    activity_times = db.session.query(
-        Activity.name,
-        db.func.sum(Score.Time).label('total_time')
-    ).join(Score).filter(
-        Score.user_id == user_id,
-        Score.Date.between(start_of_week, end_of_week)
-    ).group_by(Activity.name).all()
-
-    return activity_times
 
 
 def create_activity_plot(activity_times):

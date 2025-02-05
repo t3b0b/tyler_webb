@@ -8,9 +8,9 @@ import io
 import base64
 from datetime import datetime, timedelta, date
 from sqlalchemy import and_
-from pmg_func import (getInfo, common_route, add2db, unique,
-                      section_content, update_dagar, completed_streaks,
-                      update_streak_details, myDayScore,
+from pmg_func import (getInfo, common_route, add2db, unique, get_score_for_day,
+                      section_content, update_dagar, completed_streaks, getSwetime,
+                      update_streak_details, myDayScore, get_weekly_scores,
                       generate_calendar_weeks, filter_mod, create_notification)
 import pandas as pd
 from pytz import timezone
@@ -50,34 +50,6 @@ Questions = {
                     "Vad kan du göra för att underlätta den här dagen?"],
 }
 
-STOCKHOLM_TZ = timezone('Europe/Stockholm')
-def getSwetime():
-    now = datetime.now(STOCKHOLM_TZ)
-    return now
-
-def create_streak_notification(streak, message):
-    participants = SharedStreak.query.filter_by(streak_id=streak.id, status='active').all()
-    for participant in participants:
-        if participant.user_id != current_user.id:
-            create_notification(
-                user_id=participant.user_id,
-                message=message,
-                related_item_id=streak.id,
-                item_type='streak'
-            )
-
-def notify_streak_status(streak_id):
-    shared_items = SharedItem.query.filter_by(item_type='streak', item_id=streak_id, status='active').all()
-
-    for shared_item in shared_items:
-        if shared_item.shared_with_id != current_user.id:
-            create_notification(
-                user_id=shared_item.shared_with_id,
-                message=f"{current_user.username} behöver hjälp med streak: {shared_item.streak.name}.",
-                related_item_id=shared_item.item_id,
-                item_type='streak'
-            )
-
 def SortStreaks(Streaks):
     valid_streaks = []
     now = getSwetime()
@@ -105,30 +77,6 @@ def SortStreaks(Streaks):
             valid_streaks.append(streak)
     return valid_streaks
 
-def get_weekly_scores(user_id):
-    today = getSwetime()  # Anpassa till din lokala tidszon
-    start_of_this_week = today - timedelta(days=today.weekday())
-    start_of_last_week = start_of_this_week - timedelta(days=7)
-    end_of_last_week = start_of_this_week - timedelta(days=1)
-
-    # Hämta poäng från databasen
-    this_week_scores = db.session.query(
-        Score.Date, db.func.sum(Score.Time).label('total_points')
-    ).filter(
-        Score.user_id == user_id,
-        db.func.date(Score.Date) >= start_of_this_week.date(),
-        db.func.date(Score.Date) <= today.date()
-    ).group_by(Score.Date).all()
-
-    last_week_scores = db.session.query(
-        Score.Date, db.func.sum(Score.Time).label('total_points')
-    ).filter(
-        Score.user_id == user_id,
-        db.func.date(Score.Date) >= start_of_last_week.date(),
-        db.func.date(Score.Date) <= end_of_last_week.date()
-    ).group_by(Score.Date).all()
-
-    return this_week_scores, last_week_scores
 
 def create_week_comparison_plot(this_week_scores, last_week_scores):
     days = ['Mån', 'Tis', 'Ons', 'Tors', 'Fre', 'Lör', 'Sön']
@@ -213,6 +161,7 @@ def get_user_tasks(user_id, model, activity_id=None):
 
     return tasks
 
+
 def get_daily_scores(user_id):
     today = datetime.now().date()
     yesterday = today - timedelta(days=1)
@@ -233,41 +182,6 @@ def get_daily_scores(user_id):
 
     return today_score, yesterday_score, message
 
-def get_today_score(user_id):
-    """Hämta dagens score för en specifik användare."""
-    today = datetime.now().date()
-    today_score = db.session.query(db.func.sum(Score.Time)).filter(
-        Score.user_id == user_id,
-        db.func.date(Score.Date) == today
-    ).scalar() or 0
-    return today_score
-
-def get_yesterday_score(user_id):
-    """Hämta gårdagens score för en specifik användare."""
-    now=getSwetime()
-    yesterday = now.date() - timedelta(days=1)
-    yesterday_score = db.session.query(db.func.sum(Score.Time)).filter(
-        Score.user_id == user_id,
-        db.func.date(Score.Date) == yesterday
-    ).scalar() or 0
-    return yesterday_score
-
-def get_week_activity_times(user_id):
-    """Hämta total tid per aktivitet under aktuell vecka för en specifik användare."""
-    now = getSwetime()
-    today = now.date()
-    start_of_week = today - timedelta(days=today.weekday())  # Måndag i denna vecka
-    end_of_week = start_of_week + timedelta(days=6)  # Söndag i denna vecka
-
-    activity_times = db.session.query(
-        Activity.name,
-        db.func.sum(Score.Time).label('total_time')
-    ).join(Score).filter(
-        Score.user_id == user_id,
-        Score.Date.between(start_of_week, end_of_week)
-    ).group_by(Activity.name).all()
-
-    return activity_times
 
 def create_activity_plot(activity_times):
     """Generera en stående stapelgraf med unika färger för varje mål."""
@@ -335,7 +249,25 @@ def challenge_user_to_streak(streak_id, friend_id):
         related_item_id=new_streak.id,
         item_type='streak'
     )
+    
+def get_yesterdays_streak_values(user_id):
+    yesterday = datetime.now().date() - timedelta(days=1)  # Gårdagens datum
 
+    results = db.session.query(
+        Streak.id,
+        Streak.name,
+        Streak.amount,
+        Score.Amount.label('yesterday_value')
+    ).join(Score, and_(
+        Score.Streak == Streak.id,  # Koppla score till streak
+        Score.Date == yesterday,  # Endast gårdagens datum
+        Score.user_id == user_id  # Endast för aktuell användare
+    )).filter(
+        Streak.user_id == user_id,  # Endast aktuella användarens streaks
+        Streak.type == 'number'  # Endast streaks som har type="number"
+    ).all()
+
+    return results 
 
 @pmg_bp.route('/notifications/unread', methods=['GET'])
 @login_required
@@ -730,27 +662,41 @@ def milestones(goal_id):
 
 # endregion
 
+
 # region Start
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 @login_required
 def myday():
+
     sida, sub_menu = common_route("Min Grind", ['/pmg/timebox'], ['My Day'])
     date_now = date.today()
     now = getSwetime()
     today = now.date()  # Hämta aktuell tid
+    yesterday = datetime.now().date() - timedelta(days=1)
     tomorrow = today + timedelta(days=1)
     hour = now.hour  # Aktuell timme
     myStreaks = filter_mod(Streak, user_id=current_user.id)
     myScore, total = myDayScore(date_now, current_user.id)
-    today_score = get_today_score(current_user.id)
-    yesterday_score = get_yesterday_score(current_user.id)
+    today_score = get_score_for_day(current_user.id, day_offset=0)
+    yesterday_score = get_score_for_day(current_user.id, day_offset=-1)
+
     total, point_details = myDayScore(date_now, current_user.id)
     activity_points = point_details.get("activity_points", 0)
     streak_points = point_details.get("streak_points", 0)
 
-    this_week_scores, last_week_scores = get_weekly_scores(current_user.id)
+    this_week_scores, last_week_scores, activity_scores = get_weekly_scores(current_user.id)
 
     plot_url = create_week_comparison_plot(this_week_scores, last_week_scores)
+
+    for streak in myStreaks:
+                yesterday_score = db.session.query(Score.Time).filter(
+                    Score.Streak == streak.id,
+                    Score.Date == yesterday,
+                    Score.user_id == streak.user_id
+                ).scalar()  # Returnerar endast värdet
+
+                # Lägg till gårdagens score som en attribut
+                streak.yesterday_value = yesterday_score if yesterday_score is not None else 0
 
     # Hämta aktiviteter
     myActs = Activity.query.filter_by(user_id=current_user.id)
@@ -760,6 +706,8 @@ def myday():
         "streak_points": streak_points,
         "total_points": total
     }
+    for streak in myStreaks:
+        print(f"Streak: {streak.name}, Gårdagens värde: {streak.yesterday_value}")
 
     valid_streaks=SortStreaks(myStreaks)
 
@@ -845,6 +793,7 @@ def myday_date(date):
                                my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
     else:
         return redirect(url_for('pmg.myday'))
+    
 # endregion
 
 #region Activity
