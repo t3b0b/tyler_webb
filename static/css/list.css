@@ -55,10 +55,11 @@
 /* Stil för varje list-item, nu är det en knapp */
 .list-item {
     display: grid;
-    grid-template-columns: 3fr 2fr 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    gap: 20px;
     justify-content: space-between; /* Gör så att innehållet sprids ut */
     align-items: flex-start; /* Centrera text och knapp vertikalt */
-    justify-items: center;
+    justify-items: flex-start;
     border: 1px solid slategray;
     padding: 5px 10px 5px 15px;
     margin-bottom: 1px;
@@ -75,6 +76,9 @@
     font-family: inherit;
     color: black;
     line-height: 1rem;
+}
+.list-item > *:nth-last-child(1) {
+    justify-self: end; /* Gör så att det sista elementet går längst till höger */
 }
 .list-item-1 {
     flex: 3;

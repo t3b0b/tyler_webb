@@ -33,8 +33,9 @@ function handleActivityClick(element) {
 function startActivity(actId) {
     openTime = new Date(); // Spara starttiden
     localStorage.setItem('start', openTime.toISOString()); // Spara starttiden i localStorage om sidan laddas om
-    localStorage.setItem('active', true);
+    localStorage.setItem('active', 'true');
     localStorage.setItem('selectedActivityId', actId);
+
     window.location.href = `/pmg/focus_room/${actId}`;
 }
 
@@ -79,12 +80,6 @@ function saveActivity(time) {
     document.getElementById('elapsedTime').classList.remove("hidden");
     document.getElementById("scoreValue").value = time; // Använd rätt element-ID
     localStorage.setItem('active', false);
-}
-
-function applyActivityLayout() {
-    document.getElementById('day-section').style.display = 'none';
-    document.getElementById('stopButton').style.display = 'block';
-    document.getElementById('continueButton').style.display = 'none';
 }
 
 
@@ -155,21 +150,7 @@ $('#goalSelect').change(function () {
     });
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    let savedOpenTime = localStorage.getItem('openTime');
-    let savedActiveTimer = localStorage.getItem('active');
 
-    if (savedOpenTime && savedActiveTimer === 'true') {
-        openTime = new Date(savedOpenTime);
-        if (!isNaN(openTime.getTime())) {  // Kolla om openTime är ett giltigt datum
-            let selectedAct = localStorage.getItem('selectedActivityId');
-            toggleTodoList(selectedAct);
-            applyActivityLayout();
-        } else {
-            console.error('Invalid openTime:', savedOpenTime);
-        }
-    }
-});
 
 
 document.addEventListener('DOMContentLoaded', function () {

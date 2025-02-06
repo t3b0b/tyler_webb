@@ -143,5 +143,27 @@ function toggleList(element) {
     });
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+    console.log("Checking for active activity...");
+
+    const savedActiveTimer = localStorage.getItem('active');
+    const selectedAct = localStorage.getItem('selectedActivityId');
+    const savedOpenTime = localStorage.getItem('openTime');
+
+    if (savedActiveTimer === 'true' && selectedAct) {
+        console.log("Redirecting to focus_room for activity:", selectedAct);
+        window.location.href = `/pmg/focus_room/${selectedAct}`;
+        return;
+    }
+
+    console.log("No active activity found, continuing page load.");
+    console.log("localStorage contents:", {
+        active: savedActiveTimer,
+        selectedActivityId: selectedAct,
+        openTime: savedOpenTime
+    });
+
+    document.body.style.display = 'block';
+});
 </script>
 {% endblock body %}
