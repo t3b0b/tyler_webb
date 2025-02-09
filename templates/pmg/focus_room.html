@@ -185,21 +185,22 @@
     <form method="POST" class="form-container"  id="completed-form" style="border: none; background-color: #f0f0f0;">
         <div>
             <input type="text" id="aID" name="aID" style="display: none">
+            <input type="hidden" id="gID" name="gID" value="{{ goal_id }}">
             <div class="input-group hidden" id = aDate>
                 <label for="aDate">Date:</label>
                 <input type="text" name="aDate" value="{{ current_date }}">
             </div>
             <div class="input-group hidden" id="start">
-                <label for="start">Start:</label>
+                <label for="startValue">Start:</label>
                 <input id="startValue" type="text" name="start">
             </div>
             <div class="input-group hidden" id="end">
-                <label for="end">End:</label>
-                <input id="endValue" type="text" id="end" name="end" class="input-half">
+                <label for="endValue">End:</label>
+                <input id="endValue" type="text" name="end" class="input-half">
             </div>
             <div class="input-group hidden" id="elapsedTime">
-                <label for="score">Score:</label>
-                <input id="scoreValue" type="number" id="elapsedTime" name="score" class="input-half">
+                <label for="scoreValue">Score:</label>
+                <input id="scoreValue" type="number" name="score" class="input-half">
             </div>
             <div class="input-group">
                 <div class="button-center hidden" id="complete-form">

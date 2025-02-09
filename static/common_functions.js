@@ -16,13 +16,13 @@ document.querySelectorAll('.add-subtask-form').forEach(form => {
 });
 
 function handleActivityClick(element) {
-
-    const activityId = element.getAttribute('data-goal-id');
+    const actName = element.getAttribute('data-act-name');
+    const activityId = element.getAttribute('data-activity-id');
     const newActivity = element.getAttribute('data-start-activity');
+    const goalName = element.getAttribute('data-goal-name');
 
     if (newActivity === "1") {
-        startActivity(activityId);
-
+        startActivity(activityId,actName,goalName);
     } else {
         // Annars omdirigera till todos
         window.location.href = `/pmg/activity/${activityId}/tasks`;
@@ -30,13 +30,17 @@ function handleActivityClick(element) {
 }
 
 // Starta aktivitet
-function startActivity(actId) {
+function startActivity(actId, actName, goalName) {
     openTime = new Date(); // Spara starttiden
     localStorage.setItem('start', openTime.toISOString()); // Spara starttiden i localStorage om sidan laddas om
     localStorage.setItem('active', 'true');
     localStorage.setItem('selectedActivityId', actId);
-
-    window.location.href = `/pmg/focus_room/${actId}`;
+    
+    if (goalName === "Skriva") {
+        window.location.href = `/txt/journal?section_name=${actName}`;
+    } else {
+        window.location.href = `/pmg/focus_room/${actId}`;
+    }
 }
 
 // Stoppa aktivitet

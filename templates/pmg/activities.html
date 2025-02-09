@@ -17,7 +17,7 @@
 
     <div class="list-content">
         {% for activity in activities %}
-            <div class="list-item" data-goal-id="{{ activity.id }}" data-activity-id="{{ activity.id }}" data-start-activity="{{ start_activity }}" onclick="handleActivityClick(this)">
+            <div class="list-item" data-goal-name="{{ goal.name }}" data-activity-id="{{ activity.id }}" data-act-name="{{ activity.name }}" data-start-activity="{{ start_activity }}" onclick="handleActivityClick(this)">
                 {{ activity.name }}
                 {% if activity.shared_item_id %}
                     <span class="shared-indicator">(Shared)</span>

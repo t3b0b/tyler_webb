@@ -365,10 +365,10 @@ def update_streak(streak_id, action):
     if action == 'check':
         score, goal_id = update_streak_details(streak, midnight_today)
         flash(f"Score: {score}, Goal ID: {goal_id}")  # Lägg till denna rad för felsökning
-
+        amount = request.form.get("amount")
         # Kontrollera att goal_id och score har giltiga värden
-        if goal_id and score:
-            new_score = Score(Goal=goal_id, Activity=None, Time=score, Date=current_date, user_id=current_user.id)
+        if score:
+            new_score = Score(Goal=goal_id, Activity=None, Time=score, Date=current_date, user_id=current_user.id, Streak=streak_id, Amount=amount)
             db.session.add(new_score)
             db.session.commit()
             print("New score added successfully")  # Lägg till denna rad för felsökning
@@ -599,7 +599,7 @@ def goal_activities(goal_id):
 
     # Hantera GET-begäran för att visa aktiviteterna
     activities = Activity.query.filter_by(goal_id=goal_id).all()
-    return render_template('pmg/activities.html', goal=goal, start_activity=start_activity ,activities=activities)
+    return render_template('pmg/activities.html', goal=goal, start_activity=start_activity, activities=activities)
 
 @pmg_bp.route('/goal/<int:goal_id>/delete', methods=['POST'])
 @login_required
@@ -859,7 +859,7 @@ def focus_room(activity_id):
 
         return jsonify({"success": True}), 200
 
-    return render_template('pmg/focus_room.html',activity_notes=activity_notes, activity=activity, tasks=tasks, current_date=current_date)
+    return render_template('pmg/focus_room.html',activity_notes=activity_notes, activity=activity, tasks=tasks, current_date=current_date,goal_id=goal_id)
 
 @pmg_bp.route('/activity/<int:activity_id>/update_task/<int:task_id>', methods=['GET','POST'])
 def update_task(activity_id, task_id):

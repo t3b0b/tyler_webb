@@ -43,32 +43,47 @@
 
                         <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
 
-                        <div id="activityForm" class="button-center" >
-                            <button type="submit" id="time-less" class="button-style" name="option" value="timeless" >Skicka</button>
-                            <button type="submit" id="write-on-time" class="button-style" name="option" style="display: none;" value="write-on-time">Save</button>
-                            <button type="button" id="start-timer" class="button-style" onclick="startTimerFromSelection()">Start Timer</button>
-                            <input id="goalSelect" value="{{ goal.id }}" style="display: none">
-                            <input id="activitySelect" value="{{ act_id }}" style="display: none">
-                            <input id="timeSelect" value="{{ time }}" style="display: none">
-                            <button id="startaAktivitet" style="display: none">A</button>
-                        </div>
-                        <div class="button-center">
-                            <button type="button" id="stopButton" class="button-style" style="display: none; background-color: red">Stop</button>
-                            <button type="button" id="continueButton" class="button-style" style="display: none; background-color: green">Continue</button>
-                        </div>
+        <form method="POST" class="form-container"  id="completed-form" style="border: none; background-color: #f0f0f0;">
+        <div>
+            <input type="hidden" id="gID" name="gID" value="{{ goal_id }}" style="display: none">
+            <input type="text" id="aID" name="aID" style="display: none">
+
+            <div class="input-group hidden" id = aDate>
+                <label for="aDate">Date:</label>
+                <input type="text" name="aDate" value="{{ current_date }}">
+            </div>
+            <div class="input-group hidden" id="start">
+                <label for="startValue">Start:</label>
+                <input id="startValue" type="text" name="start">
+            </div>
+            <div class="input-group hidden" id="end">
+                <label for="endValue">End:</label>
+                <input id="endValue" type="text" name="end" class="input-half">
+            </div>
+            <div class="input-group hidden" id="elapsedTime">
+                <label for="scoreValue">Score:</label>
+                <input id="scoreValue" type="number" name="score" class="input-half">
+            </div>
+            <div class="input-group">
+                <div class="button-center hidden" id="complete-form">
+                    <button type="submit" id="time-less" class="button-style" name="option" value="timeless" >Skicka</button>
+                    <button onclick="turnOff()" type="submit" id="write-on-time" class="button-style" name="option" value="write-on-time">Save</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="button-center">
+            <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
+            <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
+    </div>
                         <div class="repetitions" style="display: none">
                             <h2 id="repetitons">0</h2>
                         </div>
-                        <div id="completed-form" class="list-item" style="display: none;">
-                            <input type="text" id="gID" name="gID" value="{{ goal.id }}">
-                            <input type="text" id="aID" name="aID" value="{{ act_id }}">
-                            <input type="text" id="aDate" name="aDate" value="{{ current_date }}">
-                            <input type="text" id="score" name="score">
-                        </div>
-                    {% endif %}
-                </form>
+
+
+            {% endif %}
+        </form>
         {% endif %}
-    </div>
         {% if not act_id %}
            {% if myPosts %}
                 <div class="blogg-post">
@@ -84,6 +99,6 @@
                 </div>
             {% endif %}
         {% endif %}
-
+        </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 {% endblock body %}

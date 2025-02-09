@@ -125,19 +125,13 @@ def journal_section(act_id, sida, sub_menu, my_posts):
             ordet = f'Varför är detta mål viktigt för dig? ({goal})'
 #           why_G = goal
             break
+
     elif sida == "Bullet":
         ordet = ['Tacksam för', 'Inför imorgon', "Personer som betyder",
                  'Distraherar mig', 'Motiverar mig',
                  'Jag borde...', 'Värt att fundera på', 'Jag ska försöka..']
 
-    timeInt = Settings.query.filter_by(user_id=current_user.id).first()
-
-    if timeInt and timeInt.stInterval:
-        time = timeInt.stInterval
-    else:
-        time = 15  # Standardvärde om stInterval saknas eller om ingen inställning hittas
-
-    titles = []  # Initialisera titles här för att säkerställa att den alltid har ett värde
+    titles = []
 
     if act_id is not None:
         print(act_id)
@@ -149,7 +143,6 @@ def journal_section(act_id, sida, sub_menu, my_posts):
 
     if request.method == 'POST':
         option = request.form.get('option')
-        print(option)
         user = User.query.filter_by(id=current_user.id).first()
         content_check = request.form['blogg-content']
         if content_check:
@@ -184,7 +177,8 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                     db.session.commit()
 
                 update_dagar(current_user.id,Dagar)
-    return render_template('txt/journal.html', time=time, goal=myGoals, activities=activities, side_options=titles,
+
+    return render_template('txt/journal.html', goal=myGoals, activities=activities, side_options=titles,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
                            current_date=current_date, page_url=page_url, act_id=act_id, myPosts=my_posts,
                            page_info=page_info, why_G=why_G)
