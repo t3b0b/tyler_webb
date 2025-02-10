@@ -178,7 +178,7 @@
     <div class="list-header">
         <h3>Score</h3>
     </div>
-<div class="button-center">
+    <div class="button-center">
             <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
             <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
     </div>
@@ -186,6 +186,7 @@
         <div>
             <input type="text" id="aID" name="aID" style="display: none">
             <input type="hidden" id="gID" name="gID" value="{{ goal_id }}">
+            
             <div class="input-group hidden" id = aDate>
                 <label for="aDate">Date:</label>
                 <input type="text" name="aDate" value="{{ current_date }}">

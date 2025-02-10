@@ -63,7 +63,7 @@ function stopActivity() {
         document.getElementById("start").classList.remove("hidden");
         document.getElementById("elapsedTime").classList.remove("hidden");
         document.getElementById("aDate").classList.remove("hidden");
-        
+        document.getElementById("complete-form").classList.remove ("hidden")
     }
 
     document.getElementById('stopButton').style.display = 'none';
@@ -72,6 +72,7 @@ function stopActivity() {
     // Beräkna och visa förfluten tid
     const elapsedTimeMs = closeTime - new Date(startStored);
     const elapsedTimeMin = Math.floor(elapsedTimeMs / 60000);
+
     document.getElementById("scoreValue").value = elapsedTimeMin; // Använd rätt element-ID
 
     saveActivity(elapsedTimeMin);
@@ -80,8 +81,8 @@ function stopActivity() {
 // Spara aktivitet
 function saveActivity(time) {
     document.getElementById('completed-form').style.display = "block";
-    document.getElementById('complete-form').style.display = "block";
-    document.getElementById('elapsedTime').classList.remove("hidden");
+    document.getElementById('complete-form').classlist.remove ("hidden");
+    document.getElementById('elapsedTime').classList.remove ("hidden");
     document.getElementById("scoreValue").value = time; // Använd rätt element-ID
     localStorage.setItem('active', false);
 }

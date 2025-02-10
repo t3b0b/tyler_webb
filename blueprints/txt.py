@@ -131,7 +131,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                  'Distraherar mig', 'Motiverar mig',
                  'Jag borde...', 'Värt att fundera på', 'Jag ska försöka..']
 
-    titles = []
+        titles = []
 
     if act_id is not None:
         print(act_id)
@@ -201,9 +201,9 @@ def get_new_word(section_id):
 @login_required
 def blog(section_name):
     if section_name:
-        my_posts = Notes.query.filter_by(title=section_name, user_id=current_user.id).all()
+        my_posts = Notes.query.filter_by(title=section_name, user_id=current_user.id).order_by(Notes.date.desc()).all()
     else:
-        my_posts = Notes.query.filter_by(user_id=current_user.id, activity_id=None).all()
+        my_posts = Notes.query.filter_by(user_id=current_user.id, activity_id=None).order_by(Notes.date.desc()).all()
 
     sida, sub_menu = common_route("Blog", [
         url_for('txt.journal', section_name='skriva'),

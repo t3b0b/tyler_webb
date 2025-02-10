@@ -40,9 +40,7 @@
                                 <img src="{{ url_for('static', filename='images/plus-icon-större.png') }}" class="edit-icon" onclick="editTitle()" alt="Redigera" />
                             </div>
                         </div>
-
                         <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
-
         <form method="POST" class="form-container"  id="completed-form" style="border: none; background-color: #f0f0f0;">
         <div>
             <input type="hidden" id="gID" name="gID" value="{{ goal_id }}" style="display: none">
@@ -67,24 +65,20 @@
             <div class="input-group">
                 <div class="button-center hidden" id="complete-form">
                     <button type="submit" id="time-less" class="button-style" name="option" value="timeless" >Skicka</button>
-                    <button onclick="turnOff()" type="submit" id="write-on-time" class="button-style" name="option" value="write-on-time">Save</button>
+                    <button onclick=turnOff() type="submit" id="write-on-time" class="button-style" name="option" value="write-on-time">Save</button>
                 </div>
             </div>
         </div>
     </form>
-    <div class="button-center">
-            <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
-            <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
-    </div>
-                        <div class="repetitions" style="display: none">
-                            <h2 id="repetitons">0</h2>
-                        </div>
-
-
-            {% endif %}
-        </form>
+    
         {% endif %}
-        {% if not act_id %}
+    </form>
+    <div class="button-center">
+        <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
+        <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
+    </div>
+    {% endif %}
+    {% if not act_id %}
            {% if myPosts %}
                 <div class="blogg-post">
                     <div class="view-toggle" style="background-color: white">
