@@ -691,14 +691,14 @@ def myday():
     plot_url = create_week_comparison_plot(this_week_scores, last_week_scores)
 
     for streak in myStreaks:
-                yesterday_score = db.session.query(Score.Time).filter(
+                yesterday_score = db.session.query(Score.Amount).filter(
                     Score.Streak == streak.id,
                     Score.Date == yesterday,
                     Score.user_id == streak.user_id
                 ).scalar()  # Returnerar endast värdet
 
                 # Lägg till gårdagens score som en attribut
-                streak.yesterday_value = yesterday_score if yesterday_score is not None else 0
+                streak.yesterday_value = int(yesterday_score) if yesterday_score is not None else 0
 
     # Hämta aktiviteter
     myActs = Activity.query.filter_by(user_id=current_user.id)

@@ -58,7 +58,7 @@
     grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
     gap: 20px;
     justify-content: space-between; /* Gör så att innehållet sprids ut */
-    align-items: flex-start; /* Centrera text och knapp vertikalt */
+    align-items: center; /* Centrera text och knapp vertikalt */
     justify-items: flex-start;
     border: 1px solid slategray;
     padding: 5px 10px 5px 15px;
@@ -80,6 +80,7 @@
 .list-item > *:nth-last-child(1) {
     justify-self: end; /* Gör så att det sista elementet går längst till höger */
 }
+
 .list-item-1 {
     flex: 3;
 }
