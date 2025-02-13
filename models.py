@@ -274,6 +274,7 @@ class TopFive(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     title = db.Column(db.String(100), nullable=False)
     list_type = db.Column(db.String(50), nullable=False, default="top_five_today")
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     def __repr__(self):
         return f"<CalendarBullet {self.date}>"
 

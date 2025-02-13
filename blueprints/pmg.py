@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, date
 from sqlalchemy import and_
 from pmg_func import (getInfo, common_route, add2db, unique, get_score_for_day,
                       section_content, update_dagar, completed_streaks, getSwetime,
-                      update_streak_details, myDayScore, get_weekly_scores,
+                      update_streak_details, myDayScore, get_weekly_scores,get_daily_question,
                       generate_calendar_weeks, filter_mod, create_notification)
 import pandas as pd
 from pytz import timezone
@@ -21,32 +21,32 @@ from sqlalchemy.orm import scoped_session
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
 Questions = {
-    "priorities": ["Viktigt att prioritera idag",
+    "Prioriteringar": ["Viktigt att prioritera idag",
                    'Viktigt att prioritera imorgon'],
-    "tacksam": ["Vad har du att vara tacksam för?"],
-    "tankar": ["Tankar/insikter värda att påminnas om",
+    "Tacksam": ["Vad har du att vara tacksam för?"],
+    "Tankar": ["Tankar/insikter värda att påminnas om",
                "Tankar/insikter att ta med till imorgon"],
-    "bättre": ["Vad ska du se till att göra bättre idag?",
+    "Bättre": ["Vad ska du se till att göra bättre idag?",
                "Vad ska du se till att göra bättre imorgon?"],
-    "känslor": ["Hur känner du dig idag?",
+    "Känslor": ["Hur känner du dig idag?",
                 "Hur känner du inför imorgon?"],
-    "mål": ["Vilka mål vill du nå idag?",
+    "Mål": ["Vilka mål vill du nå idag?",
             "Vilka mål vill du nå imorgon?"],
-    "relationer": ["Finns det någon du vill ge extra uppmärksamhet till idag?",
+    "Relationer": ["Finns det någon du vill ge extra uppmärksamhet till idag?",
                    "Finns det någon du vill ge extra uppmärksamhet till imorgon?"],
-    "lärande": ["Vad vill du lära dig eller utforska idag?",
+    "Lärande": ["Vad vill du lära dig eller utforska idag?",
                 "Vad vill du lära dig eller utforska imorgon?"],
-    "hälsa": ["Vad kan du göra idag för att ta hand om din hälsa och energi?",
+    "Hälsa": ["Vad kan du göra idag för att ta hand om din hälsa och energi?",
               "Vad kan du göra imorgon för att ta hand om din hälsa och energi?"],
-    "uppskattning": ["Vad eller vem kan du visa uppskattning för idag?",
+    "Uppskattning": ["Vad eller vem kan du visa uppskattning för idag?",
                      "Vad eller vem kan du visa uppskattning för imorgon?"],
-    "kreativitet": ["Hur kan du uttrycka din kreativitet idag?",
+    "Kreativitet": ["Hur kan du uttrycka din kreativitet idag?",
                     "Hur kan du uttrycka din kreativitet imorgon?"],
-    "utmaningar": ["Finns det någon utmaning du kan ta itu med idag?",
+    "Utmaningar": ["Finns det någon utmaning du kan ta itu med idag?",
                    "Finns det någon utmaning du kan ta itu med imorgon?"],
-    "avslappning": ["Vad kan du göra för att slappna av och återhämta dig idag?",
+    "Avslappning": ["Vad kan du göra för att slappna av och återhämta dig idag?",
                     "Vad kan du göra för att slappna av och återhämta dig imorgon?"],
-    "underlätta": ["Vad kan du göra idag för att underlätta morgondagen?",
+    "Underlätta": ["Vad kan du göra idag för att underlätta morgondagen?",
                     "Vad kan du göra för att underlätta den här dagen?"],
 }
 
@@ -713,16 +713,7 @@ def myday():
 
     valid_streaks=SortStreaks(myStreaks)
 
-    random.seed(str(today))  # Säkerställer samma fråga varje dag
-    list_type = random.choice(list(Questions.keys()))  # Välj en slumpmässig nyckel
-
-    if hour < 14:
-        message = Questions[list_type][0]  # Första elementet i listan
-        list_date = today
-    else:
-        message = Questions[list_type][1] if len(Questions[list_type]) > 1 else Questions[list_type][
-            0]  # Andra elementet, eller det första om bara ett finns
-        list_date = tomorrow
+    message, list_type, list_date = get_daily_question()
 
     list_title = list_type.capitalize()
     topFive = TopFive.query.filter_by(title=list_title, user_id=current_user.id, list_type=list_type, date=list_date).first()

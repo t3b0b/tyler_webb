@@ -28,11 +28,10 @@
             {% endfor %}
             </div>
         {% endif %}
-
     <div class="list-content" id="shared-goals" style="display: none;">
             {% if shared_goals %}
                 {% for goal in shared_goals %}
-                    <div class="list-item" data-goal-id="{{ goal.id }}" onclick="window.location.href = '/pmg/goal/{{ goal.id }}/activities';">
+                <div class="list-item" data-goal-id="{{ goal.id }}" onclick="window.location.href = '/pmg/goal/{{ goal.id }}/activities?start_activity={{ request.args.get('start_activity', '0') }}';">
                         {{ goal.name }}
                         <form action="{{ url_for('pmg.delete_goal', goal_id=goal.id) }}" method="POST" style="display: inline;">
                             <button type="submit" class="tgl-btn" onclick="event.stopPropagation();">&#10060;</button>

@@ -1,9 +1,9 @@
 from random import choice
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
-from models import (User, db, Notes, Goals, Bullet,
+from models import (User, db, Notes, Goals, Bullet, TopFive,
                     Activity, Score, MyWords, Settings, Dagar)
 
-from pmg_func import (section_content,common_route,getInfo,
+from pmg_func import (section_content,common_route,getInfo,get_daily_question,
                       getWord, add2db, update_dagar,add_unique_word,add_words_from_file)
 
 from datetime import datetime, timedelta, date
@@ -11,6 +11,36 @@ from datetime import datetime, timedelta, date
 from flask_login import current_user, login_required, login_user, logout_user
 
 txt_bp = Blueprint('txt', __name__, template_folder='templates/txt')
+
+Questions = {
+    "Prioriteringar": ["Viktigt att prioritera idag",
+                   'Viktigt att prioritera imorgon'],
+    "Tacksam": ["Vad har du att vara tacksam för?"],
+    "Tankar": ["Tankar/insikter värda att påminnas om",
+               "Tankar/insikter att ta med till imorgon"],
+    "Bättre": ["Vad ska du se till att göra bättre idag?",
+               "Vad ska du se till att göra bättre imorgon?"],
+    "Känslor": ["Hur känner du dig idag?",
+                "Hur känner du inför imorgon?"],
+    "Mål": ["Vilka mål vill du nå idag?",
+            "Vilka mål vill du nå imorgon?"],
+    "Relationer": ["Finns det någon du vill ge extra uppmärksamhet till idag?",
+                   "Finns det någon du vill ge extra uppmärksamhet till imorgon?"],
+    "Lärande": ["Vad vill du lära dig eller utforska idag?",
+                "Vad vill du lära dig eller utforska imorgon?"],
+    "Hälsa": ["Vad kan du göra idag för att ta hand om din hälsa och energi?",
+              "Vad kan du göra imorgon för att ta hand om din hälsa och energi?"],
+    "Uppskattning": ["Vad eller vem kan du visa uppskattning för idag?",
+                     "Vad eller vem kan du visa uppskattning för imorgon?"],
+    "Kreativitet": ["Hur kan du uttrycka din kreativitet idag?",
+                    "Hur kan du uttrycka din kreativitet imorgon?"],
+    "Utmaningar": ["Finns det någon utmaning du kan ta itu med idag?",
+                   "Finns det någon utmaning du kan ta itu med imorgon?"],
+    "Avslappning": ["Vad kan du göra för att slappna av och återhämta dig idag?",
+                    "Vad kan du göra för att slappna av och återhämta dig imorgon?"],
+    "Underlätta": ["Vad kan du göra idag för att underlätta morgondagen?",
+                    "Vad kan du göra för att underlätta den här dagen?"],
+}
 
 def sync_blog_titles_to_mywords(user):
     # Hämta alla rubriker från Notes där activity_id är None
@@ -127,11 +157,23 @@ def journal_section(act_id, sida, sub_menu, my_posts):
             break
 
     elif sida == "Bullet":
-        ordet = ['Tacksam för', 'Inför imorgon', "Personer som betyder",
-                 'Distraherar mig', 'Motiverar mig',
-                 'Jag borde...', 'Värt att fundera på', 'Jag ska försöka..']
+        ordet, list_type, list_date = get_daily_question()
 
-        titles = []
+        list_title = list_type.capitalize()
+        topFive = TopFive.query.filter_by(title=list_title, user_id=current_user.id, list_type=list_type, date=list_date).first()
+
+        if topFive and topFive.content:
+            topFiveList = topFive.content.split(',')
+            show = 0
+        else:
+            show = 1
+            if not topFive:
+                topFive = TopFive(user_id=current_user.id, list_type=list_type, title=list_title, date=list_date)
+                db.session.add(topFive)
+                db.session.commit()
+            topFiveList = []
+
+        titles = TopFive.query.filter_by(user_id=current_user.id).all()
 
     if act_id is not None:
         print(act_id)

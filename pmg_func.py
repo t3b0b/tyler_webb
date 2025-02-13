@@ -1,6 +1,8 @@
 from models import (User, db, Streak, Notes, Goals, Friendship, Bullet,
                     Activity, Score, MyWords, Settings, Dagar, Message, ToDoList,
                     Event, TopFive,Notification)
+from random import choice
+import random
 from datetime import datetime, timedelta, date
 import pandas as pd
 from pytz import timezone
@@ -12,6 +14,54 @@ from sqlalchemy.exc import IntegrityError
 # region Functions
 
 STOCKHOLM_TZ = timezone('Europe/Stockholm')
+
+def get_daily_question():
+
+    Questions = {
+    "Prioriteringar": ["Viktigt att prioritera idag",
+                   'Viktigt att prioritera imorgon'],
+    "Tacksam": ["Vad har du att vara tacksam för?"],
+    "Tankar": ["Tankar/insikter värda att påminnas om",
+               "Tankar/insikter att ta med till imorgon"],
+    "Bättre": ["Vad ska du se till att göra bättre idag?",
+               "Vad ska du se till att göra bättre imorgon?"],
+    "Känslor": ["Hur känner du dig idag?",
+                "Hur känner du inför imorgon?"],
+    "Mål": ["Vilka mål vill du nå idag?",
+            "Vilka mål vill du nå imorgon?"],
+    "Relationer": ["Finns det någon du vill ge extra uppmärksamhet till idag?",
+                   "Finns det någon du vill ge extra uppmärksamhet till imorgon?"],
+    "Lärande": ["Vad vill du lära dig eller utforska idag?",
+                "Vad vill du lära dig eller utforska imorgon?"],
+    "Hälsa": ["Vad kan du göra idag för att ta hand om din hälsa och energi?",
+              "Vad kan du göra imorgon för att ta hand om din hälsa och energi?"],
+    "Uppskattning": ["Vad eller vem kan du visa uppskattning för idag?",
+                     "Vad eller vem kan du visa uppskattning för imorgon?"],
+    "Kreativitet": ["Hur kan du uttrycka din kreativitet idag?",
+                    "Hur kan du uttrycka din kreativitet imorgon?"],
+    "Utmaningar": ["Finns det någon utmaning du kan ta itu med idag?",
+                   "Finns det någon utmaning du kan ta itu med imorgon?"],
+    "Avslappning": ["Vad kan du göra för att slappna av och återhämta dig idag?",
+                    "Vad kan du göra för att slappna av och återhämta dig imorgon?"],
+    "Underlätta": ["Vad kan du göra idag för att underlätta morgondagen?",
+                    "Vad kan du göra för att underlätta den här dagen?"],
+}
+    
+    today = datetime.today().date()
+    tomorrow = today + timedelta(days=1)
+    hour = datetime.now().hour
+    
+    random.seed(str(today))  # Samma fråga varje dag
+    list_type = random.choice(list(Questions.keys()))  # Välj en slumpmässig kategori
+
+    if hour < 14:
+        message = Questions[list_type][0]  # Första frågan
+        list_date = today
+    else:
+        message = Questions[list_type][1] if len(Questions[list_type]) > 1 else Questions[list_type][0]
+        list_date = tomorrow  # Sätter frågan till morgondagens datum om klockan är efter 14:00
+
+    return message, list_type, list_date
 
 def getSwetime():
     now = datetime.now(STOCKHOLM_TZ)
