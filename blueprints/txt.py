@@ -94,7 +94,7 @@ def journal():
     section_name = request.args.get('section_name')
     my_act = Activity.query.filter_by(name=section_name, user_id=current_user.id).all()
     activity_names = [act.name for act in my_act]
-
+    topFiveList = []  # Se till att variabeln alltid har ett värde
     if not section_name:
         return redirect(url_for('txt.journal', section_name='Mina Ord'))
 
@@ -126,6 +126,7 @@ def journal():
 @txt_bp.route('/journal/<section_name>', methods=['GET', 'POST'])
 @login_required
 def journal_section(act_id, sida, sub_menu, my_posts):
+    topFiveList=[]
     page_info = ""
     current_date = date.today()
     why_G = ""
@@ -158,20 +159,32 @@ def journal_section(act_id, sida, sub_menu, my_posts):
 
     elif sida == "Bullet":
         ordet, list_type, list_date = get_daily_question()
-
+        
         list_title = list_type.capitalize()
-        topFive = TopFive.query.filter_by(title=list_title, user_id=current_user.id, list_type=list_type, date=list_date).first()
+
+        # Försök att hämta en befintlig lista
+        topFive = TopFive.query.filter_by(
+            title=list_title, 
+            user_id=current_user.id, 
+            list_type=list_type, 
+            date=list_date
+        ).first()
 
         if topFive and topFive.content:
             topFiveList = topFive.content.split(',')
             show = 0
         else:
+            topFiveList=[]
             show = 1
-            if not topFive:
-                topFive = TopFive(user_id=current_user.id, list_type=list_type, title=list_title, date=list_date)
+            if not topFive:  # Om det inte finns en befintlig lista, skapa en ny
+                topFive = TopFive(
+                    title=list_title, 
+                    user_id=current_user.id, 
+                    list_type=list_type, 
+                    date=list_date
+                )
                 db.session.add(topFive)
                 db.session.commit()
-            topFiveList = []
 
         titles = TopFive.query.filter_by(user_id=current_user.id).all()
 
@@ -223,7 +236,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     return render_template('txt/journal.html', goal=myGoals, activities=activities, side_options=titles,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
                            current_date=current_date, page_url=page_url, act_id=act_id, myPosts=my_posts,
-                           page_info=page_info, why_G=why_G)
+                           page_info=page_info, why_G=why_G, topFiveList = topFiveList)
 
 @txt_bp.route('/get-new-word')
 def get_new_word(section_id):

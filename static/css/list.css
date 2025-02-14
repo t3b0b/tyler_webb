@@ -366,16 +366,16 @@
         height: 100%;
     }
     .five-list-content form {
-    font-size: 1rem;
+    font-size: 0.8rem;
     }
     .five-list-content form input[type="text"] {
-    font-size: 1rem;
+    font-size: 0.8rem;
     }
     .five-list-content form button {
-    font-size: 1rem;
+    font-size: 0.8rem;
     }
     .head-list {
-        font-size: 1rem;
+        font-size: 0.8rem;
         font-weight: bold;
     }
 
@@ -383,7 +383,7 @@
         min-height: fit-content;
         max-height: 1.2rem;
         max-width: 90%;
-        font-size: 1rem;
+        font-size: 0.5rem;
         font-weight: bold;
     }
 
@@ -400,7 +400,7 @@
         font-size: 1rem;
     }
     .tab-title{
-        font-size: 1rem;
+        font-size: 0.8rem;
     }
     .list-item {
         font-size: 1rem;
