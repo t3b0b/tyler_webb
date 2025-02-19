@@ -24,6 +24,15 @@
     font-size: 16px;
     color: #333;
 }
+.progress-bar {
+    position: absolute;
+    bottom: 1px;
+    left: 1px;
+    height: 0.3px;
+    background-color: lightgreen; /* Färg på progress-bar */
+    transition: width 0.4s ease-in-out;
+    z-index: 0;
+}
 
 /* Indrag för subtasks för att indikera hierarki */
 .subtask-list {
@@ -89,8 +98,16 @@
             {% for task in tasks %}
         <div class="striped-list">
             <div class="list-item" draggable="true" data-target="subtasks-{{ task.id }}"
-            ondragstart="dragStart(event)" ondragover="allowDrop(event)" ondrop="dropTask(event)">
+                    ondragstart="dragStart(event)" ondragover="allowDrop(event)" ondrop="dropTask(event)">
+                
+                <!-- Progress-bar ligger bakom text -->
+                <span class="progress-bar" 
+                    style="width: {{ (task.completed_subtasks / task.subtask_count) * 100 if task.subtask_count > 0 else 0 }}%;">
+                </span>  
+        
+                <!-- Text ska ligga ovanpå -->
                 <span>{{ task.task }}</span>
+
                 <!-- Om task är upprepningsbar, visa repetitionstatus -->
                 {% if task.is_repeatable %}
                     <span class="repeat-status">Repetitioner: {{ task.completed_repeats }} / {{ task.total_repeats }}</span>
@@ -201,7 +218,7 @@
             </div>
             <div class="input-group hidden" id="elapsedTime">
                 <label for="scoreValue">Score:</label>
-                <input id="scoreValue" type="number" name="score" class="input-half">
+                <input id="scoreValue" type="number" name="score" class="input-half" oninput="updateEndTime()">
             </div>
             <div class="input-group">
                 <div class="button-center hidden" id="complete-form">
@@ -214,6 +231,31 @@
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+    const scoreInput = document.getElementById("scoreValue");
+    const startInput = document.getElementById("startValue");
+    const endInput = document.getElementById("endValue");
+
+    scoreInput.addEventListener("input", function() {
+        updateEndTime();
+    });
+
+    function updateEndTime() {
+        const startTimeStr = startInput.value;
+        const scoreMinutes = parseInt(scoreInput.value, 10) || 0; // Hämta score i minuter, standardvärde 0
+
+        if (!startTimeStr) return; // Avbryt om starttid saknas
+
+        const startTime = new Date(startTimeStr.replace(" ", "T")); // Konvertera till Date-objekt
+
+        if (isNaN(startTime.getTime())) return; // Avbryt om startTime är ogiltigt
+
+        startTime.setMinutes(startTime.getMinutes() + scoreMinutes); // Lägg till score-minuter
+
+        // Uppdatera End Time-fältet i format 'YYYY-MM-DD HH:MM:SS'
+        endInput.value = startTime.toISOString().slice(0, 19).replace("T", " ");
+    }
+});
         let draggedItem = null;
 
         function dragStart(event) {

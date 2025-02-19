@@ -76,7 +76,10 @@
     font-family: inherit;
     color: black;
     line-height: 1rem;
+    position: relative;
+
 }
+
 .list-item > *:nth-last-child(1) {
     justify-self: end; /* Gör så att det sista elementet går längst till höger */
 }
@@ -106,6 +109,11 @@
 .list-item:focus {
     outline: none;
     box-shadow: 0 0 5px 2px rgba(0, 0, 255, 0.3);
+}
+
+.list-item span {
+    z-index: 1; /* Säkerställer att texten ligger ovanpå progress-baren */
+    padding: 5px 10px;
 }
 
 /* Scrollbarens utseende */
