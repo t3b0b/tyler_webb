@@ -250,7 +250,7 @@
 
         if (isNaN(startTime.getTime())) return; // Avbryt om startTime är ogiltigt
 
-        startTime.setMinutes(startTime.getMinutes() + scoreMinutes); // Lägg till score-minuter
+        startTime.setMinutes(startTime.getMinutes() + scoreMinutes+60); // Lägg till score-minuter
 
         // Uppdatera End Time-fältet i format 'YYYY-MM-DD HH:MM:SS'
         endInput.value = startTime.toISOString().slice(0, 19).replace("T", " ");

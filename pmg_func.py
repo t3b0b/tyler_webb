@@ -15,6 +15,11 @@ from sqlalchemy.exc import IntegrityError
 
 STOCKHOLM_TZ = timezone('Europe/Stockholm')
 
+def read_info(filename):
+    with open(filename, "r", encoding="utf-8") as f:
+        return f.read()
+    
+
 def get_daily_question():
 
     Questions = {

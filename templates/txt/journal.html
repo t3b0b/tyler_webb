@@ -22,16 +22,14 @@
 {% endblock head %}
 
 {% block body %}
-        {% if act_id %}
+{% if act_id %}
 <div class="blogg-container">
-        <form method="POST">
+    <form method="POST">
         <div class="view-toggle" style="background-color: white">
             <a href="{{ url_for('txt.blog', section_name=None) }}">
             <button class="page-toggle-btn" type="button">Blog</button></a>
             <button class="active-view" type="button" onclick="window.location.href='/txt/journal?section_name=Mina+Ord'">Journal</button>
         </div>
-                    
-
         <div class="ordet">
             <button name="option" style="width: 60px; margin-left: 3%" onclick="fetchNewWord()">New</button>
             <label id="ordet-label" name="post-ord">{{ ordet }}</label>
@@ -42,19 +40,21 @@
             </div>
         </div>
         {% if sida == "Mina Ord" or sida == "Dagbok" or sida == "Mina Mål" %}
-        <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
+            <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
         {% elif sida == "Bullet" %}
-        <div class="five-list-content">
-            {% for num in range(1, 6) %}
-                <input type="text" name="Prio_{{ num }}" placeholder="{{ num }}:"
-                {% if topFiveList|length >= num %}        
-                    value="{{ topFiveList[num-1] }}">
-                {% endif %}
-            {% endfor %}
-            <button type="submit" name="my_list">Spara</button>
-        </div>
+            <div class="five-list-content">
+                {% for num in range(1, 6) %}
+                    <input type="text" name="Prio_{{ num }}" placeholder="{{ num }}:"
+                    {% if topFiveList|length >= num %}        
+                        value="{{ topFiveList[num-1] }}">
+                    {% endif %}
+                {% endfor %}
+                <button type="submit" name="my_list">Spara</button>
+            </div>
+        {% endif %}
         <form method="POST" class="form-container"  id="completed-form" style="border: none; background-color: #f0f0f0;">
         <div>
+            <input type="number" id ="activeAct" style="hidden">
             <input type="hidden" id="gID" name="gID" value="{{ goal_id }}" style="display: none">
             <input type="text" id="aID" name="aID" style="display: none">
 
@@ -74,37 +74,58 @@
                 <label for="scoreValue">Score:</label>
                 <input id="scoreValue" type="number" name="score" class="input-half">
             </div>
+            <div class="button-center">
+                <button id="stopButton" class="button-style hidden" style="background-color:red" onclick="stopActivity()">Stop</button>
+            </div>
             <div class="input-group">
                 <div class="button-center hidden" id="complete-form">
-                    <button type="submit" id="time-less" class="button-style" name="option" value="timeless" >Skicka</button>
-                    <button onclick=turnOff() type="submit" id="write-on-time" class="button-style" name="option" value="write-on-time">Save</button>
+                    <button type="submit" id="time-less" class="button-style hidden" name="option" value="timeless">Skicka</button>
+                    <button type="submit" id="write-on-time" class="button-style hidden" name="option" value="write-on-time">Save</button>
                 </div>
             </div>
-        </div>
-    </form>
-    
-        {% endif %}
-    </form>
-    <div class="button-center">
-        <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
-        <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
-    </div>
     {% endif %}
-    {% if not act_id %}
-           {% if myPosts %}
-                <div class="blogg-post">
-                    <div class="view-toggle" style="background-color: white">
-                        <button class="page-toggle-btn" type="button" onclick="window.location.href='/txt/journal?section_name=Blog'">Blog</button>
-                        <button class="active-view" type="button" onclick="window.location.href='/txt/journal?section_name=Mina+Ord'">Journal</button>
-                    </div>
-                    {% for post in myPosts %}
-                        <h3 class="post-title">{{ post.title }}</h3>
-                        <p class="post-content">{{ post.content }}</p>
-                        <p class="post-author">{{ post.author }} {{ post.date }}</p>
-                    {% endfor %}
+{% if not act_id %}
+        {% if myPosts %}
+            <div class="blogg-post">
+                <div class="view-toggle" style="background-color: white">
+                    <button class="page-toggle-btn" type="button" onclick="window.location.href='/txt/journal?section_name=Blog'">Blog</button>
+                    <button class="active-view" type="button" onclick="window.location.href='/txt/journal?section_name=Mina+Ord'">Journal</button>
                 </div>
-            {% endif %}
+                {% for post in myPosts %}
+                    <h3 class="post-title">{{ post.title }}</h3>
+                    <p class="post-content">{{ post.content }}</p>
+                    <p class="post-author">{{ post.author }} {{ post.date }}</p>
+                {% endfor %}
+            </div>
         {% endif %}
-        </div>
+{% endif %}
+</div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
+
+<script>document.addEventListener('DOMContentLoaded', function () {
+    console.log("Checking for active activity...");
+
+    const savedActive = localStorage.getItem('active');
+    const selectedAct = localStorage.getItem('selectedActivityId');
+
+    const stopButton = document.getElementById("stopButton");
+    const completeForm = document.getElementById("complete-form");
+    const timeLessButton = document.getElementById("time-less");
+    const writeOnTimeButton = document.getElementById("write-on-time");
+
+    if (savedActive === 'true' && selectedAct) {
+        console.log("Activity is active, showing Stop button.");
+        if (stopButton) stopButton.classList.remove("hidden");
+        if (completeForm) completeForm.classList.remove("hidden");
+
+    } else {
+        console.log("No active activity, hiding Stop button.");
+        if (stopButton) stopButton.classList.add("hidden");
+        if (completeForm) completeForm.classList.remove("hidden");
+        if (timeLessButton) timeLessButton.classList.remove("hidden");
+        if (writeOnTimeButton) writeOnTimeButton.classList.remove("hidden");
+    }
+});
+
+</script>
 {% endblock body %}

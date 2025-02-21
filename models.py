@@ -1,4 +1,5 @@
 
+from extensions import db
 from flask_login import UserMixin
 from datetime import datetime
 from flask import current_app, Flask
@@ -6,11 +7,6 @@ from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.associationproxy import association_proxy
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@tylerobri.mysql.pythonanywhere-services.com/tylerobri$PMG'
-migrate = Migrate(app, db)
 
 #region User
 

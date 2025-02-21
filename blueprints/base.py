@@ -16,9 +16,7 @@ base_bp = Blueprint('base', __name__, template_folder='templates/base')
 test=[]
 df = pd.read_csv(file_path)
 data=df.loc[df['Tjänst']=="Mekanik"]
-def read_info(filename):
-    with open(filename, "r", encoding="utf-8") as f:
-        return f.read()
+
 @base_bp.route('/home')
 def home_base():
     sida = "Hem"

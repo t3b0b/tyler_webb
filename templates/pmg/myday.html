@@ -81,6 +81,29 @@
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(function () {
+        console.log("Checking for active activity...");
+    
+        const savedActiveTimer = localStorage.getItem('active');
+        const selectedAct = localStorage.getItem('selectedActivityId');
+        const savedOpenTime = localStorage.getItem('start');
+    
+        console.log("localStorage contents:", {
+            active: savedActiveTimer,
+            selectedActivityId: selectedAct,
+            openTime: savedOpenTime
+        });
+
+        if (savedActiveTimer === 'true' && selectedAct) {
+            console.log("Redirecting to focus_room for activity:", selectedAct);
+            window.location.href = `/pmg/focus_room/${selectedAct}`;
+        } else {
+            console.log("No active activity found, continuing page load.");
+            document.body.style.display = 'block';
+        }
+    }, 500); // Vänta 500ms för att säkerställa att localStorage hinner laddas
+});
 
     var el = document.getElementById('topFiveTable');
     var sortable = Sortable.create(el, {
@@ -143,28 +166,8 @@ function toggleList(element) {
     });
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    console.log("Checking for active activity...");
 
-    const savedActiveTimer = localStorage.getItem('active');
-    const selectedAct = localStorage.getItem('selectedActivityId');
-    const savedOpenTime = localStorage.getItem('openTime');
 
-    if (savedActiveTimer === 'true' && selectedAct) {
-        console.log("Redirecting to focus_room for activity:", selectedAct);
-        window.location.href = `/pmg/focus_room/${selectedAct}`;
-        return;
-    }
-
-    console.log("No active activity found, continuing page load.");
-    console.log("localStorage contents:", {
-        active: savedActiveTimer,
-        selectedActivityId: selectedAct,
-        openTime: savedOpenTime
-    });
-
-    document.body.style.display = 'block';
-});
 
 </script>
 {% endblock body %}

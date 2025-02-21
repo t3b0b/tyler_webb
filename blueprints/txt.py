@@ -126,6 +126,7 @@ def journal():
 @txt_bp.route('/journal/<section_name>', methods=['GET', 'POST'])
 @login_required
 def journal_section(act_id, sida, sub_menu, my_posts):
+    start_activity = request.args.get('start_activity', None)
     topFiveList=[]
     page_info = ""
     current_date = date.today()
@@ -236,7 +237,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     return render_template('txt/journal.html', goal=myGoals, activities=activities, side_options=titles,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
                            current_date=current_date, page_url=page_url, act_id=act_id, myPosts=my_posts,
-                           page_info=page_info, why_G=why_G, topFiveList = topFiveList)
+                           page_info=page_info, why_G=why_G, topFiveList = topFiveList,start_activity=start_activity)
 
 @txt_bp.route('/get-new-word')
 def get_new_word(section_id):

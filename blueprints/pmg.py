@@ -1,7 +1,8 @@
 from random import choice
+from extensions import login_manager,db
 import random
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, session
-from models import (User, db, Streak, Goals, Friendship, Notes, SharedItem, ActivityTracking, Notification,
+from models import (User, Streak, Goals, Friendship, Notes, SharedItem, ActivityTracking, Notification,
                     Activity, Score, Dagar, ToDoList, TopFive, SubTask)
 import matplotlib.pyplot as plt
 import io
@@ -289,7 +290,6 @@ def mark_notifications_as_read():
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
-
 
 
 #region Streak

@@ -1,5 +1,5 @@
 import os
-
+from extensions import mail,db
 from flask import (Blueprint, render_template, redirect, url_for,
                    request, flash, session)
 from flask_login import (login_user, logout_user, current_user, login_required)
@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 from pmg_func import (common_route,getInfo,filter_mod,add2db,readWords, add_words_from_file)
 
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Streak, Goals, Activity, Settings, MyWords, Notification
+from models import  User, Streak, Goals, Activity, Settings, MyWords, Notification
 from flask_mail import Message
 
 from datetime import datetime, timedelta
@@ -20,6 +20,20 @@ from sqlalchemy.orm import scoped_session
 auth_bp = Blueprint('auth', __name__, template_folder='auth/templates')
 
 s = URLSafeTimedSerializer("K6SM4x14")
+
+
+@auth_bp.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+        if user:
+            send_reset_email(user)  # En funktion som skickar återställningslänk
+            flash("A password reset link has been sent to your email.", "info")
+        else:
+            flash("No account found with this email.", "danger")
+
+    return render_template('auth/reset_password.html')
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
