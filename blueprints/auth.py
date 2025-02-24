@@ -29,11 +29,59 @@ def reset_password():
         user = User.query.filter_by(email=email).first()
         if user:
             send_reset_email(user)  # En funktion som skickar återställningslänk
-            flash("A password reset link has been sent to your email.", "info")
         else:
             flash("No account found with this email.", "danger")
 
     return render_template('auth/reset_password.html')
+
+def send_reset_email(user):
+    token = s.dumps(user.email, salt='password-reset')
+    reset_url = url_for('auth.reset_password_token', token=token, _external=True)
+
+    msg = Message("Återställ ditt lösenord",
+                  recipients=[user.email],
+                  sender="pmg.automatic.services@gmail.com")
+
+    msg.body = f"""Hej, {user.username}! 
+Klicka på länken nedan för att återställa ditt lösenord:
+    \n{reset_url}\n\n
+(Länken är giltig i 1 timme.)"""
+
+    try:
+        mail.send(msg)
+        flash("Ett återställningsmail har skickats till din e-post.", "info")
+    except Exception as e:
+        flash(f"Något gick fel vid skickandet av e-post: {str(e)}", "danger")
+
+@auth_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password_token(token):
+    try:
+        email = s.loads(token, salt='password-reset', max_age=3600)  # Token är giltig i 1 timme
+    except SignatureExpired:
+        flash("Länken har gått ut. Begär en ny återställning.", "danger")
+        return redirect(url_for('auth.reset_password'))
+    except BadSignature:
+        flash("Ogiltig länk!", "danger")
+        return redirect(url_for('auth.login'))
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        flash("Användaren hittades inte.", "danger")
+        return redirect(url_for('auth.login'))
+
+    if request.method == 'POST':
+        new_password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+
+        if new_password != confirm_password:
+            flash("Lösenorden matchar inte.", "danger")
+        else:
+            user.password = generate_password_hash(new_password)
+            db.session.commit()
+            flash("Ditt lösenord har återställts. Logga in med det nya lösenordet.", "success")
+            return redirect(url_for('auth.login'))
+
+    return render_template('auth/reset_password_token.html')
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -273,9 +321,6 @@ def settings(section_name=None):
 
     return render_template('auth/settings.html', sida=sida, header=sida, my_words=mina_Ord,
                            sub_menu=sub_menu, page_info=page_info, user=current_user)
-
-
-
 
 @auth_bp.route('/profile')
 @login_required

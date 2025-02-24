@@ -1,5 +1,5 @@
 from random import choice
-from extensions import login_manager,db
+from extensions import login_manager,db, mail
 import random
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, session
 from models import (User, Streak, Goals, Friendship, Notes, SharedItem, ActivityTracking, Notification,

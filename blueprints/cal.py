@@ -1,4 +1,5 @@
 from random import choice
+from extensions import mail,db
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from sqlalchemy.orm import joinedload, aliased  # Lägg till denna rad
 from models import (User, db, Streak, Goals,

@@ -1,5 +1,6 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash
 from flask_login import current_user, login_required
+from extensions import mail,db
 from datetime import datetime, timedelta, date
 from models import User, Friendship, Message, db, Notification
 from pmg_func import create_notification

@@ -1,5 +1,5 @@
 from random import choice
-
+from extensions import mail,db
 from flask_mail import Mail, Message
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 from models import (User, db, Streak, Notes, Goals, Mail,
