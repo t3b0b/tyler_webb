@@ -1,6 +1,7 @@
 .venv
 .idea
 .env
+.__pycache__
 error.log
 error.log.1
 Morgon Sidor 2021 (Sorterad).docx

@@ -2,7 +2,7 @@ from random import choice
 from extensions import mail,db
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from sqlalchemy.orm import joinedload, aliased  # Lägg till denna rad
-from models import (User, db, Streak, Goals,
+from models import (User, Streak, Goals,
                     Activity, Score,
                     Event,TopFive,Dagar)
 
@@ -16,6 +16,42 @@ from flask_login import current_user, login_required, login_user, logout_user
 
 cal_bp = Blueprint('cal', __name__, template_folder='templates/cal')
 
+def get_daily_summary(user_id, date=None):
+    """
+    Hämtar summering av dagens poäng, streaks och avklarade streaks.
+    Om datum inte anges används dagens datum.
+    """
+    if date is None:
+        date = datetime.now().date()  # Använd lokal tid istället för UTC
+
+    # 🏆 Hämta totalpoäng från Score-tabellen för angivet datum
+    total_points = db.session.query(db.func.sum(Score.Time)).filter(
+        Score.user_id == user_id,
+        Score.Date == date
+    ).scalar() or 0  # Om ingen data, sätt 0
+
+    # 🔥 Hämta totalt antal streaks
+    total_streaks = Streak.query.filter_by(user_id=user_id).count()
+
+    # ✅ Hämta antal avklarade streaks (de som har `active=False` och uppdaterades idag)
+    completed_streaks = db.session.query(db.func.count(db.distinct(Score.Streak))).filter(
+        Score.user_id == user_id,
+        Score.Date == date,
+    ).scalar() or 0
+
+    # 🏅 Hämta namn på avklarade streaks
+    completed_streaks_names = db.session.query(Streak.name).join(Score).filter(
+        Score.user_id == user_id,
+        Score.Date == date,
+    ).distinct().all()
+
+    return {
+        "date": date,
+        "total_points": total_points,
+        "total_streaks": total_streaks,
+        "completed_streaks": completed_streaks,
+        "completed_streaks_names": completed_streaks_names
+    }
 #region Kalender
 
 @cal_bp.route('/save_calendar_bullet/<date>/<view_type>', methods=['POST'])
@@ -122,8 +158,6 @@ def month(year=None, month=None):
     sida, sub_menu = common_route('Min Månad', ['/cal/month', '/cal/week', '/cal/timebox'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])
 
-    update_dagar(current_user.id, Dagar)  # Uppdatera Dagar-modellen
-
     if not year or not month:
         year = datetime.now().year
         month = datetime.now().month
@@ -137,8 +171,12 @@ def month(year=None, month=None):
     today = datetime.now()
     today_date = datetime(today.year, today.month, today.day, 0, 0, 0)
 
-    dag_entries = Dagar.query.filter(Dagar.date >= weeks[0][0]['date'], Dagar.date <= weeks[-1][-1]['date'], Dagar.user_id == current_user.id).all()
-    dag_data = {entry.date.strftime('%Y-%m-%d'): entry for entry in dag_entries}
+    # 🔄 Hämta dagliga sammanfattningar för hela månaden
+    dag_data = {}
+    for week in weeks:
+        for day in week:
+            date_str = day['date'].strftime('%Y-%m-%d')
+            dag_data[date_str] = get_daily_summary(current_user.id, day['date'])
 
     return render_template('cal/month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida,
                            sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data)

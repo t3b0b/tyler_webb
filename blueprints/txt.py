@@ -1,7 +1,7 @@
 from random import choice
 from extensions import mail,db
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
-from models import (User, db, Notes, Goals, Bullet, TopFive,
+from models import (User, Notes, Goals, Bullet, TopFive,
                     Activity, Score, MyWords, Settings, Dagar)
 
 from pmg_func import (section_content,common_route,getInfo,get_daily_question,

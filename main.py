@@ -7,7 +7,7 @@ from flask import (Flask, render_template, flash,
                    request, redirect, url_for, session)
 from pmg_func import delete_old_notifications,read_info
 from flask_login import LoginManager, current_user
-from models import db, User, Notes, Streak, Goals, MyWords
+from models import User, Notes, Streak, Goals, MyWords
 from flask_mail import Mail, Message
 from flask_wtf import CSRFProtect
 from itsdangerous import URLSafeSerializer

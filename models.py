@@ -245,20 +245,6 @@ class Event(db.Model):
     def __repr__(self):
         return f'{self.name} on {self.date} at {self.location}'
 
-class Dagar(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, nullable=False, unique=True)
-    prioriteringar = db.Column(db.Text, nullable=True)
-    notes = db.Column(db.Text, nullable=True)
-    total_streaks = db.Column(db.Integer)
-    completed_streaks = db.Column(db.Integer)
-    completed_streaks_names = db.Column(db.Text)
-    total_points = db.Column(db.Integer)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-    def __repr__(self):
-        return f'{self.user_id}, {self.date}, {self.total_streaks}, {self.completed_streaks}, {self.completed_streaks_names}, {self.total_points}'
-
 # endregion
 
 #region Text

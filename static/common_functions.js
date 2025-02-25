@@ -43,7 +43,10 @@ function startActivity(actId, actName, goalName) {
     }
 }
 
-function stopActivity() {
+function stopActivity(event) {
+    if (event) {
+        event.preventDefault(); // Förhindra sidomladdning
+    }
     const closeTime = new Date(); // Spara stopptiden
     localStorage.setItem('active', false);
     localStorage.setItem('end', closeTime.getTime()); // Spara UNIX-tid istället för UTC

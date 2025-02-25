@@ -3,7 +3,7 @@ from extensions import login_manager,db, mail
 import random
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, session
 from models import (User, Streak, Goals, Friendship, Notes, SharedItem, ActivityTracking, Notification,
-                    Activity, Score, Dagar, ToDoList, TopFive, SubTask)
+                    Activity, Score, ToDoList, TopFive, SubTask)
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -33,8 +33,8 @@ Questions = {
                 "Hur känner du inför imorgon?"],
     "Mål": ["Vilka mål vill du nå idag?",
             "Vilka mål vill du nå imorgon?"],
-    "Relationer": ["Finns det någon du vill ge extra uppmärksamhet till idag?",
-                   "Finns det någon du vill ge extra uppmärksamhet till imorgon?"],
+    "Relationer": ["Vem kan du ge extra uppmärksamhet idag?",
+                   "Vem kan du ge extra uppmärksamhet imorgon?"],
     "Lärande": ["Vad vill du lära dig eller utforska idag?",
                 "Vad vill du lära dig eller utforska imorgon?"],
     "Hälsa": ["Vad kan du göra idag för att ta hand om din hälsa och energi?",
@@ -381,11 +381,9 @@ def update_streak(streak_id, action):
         streak.dayOne = today  # Reset the start day of the streak
         streak.lastReg = today
         streak.level = 1  # Återställ nivån till 1
-        update_dagar(current_user, Dagar)
         db.session.commit()
         print("Streak reset")  # Lägg till denna rad för felsökning
 
-    update_dagar(current_user.id, Dagar)
 
     return redirect(url_for('pmg.myday'))
 
@@ -766,10 +764,6 @@ def myday_date(date):
     session = scoped_session(db.session)
     now = getSwetime()
     today = now.date()
-    completed_streakNames = completed_streaks(selected_date.strftime('%Y-%m-%d'),Dagar)
-
-    for name in completed_streakNames:
-        print(name)
 
     with session.begin():
         myGoals = filter_mod(Goals, user_id = current_user.id)

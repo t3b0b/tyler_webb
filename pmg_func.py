@@ -1,6 +1,7 @@
-from models import (User, db, Streak, Notes, Goals, Friendship, Bullet,
-                    Activity, Score, MyWords, Settings, Dagar, Message, ToDoList,
+from models import (User, Streak, Notes, Goals, Friendship, Bullet,
+                    Activity, Score, MyWords, Settings, Message, ToDoList,
                     Event, TopFive,Notification)
+from extensions import db
 from random import choice
 import random
 from datetime import datetime, timedelta, date

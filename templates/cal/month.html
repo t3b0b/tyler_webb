@@ -24,18 +24,17 @@
         <div class="day-header">Fredag</div>
         <div class="day-header">Lördag</div>
         <div class="day-header">Söndag</div>
+
         {% for week in weeks %}
             {% for day in week %}
-            <div class="day {{ 'clickable' if day.current_month else 'other-month' }} {{ 'today' if day.date.strftime('%Y-%m-%d') == today_date.strftime('%Y-%m-%d') else '' }}"
-                 data-date="{{ day.date.strftime('%Y-%m-%d') }}" onclick="onDateClick(this, '{{ day.date.strftime('%Y-%m-%d') }}')">
+            {% set date_str = day.date.strftime('%Y-%m-%d') %}
+            {% set summary = dag_data.get(date_str, {'total_points': 0, 'completed_streaks': 0, 'total_streaks': 0}) %}
+
+            <div class="day {{ 'clickable' if day.current_month else 'other-month' }} {{ 'today' if date_str == today_date.strftime('%Y-%m-%d') else '' }}"
+                 data-date="{{ date_str }}" onclick="onDateClick(this, '{{ date_str }}')">
                 <div class="streak-count">
                     {% if day.current_month %}
-                        {% set dag = dag_data.get(day.date.strftime('%Y-%m-%d')) %}
-                        {% if dag %}
-                            {{ dag.completed_streaks }} / {{ dag.total_streaks }}
-                        {% else %}
-                            0 / 0
-                        {% endif %}
+                        {{ summary.completed_streaks }} / {{ summary.total_streaks }}
                     {% else %}
                         &nbsp;
                     {% endif %}
@@ -43,12 +42,7 @@
                 <div class="day-date">{{ day.day }}</div>
                 <div class="total-points">
                     {% if day.current_month %}
-                        {% set dag = dag_data.get(day.date.strftime('%Y-%m-%d')) %}
-                        {% if dag %}
-                            {{ dag.total_points }} P
-                        {% else %}
-                            0 P
-                        {% endif %}
+                        {{ summary.total_points }} P
                     {% else %}
                         &nbsp;
                     {% endif %}
@@ -73,9 +67,8 @@ function changeMonth(change) {
     window.location.href = `/cal/month/${newDate.getFullYear()}/${newDate.getMonth() + 1}`;
 }
 
-
 document.addEventListener('DOMContentLoaded', function() {
-    const today = '{{ today_date }}';
+    const today = '{{ today_date.strftime("%Y-%m-%d") }}';
     const todayCell = document.querySelector(`.day[data-date="${today}"]`);
     if (todayCell) {
         todayCell.classList.add('today');

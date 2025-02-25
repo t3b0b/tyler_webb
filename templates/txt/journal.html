@@ -53,36 +53,39 @@
             </div>
         {% endif %}
         <form method="POST" class="form-container"  id="completed-form" style="border: none; background-color: #f0f0f0;">
-        <div>
-            <input type="number" id ="activeAct" style="hidden">
-            <input type="hidden" id="gID" name="gID" value="{{ goal_id }}" style="display: none">
-            <input type="text" id="aID" name="aID" style="display: none">
+            <div>
+                <input type="number" id ="activeAct" style="display: none;">
+                <input type="hidden" id="gID" name="gID" value="{{ goal_id }}" style="display: none">
+                <input type="text" id="aID" name="aID" style="display: none">
 
-            <div class="input-group hidden" id = aDate>
-                <label for="aDate">Date:</label>
-                <input type="text" name="aDate" value="{{ current_date }}">
-            </div>
-            <div class="input-group hidden" id="start">
-                <label for="startValue">Start:</label>
-                <input id="startValue" type="text" name="start">
-            </div>
-            <div class="input-group hidden" id="end">
-                <label for="endValue">End:</label>
-                <input id="endValue" type="text" name="end" class="input-half">
-            </div>
-            <div class="input-group hidden" id="elapsedTime">
-                <label for="scoreValue">Score:</label>
-                <input id="scoreValue" type="number" name="score" class="input-half">
-            </div>
-            <div class="button-center">
-                <button id="stopButton" class="button-style hidden" style="background-color:red" onclick="stopActivity()">Stop</button>
-            </div>
-            <div class="input-group">
-                <div class="button-center hidden" id="complete-form">
-                    <button type="submit" id="time-less" class="button-style hidden" name="option" value="timeless">Skicka</button>
-                    <button type="submit" id="write-on-time" class="button-style hidden" name="option" value="write-on-time">Save</button>
+                <div class="input-group hidden" id = aDate>
+                    <label for="aDate">Date:</label>
+                    <input type="text" name="aDate" value="{{ current_date }}">
+                </div>
+                <div class="input-group hidden" id="start">
+                    <label for="startValue">Start:</label>
+                    <input id="startValue" type="text" name="start">
+                </div>
+                <div class="input-group hidden" id="end">
+                    <label for="endValue">End:</label>
+                    <input id="endValue" type="text" name="end" class="input-half">
+                </div>
+                <div class="button-center">
+                    <button id="stopButton" class="button-style hidden" style="background-color:red" onclick="stopActivity(event)">Stop</button>
+                </div>
+                <div class="input-group hidden" id="elapsedTime">
+                    <label for="scoreValue">Score:</label>
+                    <input id="scoreValue" type="number" name="score" class="input-half" oninput="updateEndTime()">
+                </div>
+                <div class="input-group">
+                    <div class="button-center" id="complete-form">
+                        <button type="submit" id="time-less" class="button-style hidden" name="option" value="timeless">Skicka</button>
+                        <button onclikc="turnOff()" type="submit" id="write-on-time" class="button-style hidden" name="option" value="write-on-time">Save</button>
+                    </div>
                 </div>
             </div>
+        </form>
+
     {% endif %}
 {% if not act_id %}
         {% if myPosts %}
@@ -102,7 +105,35 @@
 </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 
-<script>document.addEventListener('DOMContentLoaded', function () {
+<script>
+
+document.addEventListener("DOMContentLoaded", function() {
+    const scoreInput = document.getElementById("scoreValue");
+    const startInput = document.getElementById("startValue");
+    const endInput = document.getElementById("endValue");
+
+    scoreInput.addEventListener("input", function() {
+        updateEndTime();
+    });
+
+    function updateEndTime() {
+        const startTimeStr = startInput.value;
+        const scoreMinutes = parseInt(scoreInput.value, 10) || 0; // Hämta score i minuter, standardvärde 0
+
+        if (!startTimeStr) return; // Avbryt om starttid saknas
+
+        const startTime = new Date(startTimeStr.replace(" ", "T")); // Konvertera till Date-objekt
+
+        if (isNaN(startTime.getTime())) return; // Avbryt om startTime är ogiltigt
+
+        startTime.setMinutes(startTime.getMinutes() + scoreMinutes+60); // Lägg till score-minuter
+
+        // Uppdatera End Time-fältet i format 'YYYY-MM-DD HH:MM:SS'
+        endInput.value = startTime.toISOString().slice(0, 19).replace("T", " ");
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
     console.log("Checking for active activity...");
 
     const savedActive = localStorage.getItem('active');
@@ -117,15 +148,19 @@
         console.log("Activity is active, showing Stop button.");
         if (stopButton) stopButton.classList.remove("hidden");
         if (completeForm) completeForm.classList.remove("hidden");
-
+        if (timeLessButton) timeLessButton.classList.remove("hidden");
+        if (writeOnTimeButton) writeOnTimeButton.classList.remove("hidden");
     } else {
         console.log("No active activity, hiding Stop button.");
         if (stopButton) stopButton.classList.add("hidden");
-        if (completeForm) completeForm.classList.remove("hidden");
+        if (completeForm) completeForm.classList.add("hidden");
         if (timeLessButton) timeLessButton.classList.remove("hidden");
         if (writeOnTimeButton) writeOnTimeButton.classList.remove("hidden");
     }
 });
+
+
+
 
 </script>
 {% endblock body %}
