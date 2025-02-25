@@ -4,8 +4,8 @@ from flask import Blueprint, render_template, redirect, url_for, request, jsonif
 from models import (User, Notes, Goals, Bullet, TopFive,
                     Activity, Score, MyWords, Settings, Dagar)
 
-from pmg_func import (section_content,common_route,getInfo,get_daily_question,
-                      getWord, add2db, update_dagar,add_unique_word,add_words_from_file)
+from pmg_func import (section_content,common_route,getInfo, get_daily_question,
+                      getWord, add2db,add_unique_word,add_words_from_file)
 
 from datetime import datetime, timedelta, date
 

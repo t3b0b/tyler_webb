@@ -1,9 +1,10 @@
 .venv
 .idea
 .env
-.__pycache__
 error.log
 error.log.1
 Morgon Sidor 2021 (Sorterad).docx
 certificates
 main.py
+__pycache__
+__pycache__/pmg_func.cpython-311.pyc

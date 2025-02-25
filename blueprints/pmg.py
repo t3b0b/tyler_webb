@@ -5,14 +5,13 @@ from flask import Blueprint, render_template, redirect, url_for, request, jsonif
 from models import (User, Streak, Goals, Friendship, Notes, SharedItem, ActivityTracking, Notification,
                     Activity, Score, ToDoList, TopFive, SubTask)
 import matplotlib.pyplot as plt
-import io
-import base64
+
 from datetime import datetime, timedelta, date
 from sqlalchemy import and_
-from pmg_func import (getInfo, common_route, add2db, unique, get_score_for_day,
-                      section_content, update_dagar, completed_streaks, getSwetime,
-                      update_streak_details, myDayScore, get_weekly_scores,get_daily_question,
-                      generate_calendar_weeks, filter_mod, create_notification)
+from pmg_func import (getInfo, common_route, add2db, unique,section_content,process_weekly_scores,
+                      getSwetime,get_user_goals,get_user_tasks,update_streak_details, myDayScore, 
+                      SortStreaks, get_yesterdays_streak_values,get_weekly_scores,get_daily_question,
+                      generate_calendar_weeks, filter_mod, create_notification,challenge_user_to_streak)
 import pandas as pd
 from pytz import timezone
 from flask_login import current_user, login_required, login_user, logout_user
@@ -51,225 +50,6 @@ Questions = {
                     "Vad kan du göra för att underlätta den här dagen?"],
 }
 
-def SortStreaks(Streaks):
-    valid_streaks = []
-    now = getSwetime()
-
-    for streak in Streaks:
-        interval_days = timedelta(days=streak.interval, hours=23, minutes=59, seconds=59)
-        if streak.lastReg:
-            try:
-                last_reg_date = streak.lastReg
-                streak_interval = last_reg_date + interval_days
-                if streak.count == 0:
-                    valid_streaks.append(streak)
-                elif streak.count >= 1:
-                    if now.date() == streak_interval.date():
-                        valid_streaks.append(streak)
-                    elif streak_interval.date() < now.date():
-                        continue
-                elif streak_interval.date() < now.date():
-                    streak.active = False
-                    streak.count = 0
-                    db.session.commit()
-            except (ValueError, TypeError) as e:
-                print(f'Hantera ogiltigt datum: {e}, streak ID: {streak.id}, lastReg: {streak.lastReg}')
-        else:
-            valid_streaks.append(streak)
-    return valid_streaks
-
-
-def create_week_comparison_plot(this_week_scores, last_week_scores):
-    days = ['Mån', 'Tis', 'Ons', 'Tors', 'Fre', 'Lör', 'Sön']
-    x = range(len(days))
-
-    # Konvertera datan till en form som passar grafer
-    this_week_data = {score.Date.weekday(): score.total_points for score in this_week_scores}
-    last_week_data = {score.Date.weekday(): score.total_points for score in last_week_scores}
-
-    this_week = [this_week_data.get(i, 0) for i in range(7)]
-    last_week = [last_week_data.get(i, 0) for i in range(7)]
-
-    plt.figure(figsize=(10, 6))
-    plt.bar(x, last_week, alpha=0.2, label="Föregående vecka", color="blue",)
-    plt.bar(x, this_week, alpha=0.6, label="Aktuell vecka", color="orange")
-    plt.xticks(x, days, fontsize=14)
-#    plt.ylabel("Score")
-    plt.ylim(15, 350)  # Sätter y-axeln från 15 till 350
-    plt.yticks(range(0, 360, 30), fontsize=14)
-    plt.legend(fontsize=14)
-    plt.tight_layout(pad=2.0)
-    plt.grid(color='lightgray', linestyle='--', linewidth=0.5)  # Ställ in rutnätets stil och färg
-
-    img = io.BytesIO()
-    plt.savefig(img, format='png')
-    img.seek(0)
-    plt.close()
-    return base64.b64encode(img.getvalue()).decode('utf8')
-
-def get_activities_for_goal(user_id, goal_id):
-    # Kontrollera om målet finns bland användarens tillåtna mål
-    all_goals = get_user_goals(user_id)
-    allowed_goal_ids = [goal.id for goal in all_goals]
-
-    if goal_id not in allowed_goal_ids:
-        raise ValueError("Användaren har inte tillgång till detta mål.")
-
-    # Hämta aktiviteter kopplade till det specifika målet
-    return Activity.query.filter_by(goal_id=goal_id).all()
-
-def get_user_goals(user_id):
-    # Hämta användarens egna mål
-    own_goals = Goals.query.filter_by(user_id=user_id).all()
-
-    # Hämta delade mål via SharedItem
-    shared_goal_ids = db.session.query(SharedItem.item_id).filter(
-        SharedItem.shared_with_id == user_id,
-        SharedItem.item_type == 'goal',
-        SharedItem.status == 'accepted'  # Endast accepterade mål
-    ).all()
-
-    # Konvertera shared_goal_ids till en lista av ID:n
-    shared_goal_ids = [item[0] for item in shared_goal_ids]
-
-    # Hämta själva målen från deras ID:n
-    shared_goals = Goals.query.filter(Goals.id.in_(shared_goal_ids)).all()
-
-    # Kombinera egna och delade mål
-    return own_goals + shared_goals
-
-
-def get_user_tasks(user_id, model, activity_id=None):
-    # Hämta alla aktiviteter som användaren har tillgång till
-    all_activities = model.query.filter_by(user_id=user_id).all()
-    activity_ids = [activity.id for activity in all_activities]
-
-    # Om activity_id anges, filtrera på den specifika aktiviteten
-    query = ToDoList.query.filter(ToDoList.activity_id.in_(activity_ids))
-    if activity_id:
-        query = query.filter(ToDoList.activity_id == activity_id)
-
-    # Ladda subtasks och sortera tasks
-    tasks = query.options(db.joinedload(ToDoList.subtasks)).order_by(
-        ToDoList.completed.desc(), ToDoList.task.asc()
-    ).all()
-
-    # Lägg till antalet avklarade och oavklarade deluppgifter
-    for task in tasks:
-        task.subtask_count = len(task.subtasks)  # Totalt antal deluppgifter
-        task.completed_subtasks = sum(1 for subtask in task.subtasks if subtask.completed)
-        task.pending_subtasks = task.subtask_count - task.completed_subtasks  # Oavklarade deluppgifter
-
-    return tasks
-
-
-def get_daily_scores(user_id):
-    today = datetime.now().date()
-    yesterday = today - timedelta(days=1)
-
-    # Hämta poäng för idag och igår
-    today_score = Score.query.filter_by(user_id=user_id, date=today).first()
-    yesterday_score = Score.query.filter_by(user_id=user_id, date=yesterday).first()
-
-    if today_score and yesterday_score:
-        if today_score > yesterday_score:
-            message = "Bra jobbat! Du har överträffat din poäng från igår."
-        else:
-            message = "Försök få en högre poäng imorgon!"
-    elif today_score:
-        message = "Bra start idag!"
-    else:
-        message = "Inga poäng registrerade för idag ännu."
-
-    return today_score, yesterday_score, message
-
-
-def create_activity_plot(activity_times):
-    """Generera en stående stapelgraf med unika färger för varje mål."""
-    activity_names = [activity[0] for activity in activity_times]
-    total_times = [activity[1] for activity in activity_times]
-
-    # Färger för varje stapel, genereras automatiskt för att vara unika
-    colors = plt.cm.get_cmap('tab20', len(activity_names))(range(len(activity_names)))
-    plt.figure(figsize=(10, 8),facecolor='none', edgecolor='k',)
-    plt.bar(activity_names, total_times, color=colors)  # Stående staplar
-    plt.ylabel('Total Tid (min)',fontsize=10)
-    plt.xlabel('Aktivitet', fontsize=10)
-    plt.xticks(rotation=0, ha='center',fontsize=14)
-    plt.yticks(rotation=0, ha='right',fontsize=14)
-    img = io.BytesIO()
-    plt.savefig(img, format='png')
-    img.seek(0)
-    # Konvertera bilden till base64 för att inkludera den i HTML
-    plot_url = base64.b64encode(img.getvalue()).decode('utf8')
-    plt.close()
-    return plot_url
-
-def update_shared_streak(streak_id, completed=True):
-    shared_items = SharedItem.query.filter_by(item_type='streak', item_id=streak_id, status='active').all()
-
-    for shared_item in shared_items:
-        streak = shared_item.streak
-        if completed:
-            streak.count += 1
-        else:
-            streak.count = 0
-        db.session.commit()
-
-        # Notifiera deltagarna
-        if shared_item.shared_with_id != current_user.id:
-            create_notification(
-                user_id=shared_item.shared_with_id,
-                message=f"{current_user.username} uppdaterade streak: {streak.name}.",
-                related_item_id=streak.id,
-                item_type='streak'
-            )
-
-def challenge_user_to_streak(streak_id, friend_id):
-    original_streak = Streak.query.get(streak_id)
-    if not original_streak:
-        raise ValueError("Ogiltig streak.")
-
-    # Kontrollera att användaren är en vän
-    friendship = Friendship.query.filter_by(user_id=current_user.id, friend_id=friend_id, status='accepted').first()
-    if not friendship:
-        raise ValueError("Användaren är inte din vän.")
-
-    new_streak = Streak(
-        name=f"Utmaning: {original_streak.name}",
-        user_id=friend_id,
-        interval=original_streak.interval,
-        count=0
-    )
-    db.session.add(new_streak)
-    db.session.commit()
-
-    create_notification(
-        user_id=friend_id,
-        message=f"{current_user.username} har utmanat dig med streak: '{original_streak.name}'.",
-        related_item_id=new_streak.id,
-        item_type='streak'
-    )
-    
-def get_yesterdays_streak_values(user_id):
-    yesterday = datetime.now().date() - timedelta(days=1)  # Gårdagens datum
-
-    results = db.session.query(
-        Streak.id,
-        Streak.name,
-        Streak.amount,
-        Score.Amount.label('yesterday_value')
-    ).join(Score, and_(
-        Score.Streak == Streak.id,  # Koppla score till streak
-        Score.Date == yesterday,  # Endast gårdagens datum
-        Score.user_id == user_id  # Endast för aktuell användare
-    )).filter(
-        Streak.user_id == user_id,  # Endast aktuella användarens streaks
-        Streak.type == 'number'  # Endast streaks som har type="number"
-    ).all()
-
-    return results 
-
 @pmg_bp.route('/notifications/unread', methods=['GET'])
 @login_required
 def get_unread_notifications():
@@ -280,7 +60,6 @@ def get_unread_notifications():
         'created_at': notification.created_at.strftime('%Y-%m-%d %H:%M:%S')
     } for notification in notifications])
 
-
 @pmg_bp.route('/notifications/mark_as_read', methods=['POST'])
 def mark_notifications_as_read():
     try:
@@ -290,7 +69,6 @@ def mark_notifications_as_read():
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
-
 
 #region Streak
 @pmg_bp.route('/streak',methods=['GET', 'POST'])
@@ -676,11 +454,8 @@ def myday():
     tomorrow = today + timedelta(days=1)
     hour = now.hour  # Aktuell timme
     myStreaks = filter_mod(Streak, user_id=current_user.id)
-    myScore, total = myDayScore(date_now, current_user.id)
-    today_score = get_score_for_day(current_user.id, day_offset=0)
-    yesterday_score = get_score_for_day(current_user.id, day_offset=-1)
-
-    total, point_details = myDayScore(date_now, current_user.id)
+    yesterday_score = myDayScore(current_user.id, day_offset=-1)
+    total, point_details = myDayScore(current_user.id,day_offset=0)
     activity_points = point_details.get("activity_points", 0)
     streak_points = point_details.get("streak_points", 0)
 

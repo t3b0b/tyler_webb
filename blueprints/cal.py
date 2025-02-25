@@ -9,8 +9,8 @@ from models import (User, Streak, Goals,
 from datetime import datetime, timedelta
 
 from pmg_func import (get_activities_for_user,getInfo,
-                      organize_activities_by_time,process_weekly_scores,
-                      common_route, update_dagar,generate_calendar_weeks)
+                      organize_activities_by_time,
+                      common_route,generate_calendar_weeks)
 
 from flask_login import current_user, login_required, login_user, logout_user
 
@@ -52,6 +52,7 @@ def get_daily_summary(user_id, date=None):
         "completed_streaks": completed_streaks,
         "completed_streaks_names": completed_streaks_names
     }
+
 #region Kalender
 
 @cal_bp.route('/save_calendar_bullet/<date>/<view_type>', methods=['POST'])
