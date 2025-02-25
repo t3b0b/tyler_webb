@@ -588,7 +588,6 @@ def focus_room(activity_id):
     today = date.today()
     current_date = today
     tasks = get_user_tasks(current_user.id, Activity,activity_id)  # Hämta och sortera tasks
-
     activity_notes = Notes.query.filter_by(user_id=current_user.id, activity_id=activity_id).all()
     if request.method == 'POST':
         if 'save-score' in request.form['action']:

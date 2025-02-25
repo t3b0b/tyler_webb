@@ -388,7 +388,6 @@ def challenge_user_to_streak(streak_id, friend_id):
         item_type='streak'
     )
 
-
 # endregion
 
 # region Txt
@@ -646,7 +645,6 @@ def get_daily_question():
 def get_user_tasks(user_id, model, activity_id=None):
     # Hämta alla aktiviteter som användaren har tillgång till
     all_activities = model.query.filter_by(user_id=user_id).all()
-
     activity_ids = [activity.id for activity in all_activities]
 
     # Om activity_id anges, filtrera på den specifika aktiviteten
@@ -654,10 +652,18 @@ def get_user_tasks(user_id, model, activity_id=None):
     if activity_id:
         query = query.filter(ToDoList.activity_id == activity_id)
 
-    # Sortera tasks (avklarade först, sedan alfabetiskt)
-    return query.options(db.joinedload(ToDoList.subtasks)).order_by(ToDoList.completed.desc(),
-                                                                    ToDoList.task.asc()).all()
+    # Ladda subtasks och sortera tasks
+    tasks = query.options(db.joinedload(ToDoList.subtasks)).order_by(
+        ToDoList.completed.desc(), ToDoList.task.asc()
+    ).all()
 
+    # Lägg till antalet avklarade och oavklarade deluppgifter
+    for task in tasks:
+        task.subtask_count = len(task.subtasks)  # Totalt antal deluppgifter
+        task.completed_subtasks = sum(1 for subtask in task.subtasks if subtask.completed)
+        task.pending_subtasks = task.subtask_count - task.completed_subtasks  # Oavklarade deluppgifter
+
+    return tasks
 def getInfo(filename, page):
     df = pd.read_csv(filename)
     row = df.loc[df['Page'] == page]
