@@ -3,7 +3,7 @@ from extensions import mail,db
 from flask_mail import Mail, Message
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 from models import (User, Streak, Notes, Goals, Mail,
-                    Activity, Score, MyWords, Settings, Dagar)
+                    Activity, Score, MyWords, Settings)
 from datetime import datetime, timedelta,date
 from flask_login import current_user
 import pandas as pd

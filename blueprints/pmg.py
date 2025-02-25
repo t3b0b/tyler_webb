@@ -8,10 +8,10 @@ import matplotlib.pyplot as plt
 
 from datetime import datetime, timedelta, date
 from sqlalchemy import and_
-from pmg_func import (getInfo, common_route, add2db, unique,section_content,process_weekly_scores,
+from pmg_func import (getInfo, common_route, add2db, unique,section_content,
                       getSwetime,get_user_goals,get_user_tasks,update_streak_details, myDayScore, 
                       SortStreaks, get_yesterdays_streak_values,get_weekly_scores,get_daily_question,
-                      generate_calendar_weeks, filter_mod, create_notification,challenge_user_to_streak)
+                      generate_calendar_weeks,create_week_comparison_plot, filter_mod, create_notification,challenge_user_to_streak)
 import pandas as pd
 from pytz import timezone
 from flask_login import current_user, login_required, login_user, logout_user

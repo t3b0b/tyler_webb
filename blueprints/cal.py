@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, jsonif
 from sqlalchemy.orm import joinedload, aliased  # Lägg till denna rad
 from models import (User, Streak, Goals,
                     Activity, Score,
-                    Event,TopFive,Dagar)
+                    Event,TopFive)
 
 from datetime import datetime, timedelta
 

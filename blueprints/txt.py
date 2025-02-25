@@ -2,7 +2,7 @@ from random import choice
 from extensions import mail,db
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from models import (User, Notes, Goals, Bullet, TopFive,
-                    Activity, Score, MyWords, Settings, Dagar)
+                    Activity, Score, MyWords, Settings)
 
 from pmg_func import (section_content,common_route,getInfo, get_daily_question,
                       getWord, add2db,add_unique_word,add_words_from_file)
