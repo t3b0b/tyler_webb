@@ -1,21 +1,18 @@
 from random import choice
-from extensions import login_manager,db, mail
+from extensions import db
 import random
-from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, session
-from models import (User, Streak, Goals, Friendship, Notes, SharedItem, ActivityTracking, Notification,
+from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
+from models import (User, Streak, Goals, Friendship, Notes, SharedItem, Notification,
                     Activity, Score, ToDoList, TopFive, SubTask)
-import matplotlib.pyplot as plt
-
 from datetime import datetime, timedelta, date
 from sqlalchemy import and_
-from pmg_func import (getInfo, common_route, add2db, unique,section_content,
+from pmg_func import (common_route, add2db,
                       getSwetime,get_user_goals,get_user_tasks,update_streak_details, myDayScore, 
-                      SortStreaks, get_yesterdays_streak_values,get_weekly_scores,get_daily_question,
-                      generate_calendar_weeks,create_week_comparison_plot, filter_mod, create_notification,challenge_user_to_streak)
+                      SortStreaks, get_weekly_scores,get_daily_question,
+                      create_week_comparison_plot, filter_mod, create_notification)
 import pandas as pd
 from pytz import timezone
-from flask_login import current_user, login_required, login_user, logout_user
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import current_user, login_required
 from sqlalchemy.orm import scoped_session
 
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')

@@ -1,13 +1,9 @@
 from random import choice
-from extensions import mail,db
 from flask_mail import Mail, Message
-from flask import Blueprint, render_template, redirect, url_for, request, jsonify
-from models import (User, Streak, Notes, Goals, Mail,
-                    Activity, Score, MyWords, Settings)
-from datetime import datetime, timedelta,date
+from flask import Blueprint, render_template, redirect, request
+from models import Mail
 from flask_login import current_user
 import pandas as pd
-import os
 
 file_path = "texts/tjänster.csv"
 df = pd.read_csv(file_path)

@@ -1,15 +1,15 @@
 from random import choice
-from extensions import mail,db
+from extensions import db
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from models import (User, Notes, Goals, Bullet, TopFive,
-                    Activity, Score, MyWords, Settings)
+                    Activity, Score, MyWords)
 
 from pmg_func import (section_content,common_route,getInfo, get_daily_question,
                       getWord, add2db,add_unique_word,add_words_from_file)
 
-from datetime import datetime, timedelta, date
+from datetime import date
 
-from flask_login import current_user, login_required, login_user, logout_user
+from flask_login import current_user, login_required
 
 txt_bp = Blueprint('txt', __name__, template_folder='templates/txt')
 

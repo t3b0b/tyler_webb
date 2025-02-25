@@ -1,18 +1,16 @@
 from random import choice
-from extensions import mail,db
+from extensions import db
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
-from sqlalchemy.orm import joinedload, aliased  # Lägg till denna rad
-from models import (User, Streak, Goals,
+from sqlalchemy.orm import aliased
+from models import (Streak, Goals,
                     Activity, Score,
                     Event,TopFive)
 
 from datetime import datetime, timedelta
 
-from pmg_func import (get_activities_for_user,getInfo,
-                      organize_activities_by_time,
-                      common_route,generate_calendar_weeks)
+from pmg_func import (common_route,generate_calendar_weeks)
 
-from flask_login import current_user, login_required, login_user, logout_user
+from flask_login import current_user, login_required
 
 cal_bp = Blueprint('cal', __name__, template_folder='templates/cal')
 

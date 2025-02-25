@@ -1,19 +1,10 @@
 #region Imports
-import logging
-from extensions import db, login_manager
+from extensions import login_manager
 from app_factory import create_app
-from logging.handlers import RotatingFileHandler
-from flask import (Flask, render_template, flash,
-                   request, redirect, url_for, session)
-from pmg_func import delete_old_notifications,read_info
-from flask_login import LoginManager, current_user
-from models import User, Notes, Streak, Goals, MyWords
-from flask_mail import Mail, Message
-from flask_wtf import CSRFProtect
-from itsdangerous import URLSafeSerializer
-from flask_migrate import Migrate,migrate,init
-import sshtunnel
-import os
+from flask import render_template,request
+from pmg_func import read_info
+from flask_login import current_user
+from models import User
 from dotenv import load_dotenv
 
 # endregion
