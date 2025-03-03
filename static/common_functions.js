@@ -79,10 +79,10 @@ function stopActivity(event) {
         document.getElementById("elapsedTime").classList.remove("hidden");
         document.getElementById("aDate").classList.remove("hidden");
         document.getElementById("complete-form").classList.remove("hidden");
+        document.getElementById("continueButton").classList.remove("hidden");
     }
     
-    document.getElementById('stopButton').style.display = 'none';
-    document.getElementById('continueButton').style.display = 'none';
+    document.getElementById('stopButton').classList.add ("hidden");
 
     // **Beräkna elapsed time korrekt**
     if (startStored) {

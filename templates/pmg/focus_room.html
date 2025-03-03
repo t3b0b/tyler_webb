@@ -47,10 +47,12 @@
 .list-item:hover {
     background-color: #f0f0f0; /* Lägg till hover-effekt */
 }
+
 .task-actions {
     display: flex;
     align-items: center;
 }
+
 .frontPos {
   top: 50%;
   left: 50%;
@@ -197,7 +199,6 @@
     </div>
     <div class="button-center">
             <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
-            <button id="continueButton" class="button-style" style="display: none; background-color: green" onclick="">Continue</button>
     </div>
     <form method="POST" class="form-container"  id="completed-form" style="border: none; background-color: #f0f0f0;">
         <div>
@@ -227,6 +228,9 @@
             </div>
         </div>
     </form>
+    <div class="button-center">
+        <button id="continueButton" class="button-style hidden" style="background-color: green" onclick="location.reload()">Continue</button>
+    </div>
 </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 
