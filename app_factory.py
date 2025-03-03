@@ -17,7 +17,7 @@ def create_app():
     load_dotenv()  # Ladda miljövariabler från .env-filen
     app = Flask(__name__)
 
-    # 🛠️ Ladda konfiguration
+    # 🛠️ Ladda konfiguration a,dnam,dn.
     app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "K6SM4x14")
     app.config['MAIL_SERVER'] = "smtp.gmail.com"
     app.config['MAIL_USE_SSL'] = True
