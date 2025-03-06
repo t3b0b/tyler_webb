@@ -219,7 +219,8 @@ def journal_section(act_id, sida, sub_menu, my_posts):
 #                elif sida == 'Mina Mål':
 #                    add2db(WhyGoals,request,['post-ord','blogg-content','goal'],['title','text','goal'],user)
             elif option == "write-on-time":
-                add2db(Score, request, ['gID', 'aID', 'aDate', 'score'], ['Goal', 'Activity', 'Date', 'Time'], user)
+                add2db(Score, request, ['gID', 'aID', 'aDate', 'start', 'end', 'score'],
+                               ['Goal', 'Activity', 'Date', 'Start', 'End', 'Time'], user)
                 if sida == 'Dagbok':
                     add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Mina Ord':
@@ -233,7 +234,6 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                     db.session.add(newBullet)
                     db.session.commit()
 
-                update_dagar(current_user.id,Dagar)
 
     return render_template('txt/journal.html', goal=myGoals, activities=activities, side_options=titles,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
