@@ -14,6 +14,7 @@ from sqlalchemy.exc import IntegrityError
 import matplotlib.pyplot as plt
 import io
 import base64
+from calendar import monthrange
 
 # region Functions
 
@@ -503,12 +504,81 @@ def myDayScore(user_id,day_offset=0):
         "activity_points": activity_points
     }
 
+def get_scores_by_period(user_id, period='week', reference_date=None):
+    today = datetime.now().date()
+
+    if reference_date is None:
+        reference_date = today
+    elif isinstance(reference_date, datetime):
+        reference_date = reference_date.date()
+
+    if period == 'week':
+        start_date = reference_date - timedelta(days=reference_date.weekday())
+        # Om vi är i aktuell vecka, sluta idag, annars söndag den veckan
+        if reference_date.isocalendar()[1] == today.isocalendar()[1] and reference_date.year == today.year:
+            end_date = today
+        else:
+            end_date = start_date + timedelta(days=6)  # Söndag samma vecka
+
+    elif period == 'month':
+        # Första dagen i månaden
+        start_date = reference_date.replace(day=1)
+        # Om samma månad och år som idag, sluta idag, annars sista dagen i månaden
+        if reference_date.month == today.month and reference_date.year == today.year:
+            end_date = today
+        else:
+            last_day = monthrange(reference_date.year, reference_date.month)[1]  # Sista dagen i månaden
+            end_date = reference_date.replace(day=last_day)
+
+    elif period == 'year':
+        # Första januari
+        start_date = reference_date.replace(month=1, day=1)
+        # Om samma år, sluta idag, annars 31 december
+        if reference_date.year == today.year:
+            end_date = today
+        else:
+            end_date = reference_date.replace(month=12, day=31)
+    else:
+        raise ValueError("Ogiltig period. Välj 'week', 'month', eller 'year'.")
+
+    # 🔽 Debug utskrift om du vill se datumen (kan tas bort)
+    print(f"Period: {period}, Start: {start_date}, End: {end_date}")
+
+    # Hämta poäng från Score
+    scores = db.session.query(
+        Score.Date, db.func.sum(Score.Time).label('total_points')
+    ).filter(
+        Score.user_id == user_id,
+        Score.Date >= start_date,
+        Score.Date <= end_date
+    ).group_by(Score.Date).all()
+
+        # Hämta aktivitetstider per aktivitet inom samma period
+    activity_times = db.session.query(
+        Activity.name.label('activity_name'),          # Namnet på aktiviteten
+        Goals.name.label('goal_name'),                # Namnet på målet som aktiviteten tillhör
+        db.func.sum(Score.Time).label('total_time')   # Summan av tid för aktiviteten
+    ).join(
+        Score, Score.Activity == Activity.id          # Join till Score baserat på aktiviteten
+    ).outerjoin(
+        Goals, Goals.id == Activity.goal_id           # Join till Goals baserat på goal_id
+    ).filter(
+        Score.user_id == user_id,
+        Score.Date >= start_date,
+        Score.Date <= end_date
+    ).group_by(
+        Activity.name, Goals.name                    # Gruppera både på aktivitet och mål
+    ).all()
+    
+    return scores, activity_times
+
+
 def get_weekly_scores(user_id):
     today = datetime.now()  # Byt från utcnow() till now()
     start_of_this_week = today - timedelta(days=today.weekday())  # Får måndag denna vecka (kl 00:00)
     start_of_last_week = start_of_this_week - timedelta(days=7)  # Måndag förra veckan
     end_of_last_week = start_of_this_week - timedelta(days=1)  # Söndag förra veckan
-
+    
     # Hämta poäng från databasen
     this_week_scores = db.session.query(
         Score.Date, db.func.sum(Score.Time).label('total_points')

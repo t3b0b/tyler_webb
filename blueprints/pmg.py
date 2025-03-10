@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, date
 from sqlalchemy import and_
 from pmg_func import (common_route, add2db,
                       getSwetime,get_user_goals,get_user_tasks,update_streak_details, myDayScore, 
-                      SortStreaks, get_weekly_scores,get_daily_question,
+                      SortStreaks, get_weekly_scores,get_daily_question, get_scores_by_period,
                       create_week_comparison_plot, filter_mod, create_notification)
 import pandas as pd
 from pytz import timezone
@@ -456,9 +456,15 @@ def myday():
     activity_points = point_details.get("activity_points", 0)
     streak_points = point_details.get("streak_points", 0)
 
-    this_week_scores, last_week_scores, activity_scores = get_weekly_scores(current_user.id)
+    this_week_scores, activity_scores = get_scores_by_period(current_user.id,'week',today)
+    last_week_scores,lastweek_activity_scores=get_scores_by_period(current_user.id,'week',today-timedelta(days=7))
+
+    for activity_name, goal_name, total_time in lastweek_activity_scores:
+        print(f"Aktivitet: {activity_name}, Mål: {goal_name}, Total tid: {total_time}")
 
     plot_url = create_week_comparison_plot(this_week_scores, last_week_scores)
+
+
 
     for streak in myStreaks:
                 yesterday_score = db.session.query(Score.Amount).filter(
@@ -478,8 +484,6 @@ def myday():
         "streak_points": streak_points,
         "total_points": total
     }
-    for streak in myStreaks:
-        print(f"Streak: {streak.name}, Gårdagens värde: {streak.yesterday_value}")
 
     valid_streaks=SortStreaks(myStreaks)
 
