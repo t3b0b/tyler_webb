@@ -504,6 +504,30 @@ def myDayScore(user_id,day_offset=0):
         "activity_points": activity_points
     }
 
+def sumGoal(score_list):
+    goal_summary = {}
+    for row in score_list:
+        goal_name = row.goalName or 'Okänt mål'  # Hantera None
+        time = row.Time or 0                     # Hantera None
+
+        if goal_name not in goal_summary:
+            goal_summary[goal_name] = 0
+
+        goal_summary[goal_name] += time
+
+    return goal_summary
+
+def sumDays(score):
+    daySum = {}
+    for row in score:
+        day = row.Date
+        time = row.Time or 0  # Om time är None, ersätt med 0
+        if day not in daySum:
+            daySum[day] = 0  # 🟢 Initiera med 0 om dagen inte finns
+        daySum[day] += time  # Lägg till tiden för den dagen
+
+    return daySum
+
 def get_scores_by_period(user_id, period='week', reference_date=None):
     today = datetime.now().date()
 
@@ -546,12 +570,19 @@ def get_scores_by_period(user_id, period='week', reference_date=None):
 
     # Hämta poäng från Score
     scores = db.session.query(
-        Score.Date, db.func.sum(Score.Time).label('total_points')
+        Score.Time.label('Time'),              # Poäng/tid
+        Score.Date.label('Date'),              # Datum
+        Goals.name.label('goalName'),         # Mål-namn
+        Activity.name.label('actName')   # Aktivitet-namn
+    ).outerjoin(
+        Goals, Goals.id == Score.Goal
+    ).outerjoin(
+        Activity, Activity.id == Score.Activity
     ).filter(
         Score.user_id == user_id,
         Score.Date >= start_date,
         Score.Date <= end_date
-    ).group_by(Score.Date).all()
+    ).all()
 
         # Hämta aktivitetstider per aktivitet inom samma period
     activity_times = db.session.query(

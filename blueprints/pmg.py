@@ -7,8 +7,8 @@ from models import (User, Streak, Goals, Friendship, Notes, SharedItem, Notifica
 from datetime import datetime, timedelta, date
 from sqlalchemy import and_
 from pmg_func import (common_route, add2db,
-                      getSwetime,get_user_goals,get_user_tasks,update_streak_details, myDayScore, 
-                      SortStreaks, get_weekly_scores,get_daily_question, get_scores_by_period,
+                      getSwetime,get_user_goals,get_user_tasks,update_streak_details, myDayScore, sumGoal,
+                      SortStreaks, get_weekly_scores,get_daily_question, get_scores_by_period, sumDays,
                       create_week_comparison_plot, filter_mod, create_notification)
 import pandas as pd
 from pytz import timezone
@@ -444,7 +444,6 @@ def milestones(goal_id):
 def myday():
 
     sida, sub_menu = common_route("Min Grind", ['/pmg/timebox'], ['My Day'])
-    date_now = date.today()
     now = getSwetime()
     today = now.date()  # Hämta aktuell tid
     yesterday = datetime.now().date() - timedelta(days=1)
@@ -459,12 +458,24 @@ def myday():
     this_week_scores, activity_scores = get_scores_by_period(current_user.id,'week',today)
     last_week_scores,lastweek_activity_scores=get_scores_by_period(current_user.id,'week',today-timedelta(days=7))
 
-    for activity_name, goal_name, total_time in lastweek_activity_scores:
-        print(f"Aktivitet: {activity_name}, Mål: {goal_name}, Total tid: {total_time}")
+    for row in last_week_scores:
+        goal = row.goalName or "Okänt mål"
+        activity = row.actName or "Okänd aktivitet"
+        time = row.Time
+        date = row.Date
+        print(f"Mål: {goal}, Aktivitet: {activity}, Tid: {time}, Datum: {date}")
 
-    plot_url = create_week_comparison_plot(this_week_scores, last_week_scores)
+   # plot_url = create_week_comparison_plot(this_week_scores, last_week_scores)
 
+    goalTime=sumGoal(last_week_scores)
 
+    dayTime = sumDays(last_week_scores)
+
+    for day, total_time in dayTime.items():
+        print(f"Day: {day}, Total tid: {total_time} min")
+
+    for goal, total_time in goalTime.items():
+        print(f"Mål: {goal}, Total tid: {total_time} min")
 
     for streak in myStreaks:
                 yesterday_score = db.session.query(Score.Amount).filter(
@@ -528,9 +539,9 @@ def myday():
             flash("Ett fel inträffade vid sparningen.", "danger")
 
 
-    return render_template('pmg/myday.html', sida=sida, header=sida, current_date=date_now,
+    return render_template('pmg/myday.html', sida=sida, header=sida, current_date=today,
                            acts=myActs, total_score=total, aggregated_scores=aggregated_scores,show=show, my_streaks=valid_streaks,
-                           sub_menu=sub_menu, plot_url=plot_url, message=message, topFiveList=topFiveList,topFive=topFive,title=list_title)
+                           sub_menu=sub_menu, plot_url="plot_url", message=message, topFiveList=topFiveList,topFive=topFive,title=list_title)
 
 
 @pmg_bp.route('/myday/<date>')
