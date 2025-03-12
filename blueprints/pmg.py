@@ -9,7 +9,7 @@ from sqlalchemy import and_
 from pmg_func import (common_route, add2db,
                       getSwetime,get_user_goals,get_user_tasks,update_streak_details, myDayScore, sumGoal,
                       SortStreaks, get_weekly_scores,get_daily_question, get_scores_by_period, sumDays,
-                      create_week_comparison_plot, filter_mod, create_notification)
+                      create_week_comparison_plot, filter_mod, create_notification, sumAct, create_bar_plot)
 import pandas as pd
 from pytz import timezone
 from flask_login import current_user, login_required
@@ -471,11 +471,18 @@ def myday():
 
     dayTime = sumDays(last_week_scores)
 
+    actTime = sumAct(last_week_scores)
+
     for day, total_time in dayTime.items():
         print(f"Day: {day}, Total tid: {total_time} min")
 
     for goal, total_time in goalTime.items():
         print(f"Mål: {goal}, Total tid: {total_time} min")
+
+    goal_plot = create_bar_plot(dayTime, title="Tid per mål", ylabel="Tid (min)")
+
+    for activity, total_time in actTime.items():
+        print(f"Activity: {activity}, Total tid: {total_time} min")
 
     for streak in myStreaks:
                 yesterday_score = db.session.query(Score.Amount).filter(
@@ -541,7 +548,7 @@ def myday():
 
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=today,
                            acts=myActs, total_score=total, aggregated_scores=aggregated_scores,show=show, my_streaks=valid_streaks,
-                           sub_menu=sub_menu, plot_url="plot_url", message=message, topFiveList=topFiveList,topFive=topFive,title=list_title)
+                           sub_menu=sub_menu, plot_url=goal_plot, message=message, topFiveList=topFiveList,topFive=topFive,title=list_title)
 
 
 @pmg_bp.route('/myday/<date>')

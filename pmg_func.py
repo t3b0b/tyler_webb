@@ -528,6 +528,18 @@ def sumDays(score):
 
     return daySum
 
+def sumAct(score):
+    actSum = {}
+    for row in score:
+        actName=row.actName
+        time=row.Time or 0
+        
+        if actName not in actSum:
+            actSum[actName] = 0
+        
+        actSum[actName] += time
+    return actSum
+
 def get_scores_by_period(user_id, period='week', reference_date=None):
     today = datetime.now().date()
 
@@ -662,6 +674,40 @@ def create_activity_plot(activity_times):
     plot_url = base64.b64encode(img.getvalue()).decode('utf8')
     plt.close()
     return plot_url
+
+def create_bar_plot(data_dict, title="Summering", ylabel="Tid (min)"):
+    """
+    Skapar en stapelgraf från en dictionary med {'label': value}.
+    Returnerar grafen som en base64-sträng (för att använda i templates).
+    """
+    labels = list(data_dict.keys())  # Exempelvis dagar, mål eller aktiviteter
+    values = list(data_dict.values())  # Tiden för varje
+
+    # Snygg formatering för datum (om labels är datumobjekt)
+    labels = [label.strftime('%a %d-%m') if isinstance(label, (datetime, date)) else label for label in labels]
+
+    plt.figure(figsize=(10, 6))
+    bars = plt.bar(labels, values, color='skyblue', alpha=0.7)
+
+    # Lägg etiketter på staplarna
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width() / 2.0, height, f'{int(height)}', ha='center', va='bottom', fontsize=10)
+
+    plt.title(title, fontsize=16)
+    plt.ylabel(ylabel, fontsize=14)
+    plt.xticks(rotation=45, ha='right', fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.tight_layout()
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+    # Exportera som base64
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plt.close()
+    return base64.b64encode(img.getvalue()).decode('utf8')
+
 
 def create_week_comparison_plot(this_week_scores, last_week_scores):
     days = ['Mån', 'Tis', 'Ons', 'Tors', 'Fre', 'Lör', 'Sön']
