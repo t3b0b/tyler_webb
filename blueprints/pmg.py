@@ -6,7 +6,7 @@ from models import (User, Streak, Goals, Friendship, Notes, SharedItem, Notifica
                     Activity, Score, ToDoList, TopFive, SubTask)
 from datetime import datetime, timedelta, date
 from sqlalchemy import and_
-from pmg_func import (common_route, add2db,
+from pmg_func import (common_route, add2db, create_grouped_bar_plot,
                       getSwetime,get_user_goals,get_user_tasks,update_streak_details, myDayScore, sumGoal,
                       SortStreaks, get_weekly_scores,get_daily_question, get_scores_by_period, sumDays,
                       create_week_comparison_plot, filter_mod, create_notification, sumAct, create_bar_plot)
@@ -442,7 +442,6 @@ def milestones(goal_id):
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 @login_required
 def myday():
-
     sida, sub_menu = common_route("Min Grind", ['/pmg/timebox'], ['My Day'])
     now = getSwetime()
     today = now.date()  # Hämta aktuell tid
@@ -468,18 +467,18 @@ def myday():
    # plot_url = create_week_comparison_plot(this_week_scores, last_week_scores)
 
     goalTime=sumGoal(last_week_scores)
-
-    dayTime = sumDays(last_week_scores)
+    lastWeek = sumDays(this_week_scores)
+    thisWeek = sumDays(last_week_scores)
 
     actTime = sumAct(last_week_scores)
 
-    for day, total_time in dayTime.items():
+    for day, total_time in thisWeek.items():
         print(f"Day: {day}, Total tid: {total_time} min")
 
     for goal, total_time in goalTime.items():
         print(f"Mål: {goal}, Total tid: {total_time} min")
 
-    goal_plot = create_bar_plot(dayTime, title="Tid per mål", ylabel="Tid (min)")
+    goal_plot = create_grouped_bar_plot(data_dicts=[thisWeek,lastWeek],labels_list=['Denna vecka', 'Förra veckan'], title="Tid per dag", ylabel="Tid (min)")
 
     for activity, total_time in actTime.items():
         print(f"Activity: {activity}, Total tid: {total_time} min")

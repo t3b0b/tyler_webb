@@ -85,6 +85,33 @@ def get_activities(goal_id):
     return jsonify(activities_data)
 
 
+def get_events_for_day(user_id, target_date):
+    """Hämtar alla event för en viss dag inklusive återkommande events."""
+    target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
+
+    # Hämta alla event (både vanliga och återkommande)
+    events = Event.query.filter(
+        (Event.user_id == user_id) & 
+        ((Event.date == target_date) | (Event.is_recurring == True))
+    ).all()
+
+    recurring_events = []
+    
+    for event in events:
+        if event.is_recurring:
+            if event.recurrence_type == 'daily':
+                if event.date <= target_date:
+                    recurring_events.append(event)
+            elif event.recurrence_type == 'weekly':
+                delta_days = (target_date - event.date).days
+                if delta_days % event.recurrence_interval == 0:
+                    recurring_events.append(event)
+            elif event.recurrence_type == 'monthly':
+                if event.date.day == target_date.day and event.date <= target_date:
+                    recurring_events.append(event)
+
+    return events + recurring_events
+
 @cal_bp.route('/day/<string:date>', methods=['GET', 'POST'])
 @login_required
 def day_view(date):
@@ -107,7 +134,8 @@ def day_view(date):
     ).outerjoin(
         Goal, Event.goal_id == Goal.id
     ).filter(
-        Event.user_id == current_user.id
+        Event.user_id == current_user.id,
+        Event.date == date
     ).all()
 
     # Strukturera data för mallen
@@ -122,6 +150,7 @@ def day_view(date):
             "goal_id": row.goal_id,
             "goal_name": row.goal_name
         })
+
     if request.method == 'POST':
         # Hantera POST för att skapa event eller deadline
         event_name = request.form.get('event-name')

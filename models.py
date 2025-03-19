@@ -242,6 +242,10 @@ class Event(db.Model):
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=True)
     date = db.Column(db.Date, nullable=False)
 
+    is_recurring = db.Column(db.Boolean, default=False)  # Om eventet repeteras
+    recurrence_type = db.Column(db.String(20), nullable=True)  # 'daily', 'weekly', 'monthly'
+    recurrence_interval = db.Column(db.Integer, nullable=True)  # Exempel: 1 = varje vecka, 2 = varannan vecka
+
     def __repr__(self):
         return f'{self.name} on {self.date} at {self.location}'
 

@@ -14,6 +14,7 @@ from sqlalchemy.exc import IntegrityError
 import matplotlib.pyplot as plt
 import io
 import base64
+import numpy as np
 from calendar import monthrange
 
 # region Functions
@@ -674,6 +675,60 @@ def create_activity_plot(activity_times):
     plot_url = base64.b64encode(img.getvalue()).decode('utf8')
     plt.close()
     return plot_url
+
+def create_grouped_bar_plot(data_dicts, labels_list=None, title="Summering", ylabel="Tid (min)"):
+
+    # 1. Samla alla unika labels från alla dictionaries
+    all_labels = set()
+    for d in data_dicts:
+        all_labels.update(d.keys())
+    all_labels = sorted(all_labels)  # Sorterade för snyggare presentation
+
+    # 2. Extrahera värden, säkerställ att varje dataset har värden för alla labels (fyll 0 annars)
+    all_values = []
+    for d in data_dicts:
+        values = [d.get(label, 0) for label in all_labels]
+        all_values.append(values)
+
+    # 3. Gör snygg formatering om labels är datum
+    all_labels = [label.strftime('%a %d-%m') if isinstance(label, (datetime, date)) else label for label in all_labels]
+
+    # 4. Plot inställningar
+    x = np.arange(len(all_labels))  # x-axelns positioner
+    width = 0.8 / len(data_dicts)  # Bredd anpassad för antal grupper (max bredd 0.8)
+
+    plt.figure(figsize=(12, 6))
+    colors = plt.cm.get_cmap('tab10', len(data_dicts))  # Unika färger för varje dataset
+
+    # 5. Skapa staplar för varje data_dict
+    for idx, values in enumerate(all_values):
+        offset = (idx - (len(data_dicts) - 1) / 2) * width  # Placera bredvid varandra
+        label = labels_list[idx] if labels_list and idx < len(labels_list) else f"Data {idx+1}"
+        bars = plt.bar(x + offset, values, width=width, label=label, color=colors(idx), alpha=0.8)
+
+        # Lägg siffror ovanpå varje stapel
+        for bar in bars:
+            height = bar.get_height()
+            if height > 0:
+                plt.text(bar.get_x() + bar.get_width() / 2.0, height, f'{int(height)}',
+                         ha='center', va='bottom', fontsize=10)
+
+    # 6. Layout och stil
+    plt.title(title, fontsize=16)
+    plt.ylabel(ylabel, fontsize=14)
+    plt.xticks(x, all_labels, rotation=45, ha='right', fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.legend(fontsize=12)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+
+    # 7. Exportera som base64 för HTML
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plt.close()
+
+    return base64.b64encode(img.getvalue()).decode('utf8')
 
 def create_bar_plot(data_dict, title="Summering", ylabel="Tid (min)"):
     """
