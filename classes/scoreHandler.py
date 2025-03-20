@@ -5,36 +5,8 @@ from extensions import db
 from models import MyWords
 
 class ScoreAnalyzer:
-    def __init__(self, user_id):
-        self.user_id = user_id
-
-
-    def myDayScore(self, day_offset=0):
-        # Beräkna streaks-poäng
-        date = datetime.now().date() - timedelta(days=day_offset)
-
-        streak_points = db.session.query(db.func.sum(Score.Time)).filter(
-            Score.user_id == self.user_id,
-            db.func.date(Score.Date) == date,
-            Score.Activity == None  # Streaks har ingen aktivitet kopplad
-        ).scalar() or 0
-
-        # Beräkna aktivitetspoäng
-        activity_points = db.session.query(db.func.sum(Score.Time)).filter(
-            Score.user_id == self.user_id,
-            db.func.date(Score.Date) == date,
-            Score.Activity != None  # Poäng kopplade till aktiviteter
-        ).scalar() or 0
-
-        # Totalpoäng
-        total_points = streak_points + activity_points
-
-        # Returnera totalpoäng och en ordbok med detaljer
-        return total_points, {
-            "streak_points": streak_points,
-            "activity_points": activity_points
-        }
-
+    def __init__(self):
+        pass
 
     def sumGoal(self, score_list):
         goal_summary = {}
@@ -71,6 +43,46 @@ class ScoreAnalyzer:
             
             actSum[actName] += time
         return actSum
+
+
+class UserScores(ScoreAnalyzer):
+    def __init__(self, user_id):
+        super().__init__()
+        self.user_id = user_id
+    
+    def get_weekly_scores(self):
+        today = datetime.now()  # Byt från utcnow() till now()
+        start_of_this_week = today - timedelta(days=today.weekday())  # Får måndag denna vecka (kl 00:00)
+        start_of_last_week = start_of_this_week - timedelta(days=7)  # Måndag förra veckan
+        end_of_last_week = start_of_this_week - timedelta(days=1)  # Söndag förra veckan
+        
+        # Hämta poäng från databasen
+        this_week_scores = db.session.query(
+            Score.Date, db.func.sum(Score.Time).label('total_points')
+        ).filter(
+            Score.user_id == self.user_id,
+            Score.Date >= start_of_this_week.date(),  # Fixar måndagsproblemet
+            Score.Date <= today.date()  # Endast till idag, ej framtida poster
+        ).group_by(Score.Date).all()
+
+        last_week_scores = db.session.query(
+            Score.Date, db.func.sum(Score.Time).label('total_points')
+        ).filter(
+            Score.user_id == self.user_id,
+            Score.Date >= start_of_last_week.date(),  # Använder .date() för att jämföra rätt
+            Score.Date <= end_of_last_week.date()
+        ).group_by(Score.Date).all()
+
+        activity_times = db.session.query(
+            Activity.name,
+            db.func.sum(Score.Time).label('total_time')
+        ).join(Score).filter(
+            Score.user_id == self.user_id,
+            Score.Date.between(start_of_this_week.date(), today.date())
+        ).group_by(Activity.name).all()
+
+        return this_week_scores, last_week_scores, activity_times
+
 
     def get_scores_by_period(self, period='week', reference_date=None):
         today = datetime.now().date()
@@ -146,39 +158,30 @@ class ScoreAnalyzer:
         ).all()
         
         return scores, activity_times
+    
 
+    def myDayScore(self, day_offset=0):
+        # Beräkna streaks-poäng
+        date = datetime.now().date() - timedelta(days=day_offset)
 
-    def get_weekly_scores(self):
-        today = datetime.now()  # Byt från utcnow() till now()
-        start_of_this_week = today - timedelta(days=today.weekday())  # Får måndag denna vecka (kl 00:00)
-        start_of_last_week = start_of_this_week - timedelta(days=7)  # Måndag förra veckan
-        end_of_last_week = start_of_this_week - timedelta(days=1)  # Söndag förra veckan
-        
-        # Hämta poäng från databasen
-        this_week_scores = db.session.query(
-            Score.Date, db.func.sum(Score.Time).label('total_points')
-        ).filter(
+        streak_points = db.session.query(db.func.sum(Score.Time)).filter(
             Score.user_id == self.user_id,
-            Score.Date >= start_of_this_week.date(),  # Fixar måndagsproblemet
-            Score.Date <= today.date()  # Endast till idag, ej framtida poster
-        ).group_by(Score.Date).all()
+            db.func.date(Score.Date) == date,
+            Score.Activity == None  # Streaks har ingen aktivitet kopplad
+        ).scalar() or 0
 
-        last_week_scores = db.session.query(
-            Score.Date, db.func.sum(Score.Time).label('total_points')
-        ).filter(
+        # Beräkna aktivitetspoäng
+        activity_points = db.session.query(db.func.sum(Score.Time)).filter(
             Score.user_id == self.user_id,
-            Score.Date >= start_of_last_week.date(),  # Använder .date() för att jämföra rätt
-            Score.Date <= end_of_last_week.date()
-        ).group_by(Score.Date).all()
+            db.func.date(Score.Date) == date,
+            Score.Activity != None  # Poäng kopplade till aktiviteter
+        ).scalar() or 0
 
-        activity_times = db.session.query(
-            Activity.name,
-            db.func.sum(Score.Time).label('total_time')
-        ).join(Score).filter(
-            Score.user_id == self.user_id,
-            Score.Date.between(start_of_this_week.date(), today.date())
-        ).group_by(Activity.name).all()
+        # Totalpoäng
+        total_points = streak_points + activity_points
 
-        return this_week_scores, last_week_scores, activity_times
-
-
+        # Returnera totalpoäng och en ordbok med detaljer
+        return total_points, {
+            "streak_points": streak_points,
+            "activity_points": activity_points
+        }

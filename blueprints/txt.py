@@ -4,8 +4,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, jsonif
 from models import (User, Notes, Goals, Bullet, TopFive,
                     Activity, Score, MyWords)
 
-from pmg_func import (section_content,common_route,getInfo, get_daily_question,
-                      getWord, add2db,add_unique_word,add_words_from_file)
+from pmg_func import (common_route,getInfo,add2db)
 
 from datetime import date
 
@@ -13,7 +12,12 @@ from flask_login import current_user, login_required
 
 txt_bp = Blueprint('txt', __name__, template_folder='templates/txt')
 
+from classes.textHandler import textHandler, userText
+
+text = textHandler()
+
 Questions = {
+
     "Prioriteringar": ["Viktigt att prioritera idag",
                    'Viktigt att prioritera imorgon'],
     "Tacksam": ["Vad har du att vara tacksam för?"],
@@ -95,30 +99,31 @@ def journal():
     section_name = request.args.get('section_name')
     my_act = Activity.query.filter_by(name=section_name, user_id=current_user.id).all()
     activity_names = [act.name for act in my_act]
+    texthand=userText(current_user.id)
     topFiveList = []  # Se till att variabeln alltid har ett värde
     if not section_name:
         return redirect(url_for('txt.journal', section_name='Mina Ord'))
 
     if section_name == 'Mina Ord' or section_name == 'skriva':
-        act_id = section_content(Activity, section_name)
+        act_id = texthand.section_content(Activity, section_name)
         sida, sub_menu = common_route("Mina Ord", [url_for('txt.journal', section_name='skriva'),
                                                    url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         return journal_section(act_id, sida, sub_menu,None)
 
     if section_name == 'Mina Mål':
-        act_id = section_content(Activity, section_name)
+        act_id = texthand.section_content(Activity, section_name)
         sida, sub_menu = common_route("Mina Mål", [url_for('txt.journal', section_name='skriva'),
                                                    url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         return journal_section(act_id, sida, sub_menu,None)
 
     elif section_name == "Bullet" or section_name == "Lista":
-        act_id = section_content(Activity, section_name)
+        act_id = texthand.section_content(Activity, section_name)
         sida, sub_menu = common_route("Bullet", [url_for('txt.journal', section_name='skriva'),
                                                  url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         return journal_section(act_id, sida, sub_menu, None)
 
     elif section_name in activity_names:
-        act_id = section_content(Activity, section_name)
+        act_id = texthand.section_content(Activity, section_name)
         sida, sub_menu = common_route(section_name, [url_for('txt.journal', section_name='skriva'),
                                                      url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         return journal_section(act_id, sida, sub_menu, None)
@@ -127,6 +132,7 @@ def journal():
 @txt_bp.route('/journal/<section_name>', methods=['GET', 'POST'])
 @login_required
 def journal_section(act_id, sida, sub_menu, my_posts):
+    texthand=userText(current_user.id)
     start_activity = request.args.get('start_activity', None)
     topFiveList=[]
     page_info = ""
@@ -134,13 +140,13 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     why_G = ""
     page_url = 'txt.journal'
     activities = None
-    ordet,ord_lista = getWord()
+    ordet,ord_lista = texthand.getWord()
 
     if ordet is None:
         for ord in ord_lista:
             ord.used = False
         db.session.commit()
-        ordet,ord_lista = getWord()
+        ordet,ord_lista = texthand.getWord()
 
     if sida == 'Dagbok':
         ordet = current_date
@@ -148,7 +154,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     elif sida == 'Mina Mål':
         MyWords.query.filter_by(user_id=current_user.id).all()
         if not MyWords:
-            add_words_from_file('orden.txt',current_user.id)
+            texthand.add_words_from_file('orden.txt')
         goals = Goals.query.filter_by(user_id=current_user.id).with_entities(Goals.name).all()
 #        used_goals = WhyGoals.query.filter_by(user_id=current_user.id).with_entities(WhyGoals.goal).all()
         goal_list = [goal[0] for goal in goals]
@@ -160,7 +166,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
             break
 
     elif sida == "Bullet":
-        ordet, list_type, list_date = get_daily_question()
+        ordet, list_type, list_date = texthand.get_daily_question()
         
         list_title = list_type.capitalize()
 
@@ -208,7 +214,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                     add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Mina Ord':
                     nytt_ord = request.form.get('post-ord')
-                    add_unique_word(nytt_ord,current_user.id)
+                    texthand.add_unique_word(nytt_ord)
                     add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Bullet':
                     theme = request.form['post-ord']
@@ -242,13 +248,14 @@ def journal_section(act_id, sida, sub_menu, my_posts):
 
 @txt_bp.route('/get-new-word')
 def get_new_word(section_id):
+    texthand=userText(current_user.id)
     ordet = None
-    ordet,ord_lista = getWord()
+    ordet,ord_lista = texthand.getWord()
     if ordet is None:
         for ord in ord_lista:
             ord.used = False
         db.session.commit()
-        ordet, ord_lista = getWord()
+        ordet, ord_lista = texthand.getWord()
 
     return jsonify(ordet)
 

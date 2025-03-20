@@ -5,6 +5,7 @@ import io
 import numpy as np
 
 class DataHandler:
+    
     def __init__(self):
         pass
 

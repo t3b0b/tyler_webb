@@ -5,8 +5,8 @@ from random import choice
 import random
 
 class textHandler:
-    def __init__(self, user_id):
-        self.user_id = user_id
+    def __init__(self):
+        pass
 
 # region Txt
     def readWords(self, filename):
@@ -30,66 +30,11 @@ class textHandler:
 
         raise UnicodeDecodeError(f"Could not decode the file {filename} with any of the tried encodings.")
 
-    def unique(db, by_db):
+    def unique(self, db, by_db):
         unique_data = [post.title for post in db.query.with_entities(by_db).distinct().all()]
         list = [item[0] for item in unique_data]
         return list
 
-    def add_words_from_file(self, file_name, user_id):
-        try:
-            _, word_list = self.readWords(file_name)  # Läs in ordlistan från filen
-            if not word_list:
-                return "No words found in file."
-
-            # Hämta alla ord som redan finns i databasen för denna användare
-            existing_words = set(word.word for word in MyWords.query.filter_by(user_id=user_id).all())
-
-            # Filtrera ut ord som redan finns
-            new_words = [word for word in word_list if word not in existing_words]
-
-            if not new_words:
-                return "All words already exist in the database."
-
-            # Skapa nya objekt och batcha in dem i databasen
-            db.session.bulk_save_objects([MyWords(word=word, user_id=user_id) for word in new_words])
-            db.session.commit()
-
-            return f"{len(new_words)} words added successfully."
-        except FileNotFoundError:
-            return "File not found."
-        except Exception as e:
-            db.session.rollback()
-            return f"An unexpected error occurred: {e}"
-
-    def add_unique_word(self, word):
-        # Kontrollera om ordet redan finns
-        existing_word = MyWords.query.filter_by(word=word).first()
-        if existing_word:
-            return f"Word '{word}' already exists!", False  # Returnera ett felmeddelande
-
-        # Skapa nytt ord
-        new_word = MyWords(word=word, user_id = self.user_id)
-        db.session.add(new_word)
-        db.session.commit()
-        return f"Word '{word}' added successfully!", True
-
-    def section_content(db,section):
-        list = db.query.filter_by(name=section).first()
-        return list
-
-
-    def getWord(self):
-        ord_lista = MyWords.query.filter_by(user_id = self.user_id).all()
-        ordet = None
-        for ord in ord_lista:
-            if not ord.used:
-                # Uppdatera ordet till att vara använt
-                ord.used = True
-                db.session.commit()
-
-                ordet = ord.word
-                break
-        return ordet, ord_lista
     
     def get_daily_question():
 
@@ -138,5 +83,68 @@ class textHandler:
             list_date = tomorrow  # Sätter frågan till morgondagens datum om klockan är efter 14:00
 
         return message, list_type, list_date
+    
+class userText(textHandler):
+    
+    def __init__(self,user_id):
+        super.__init__
+        self.user_id = user_id
+
+
+    def add_words_from_file(self, file_name, user_id):
+        try:
+            _, word_list = self.readWords(file_name)  # Läs in ordlistan från filen
+            if not word_list:
+                return "No words found in file."
+
+            # Hämta alla ord som redan finns i databasen för denna användare
+            existing_words = set(word.word for word in MyWords.query.filter_by(user_id=self.user_id).all())
+
+            # Filtrera ut ord som redan finns
+            new_words = [word for word in word_list if word not in existing_words]
+
+            if not new_words:
+                return "All words already exist in the database."
+
+            # Skapa nya objekt och batcha in dem i databasen
+            db.session.bulk_save_objects([MyWords(word=word, user_id=user_id) for word in new_words])
+            db.session.commit()
+
+            return f"{len(new_words)} words added successfully."
+        except FileNotFoundError:
+            return "File not found."
+        except Exception as e:
+            db.session.rollback()
+            return f"An unexpected error occurred: {e}"
+
+
+    def getWord(self):
+        ord_lista = MyWords.query.filter_by(user_id = self.user_id).all()
+        ordet = None
+        for ord in ord_lista:
+            if not ord.used:
+                # Uppdatera ordet till att vara använt
+                ord.used = True
+                db.session.commit()
+
+                ordet = ord.word
+                break
+        return ordet, ord_lista
+    
+    def add_unique_word(self, word):
+        # Kontrollera om ordet redan finns
+        existing_word = MyWords.query.filter_by(word=word).first()
+        if existing_word:
+            return f"Word '{word}' already exists!", False  # Returnera ett felmeddelande
+
+        # Skapa nytt ord
+        new_word = MyWords(word=word, user_id = self.user_id)
+        db.session.add(new_word)
+        db.session.commit()
+        return f"Word '{word}' added successfully!", True
+
+    def section_content(db,section):
+        list = db.query.filter_by(name=section).first()
+        return list
 
 # endregion

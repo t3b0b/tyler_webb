@@ -11,8 +11,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from flask_login import current_user
 from sqlalchemy.exc import IntegrityError
 
-from calendar import monthrange
-
 # region Functions
 
 STOCKHOLM_TZ = timezone('Europe/Stockholm')
@@ -382,6 +380,7 @@ def get_user_tasks(user_id, model, activity_id=None):
         task.pending_subtasks = task.subtask_count - task.completed_subtasks  # Oavklarade deluppgifter
 
     return tasks
+
 def getInfo(filename, page):
     df = pd.read_csv(filename)
     row = df.loc[df['Page'] == page]

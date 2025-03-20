@@ -6,24 +6,26 @@ from models import (User, Streak, Goals, Friendship, Notes, SharedItem, Notifica
                     Activity, Score, ToDoList, TopFive, SubTask)
 from datetime import datetime, timedelta, date
 from sqlalchemy import and_
-from pmg_func import (common_route, add2db,
-                      getSwetime,get_user_goals,get_user_tasks,update_streak_details,
-                      SortStreaks, get_daily_question, filter_mod, create_notification)
+from pmg_func import (common_route, add2db, getSwetime,get_user_goals,get_user_tasks,update_streak_details,
+                      SortStreaks, filter_mod, create_notification)
 import pandas as pd
 from pytz import timezone
 from flask_login import current_user, login_required
 from sqlalchemy.orm import scoped_session
 
-from classes.scoreAnalyzer import ScoreAnalyzer
+from classes.scoreHandler import ScoreAnalyzer,UserScores
 from classes.calHandler import Calendar
 from classes.textHandler import textHandler
 from classes.dataHandler import DataHandler
 
+scorehand = ScoreAnalyzer()
+datahand = DataHandler()
+texthand = textHandler()
+
+
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
-analyzer = ScoreAnalyzer(current_user.id)
-datahand = DataHandler(current_user.id)
-texthand = textHandler(current_user.id)
+
 
 Questions = {
 
@@ -134,12 +136,14 @@ def respond_to_streak_invitation(shared_streak_id):
     return redirect(url_for('pmg.streak'))
 """
 
+
 @pmg_bp.route('/streak/<int:streak_id>/details', methods=['GET'])
 def streak_details(streak_id):
     streak = Streak.query.get_or_404(streak_id)
     streakdetail = Streak.query.filter_by(user_id=current_user.id, id = streak_id).first()
 
     return render_template('pmg/details.html', streak=streak, detail=streakdetail)
+
 
 @pmg_bp.route('/update_streak/<int:streak_id>/<action>', methods=['POST'])
 def update_streak(streak_id, action):
@@ -172,6 +176,7 @@ def update_streak(streak_id, action):
 
 
     return redirect(url_for('pmg.myday'))
+
 
 @pmg_bp.route('/delete-streak/<int:streak_id>', methods=['POST'])
 def delete_streak(streak_id):
@@ -453,7 +458,7 @@ def milestones(goal_id):
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 @login_required
 def myday():
-
+    analyzer = UserScores(current_user.id)
     sida, sub_menu = common_route("Min Grind", ['/pmg/timebox'], ['My Day'])
     now = getSwetime()
     today = now.date()  # Hämta aktuell tid
@@ -516,7 +521,7 @@ def myday():
 
     valid_streaks=SortStreaks(myStreaks)
 
-    message, list_type, list_date = get_daily_question()
+    message, list_type, list_date = texthand.get_daily_question()
 
     list_title = list_type.capitalize()
     topFive = TopFive.query.filter_by(title=list_title, user_id=current_user.id, list_type=list_type, date=list_date).first()
@@ -565,6 +570,7 @@ def myday():
 @pmg_bp.route('/myday/<date>')
 @login_required
 def myday_date(date):
+    analyzer = UserScores(current_user.id)
     selected_date = datetime.strptime(date, '%Y-%m-%d').date()
     session = scoped_session(db.session)
     now = getSwetime()
