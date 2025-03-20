@@ -7,6 +7,7 @@ from flask_login import current_user
 from models import User
 from dotenv import load_dotenv
 
+
 # endregion
 
 app = create_app()
