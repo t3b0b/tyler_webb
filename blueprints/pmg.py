@@ -16,10 +16,10 @@ from sqlalchemy.orm import scoped_session
 from classes.scoreHandler import ScoreAnalyzer,UserScores
 from classes.calHandler import Calendar
 from classes.textHandler import textHandler
-from classes.dataHandler import DataHandler
+from classes.plotHandler import PlotHandler
 
 scorehand = ScoreAnalyzer()
-datahand = DataHandler()
+datahand = PlotHandler()
 texthand = textHandler()
 
 

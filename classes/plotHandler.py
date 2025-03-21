@@ -4,7 +4,7 @@ import base64
 import io
 import numpy as np
 
-class DataHandler:
+class PlotHandler:
     
     def __init__(self):
         pass
@@ -33,7 +33,6 @@ class DataHandler:
         return plot_url
 
     def create_grouped_bar_plot(data_dicts, labels_list=None, title="Summering", ylabel="Tid (min)"):
-
         # 1. Samla alla unika labels från alla dictionaries
         all_labels = set()
         for d in data_dicts:
