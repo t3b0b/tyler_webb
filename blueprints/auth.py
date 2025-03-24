@@ -86,6 +86,7 @@ def reset_password_token(token):
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     sida = 'P.M.G'
+    session.permanent = True
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')

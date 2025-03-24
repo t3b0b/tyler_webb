@@ -459,6 +459,7 @@ def milestones(goal_id):
 @login_required
 def myday():
     analyzer = UserScores(current_user.id)
+
     sida, sub_menu = common_route("Min Grind", ['/pmg/timebox'], ['My Day'])
     now = getSwetime()
     today = now.date()  # Hämta aktuell tid
@@ -466,13 +467,13 @@ def myday():
     tomorrow = today + timedelta(days=1)
     hour = now.hour  # Aktuell timme
     myStreaks = filter_mod(Streak, user_id=current_user.id)
-    yesterday_score = analyzer.myDayScore(current_user.id, day_offset=-1)
-    total, point_details = analyzer.myDayScore(current_user.id,day_offset=0)
+    yesterday_score = analyzer.myDayScore(day_offset=-1)
+    total, point_details = analyzer.myDayScore(day_offset=0)
     activity_points = point_details.get("activity_points", 0)
     streak_points = point_details.get("streak_points", 0)
 
-    this_week_scores, activity_scores = analyzer.get_scores_by_period(current_user.id,'week',today)
-    last_week_scores,lastweek_activity_scores=analyzer.get_scores_by_period(current_user.id,'week',today-timedelta(days=7))
+    this_week_scores, activity_scores = analyzer.get_scores_by_period('week',today)
+    last_week_scores,lastweek_activity_scores=analyzer.get_scores_by_period('week',today-timedelta(days=7))
 
     for row in last_week_scores:
         goal = row.goalName or "Okänt mål"
@@ -495,7 +496,11 @@ def myday():
     for goal, total_time in goalTime.items():
         print(f"Mål: {goal}, Total tid: {total_time} min")
 
-    goal_plot = datahand.create_grouped_bar_plot(data_dicts=[thisWeek,lastWeek],labels_list=['Denna vecka', 'Förra veckan'], title="Tid per dag", ylabel="Tid (min)")
+    goal_plot = datahand.create_grouped_bar_plot(
+        data_dicts=[thisWeek,lastWeek],
+        labels_list=['Denna vecka', 'Förra veckan'], 
+        title="Tid per dag", 
+        ylabel="Tid (min)")
 
     for activity, total_time in actTime.items():
         print(f"Activity: {activity}, Total tid: {total_time} min")

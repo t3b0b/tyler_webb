@@ -36,7 +36,7 @@ class textHandler:
         return list
 
     
-    def get_daily_question():
+    def get_daily_question(self):
 
         Questions = {
         "Prioriteringar": ["Viktigt att prioritera idag",

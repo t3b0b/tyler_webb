@@ -11,7 +11,7 @@ class PlotHandler:
 
     # region Plot
 
-    def create_activity_plot(activity_times):
+    def create_activity_plot(self,activity_times):
         """Generera en stående stapelgraf med unika färger för varje mål."""
         activity_names = [activity[0] for activity in activity_times]
         total_times = [activity[1] for activity in activity_times]
@@ -32,7 +32,7 @@ class PlotHandler:
         plt.close()
         return plot_url
 
-    def create_grouped_bar_plot(data_dicts, labels_list=None, title="Summering", ylabel="Tid (min)"):
+    def create_grouped_bar_plot(self, data_dicts=None, labels_list=None, title="Summering", ylabel="Tid (min)"):
         # 1. Samla alla unika labels från alla dictionaries
         all_labels = set()
         for d in data_dicts:
