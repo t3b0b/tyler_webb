@@ -4,11 +4,12 @@ from app_factory import create_app
 from flask import render_template,request
 from flask_login import current_user
 from models import User
+import os
 from dotenv import load_dotenv
 # endregion
 
 app = create_app()
-
+load_dotenv()
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -49,4 +50,7 @@ def blog():
 #endregion
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",port=5001, debug=True)
+    if os.getenv('FLASK_ENV') == 'development':
+        app.run(host="0.0.0.0", port=5001, debug=True)
+    else:
+        print("Running in production mode. Use WSGI configuration to run the app.")
