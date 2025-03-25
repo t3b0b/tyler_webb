@@ -9,6 +9,10 @@ class textHandler:
         pass
 
 # region Txt
+    def section_content(self, db,section):
+        list = db.query.filter_by(name=section).first()
+        return list
+    
     def readWords(self, filename):
         encodings = ['utf-8', 'latin-1', 'iso-8859-1', 'utf-8-sig']
 
@@ -86,12 +90,12 @@ class textHandler:
     
 class userText(textHandler):
     
-    def __init__(self,user_id):
-        super.__init__
+    def __init__(self, user_id):
+        super().__init__()
         self.user_id = user_id
 
 
-    def add_words_from_file(self, file_name, user_id):
+    def add_words_from_file(self, file_name):
         try:
             _, word_list = self.readWords(file_name)  # Läs in ordlistan från filen
             if not word_list:
@@ -107,7 +111,7 @@ class userText(textHandler):
                 return "All words already exist in the database."
 
             # Skapa nya objekt och batcha in dem i databasen
-            db.session.bulk_save_objects([MyWords(word=word, user_id=user_id) for word in new_words])
+            db.session.bulk_save_objects([MyWords(word=word, user_id=self.user_id) for word in new_words])
             db.session.commit()
 
             return f"{len(new_words)} words added successfully."
@@ -143,8 +147,5 @@ class userText(textHandler):
         db.session.commit()
         return f"Word '{word}' added successfully!", True
 
-    def section_content(db,section):
-        list = db.query.filter_by(name=section).first()
-        return list
 
 # endregion
