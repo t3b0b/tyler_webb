@@ -867,6 +867,9 @@ def add_subtask(task_id):
 
     new_subtask = SubTask(name=subtask_name, task_id=task_id)
     db.session.add(new_subtask)
+    
+    task.completed = False
+    
     db.session.commit()
 
     if 'fokus' in request.form.get('page'):
@@ -879,13 +882,27 @@ def add_subtask(task_id):
 @pmg_bp.route('/subtask/<int:subtask_id>/update', methods=['POST'])
 def update_subtask(subtask_id):
     subtask = SubTask.query.get_or_404(subtask_id)
-    subtask.completed = not subtask.completed  # Växla status
+    subtask.completed = not subtask.completed  # Växla status på subtask
     db.session.commit()
-    if 'fokus' in request.form.get('page'):
-        return redirect(url_for('pmg.focus_room', activity_id=subtask.task.activity_id))
-    elif 'list' in request.form.get('page'):
-        return redirect(url_for('pmg.activity_tasks', activity_id=subtask.task.activity_id))
 
+    # 🟢 Hämta alla subtasks för denna task
+    all_subtasks = SubTask.query.filter_by(task_id=subtask.task_id).all()
+    task = ToDoList.query.get(subtask.task_id)
+
+    # 🔍 Kontrollera om alla subtasks är avklarade
+    if all(sub.completed for sub in all_subtasks):  # Om alla subtasks är klara
+        task.completed = True
+    else:
+        task.completed = False  # Om minst en subtask är ofullständig
+
+    db.session.commit()  # Spara ändringar till databasen
+
+    # Omdirigera tillbaka till rätt sida
+    if 'fokus' in request.form.get('page'):
+        return redirect(url_for('pmg.focus_room', activity_id=task.activity_id))
+    elif 'list' in request.form.get('page'):
+        return redirect(url_for('pmg.activity_tasks', activity_id=task.activity_id))
+    
 @pmg_bp.route('/task/<int:task_id>/subtasks', methods=['GET'])
 @login_required
 def get_subtasks(task_id):
