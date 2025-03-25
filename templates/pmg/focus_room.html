@@ -118,7 +118,7 @@
                     <span class="shared-indicator">(Shared)</span>
                 {% endif %}
                 <span class="subtask-count">
-                    {{ task.completed_subtasks }} / {{ task.subtask_count }} avklarade
+                    {{ task.completed_subtasks }} / {{ task.subtask_count }}
                 </span>
                 <div class="task-actions">
                     <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">

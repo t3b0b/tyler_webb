@@ -661,26 +661,6 @@ def focus_room(activity_id):
 
     return render_template('pmg/focus_room.html',activity_notes=activity_notes, activity=activity, tasks=tasks, current_date=current_date,goal_id=goal_id)
 
-@pmg_bp.route('/activity/<int:activity_id>/update_task/<int:task_id>', methods=['GET','POST'])
-def update_task(activity_id, task_id):
-    task = ToDoList.query.get_or_404(task_id)
-
-    # Hämta den nya statusen från formuläret
-    completed = 'completed' in request.form  # Checkbox skickar bara värde om den är markerad
-    page = request.form.get('page')  # Hämta ursprungssidan
-
-    # Uppdatera task status
-    task.completed = completed
-    db.session.commit()
-
-    # Omdirigera till rätt sida baserat på ursprungssidan
-    if page == 'todo':
-        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
-    elif page == 'focus':
-        return redirect(url_for('pmg.focus_room', activity_id=activity_id))
-
-    # Om ingen origin skickas med, omdirigera till standard-sidan
-    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
 
 @pmg_bp.route('/delete-activity/<int:activity_id>', methods=['POST'])
 @login_required
@@ -755,6 +735,7 @@ def create_notebook(activity_id):
 # endregion
 
 # region Todos
+
 @pmg_bp.route('/activity/<int:activity_id>/tasks', methods=['GET'])
 def activity_tasks(activity_id):
     # Hämta aktiviteten
@@ -772,6 +753,26 @@ def activity_tasks(activity_id):
     sida = f"{activity.name} ToDos"
     return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos, sida=sida, header=sida)
 
+@pmg_bp.route('/activity/<int:activity_id>/update_task/<int:task_id>', methods=['GET','POST'])
+def update_task(activity_id, task_id):
+    task = ToDoList.query.get_or_404(task_id)
+
+    # Hämta den nya statusen från formuläret
+    completed = 'completed' in request.form  # Checkbox skickar bara värde om den är markerad
+    page = request.form.get('page')  # Hämta ursprungssidan
+
+    # Uppdatera task status
+    task.completed = completed
+    db.session.commit()
+
+    # Omdirigera till rätt sida baserat på ursprungssidan
+    if page == 'todo':
+        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+    elif page == 'focus':
+        return redirect(url_for('pmg.focus_room', activity_id=activity_id))
+
+    # Om ingen origin skickas med, omdirigera till standard-sidan
+    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
 
 @pmg_bp.route('/activity/<int:activity_id>/add_task', methods=['POST'])
 def add_task(activity_id):
@@ -825,7 +826,6 @@ def add_task(activity_id):
         flash("Task added successfully", "success")
         return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
     
-
 @pmg_bp.route('/activity/<int:activity_id>/delete_task/<int:task_id>', methods=['POST'])
 @login_required
 def delete_task(activity_id, task_id):
@@ -852,7 +852,6 @@ def delete_task(activity_id, task_id):
 
     return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
 
-
 # endregion
 
 #region Subtasks
@@ -877,7 +876,6 @@ def add_subtask(task_id):
         flash("Subtask added successfully!", "success")
         return redirect(url_for('pmg.activity_tasks', activity_id=task.activity_id))
 
-
 @pmg_bp.route('/subtask/<int:subtask_id>/update', methods=['POST'])
 def update_subtask(subtask_id):
     subtask = SubTask.query.get_or_404(subtask_id)
@@ -887,8 +885,6 @@ def update_subtask(subtask_id):
         return redirect(url_for('pmg.focus_room', activity_id=subtask.task.activity_id))
     elif 'list' in request.form.get('page'):
         return redirect(url_for('pmg.activity_tasks', activity_id=subtask.task.activity_id))
-
-
 
 @pmg_bp.route('/task/<int:task_id>/subtasks', methods=['GET'])
 @login_required

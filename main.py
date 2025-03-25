@@ -5,9 +5,6 @@ from flask import render_template,request
 from flask_login import current_user
 from models import User
 from dotenv import load_dotenv
-
-
-
 # endregion
 
 app = create_app()
@@ -52,4 +49,4 @@ def blog():
 #endregion
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",port=5001, debug=True)
+    app.run(host="0.0.0.0",port=5001, debug=False)
