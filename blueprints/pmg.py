@@ -6,18 +6,29 @@ from models import (User, Streak, Goals, Friendship, Notes, SharedItem, Notifica
                     Activity, Score, ToDoList, TopFive, SubTask)
 from datetime import datetime, timedelta, date
 from sqlalchemy import and_
-from pmg_func import (common_route, add2db, create_grouped_bar_plot,
-                      getSwetime,get_user_goals,get_user_tasks,update_streak_details, myDayScore, sumGoal,
-                      SortStreaks, get_weekly_scores,get_daily_question, get_scores_by_period, sumDays,
-                      create_week_comparison_plot, filter_mod, create_notification, sumAct, create_bar_plot)
+from pmg_func import (common_route, add2db, getSwetime,get_user_goals,get_user_tasks,update_streak_details,
+                      SortStreaks, filter_mod, create_notification)
 import pandas as pd
 from pytz import timezone
 from flask_login import current_user, login_required
 from sqlalchemy.orm import scoped_session
 
+from classes.scoreHandler import ScoreAnalyzer,UserScores
+from classes.calHandler import Calendar
+from classes.textHandler import textHandler
+from classes.plotHandler import PlotHandler
+
+scorehand = ScoreAnalyzer()
+datahand = PlotHandler()
+texthand = textHandler()
+
+
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
+
+
 Questions = {
+
     "Prioriteringar": ["Viktigt att prioritera idag",
                    'Viktigt att prioritera imorgon'],
     "Tacksam": ["Vad har du att vara tacksam för?"],
@@ -91,6 +102,7 @@ def streak():
                            todayDate=current_date,streaks=myStreaks,sub_menu=sub_menu,
                        goals=myGoals)
 
+"""
 @pmg_bp.route('/streak/<int:shared_streak_id>/respond', methods=['POST'])
 @login_required
 def respond_to_streak_invitation(shared_streak_id):
@@ -122,6 +134,8 @@ def respond_to_streak_invitation(shared_streak_id):
 
     db.session.commit()
     return redirect(url_for('pmg.streak'))
+"""
+
 
 @pmg_bp.route('/streak/<int:streak_id>/details', methods=['GET'])
 def streak_details(streak_id):
@@ -129,6 +143,7 @@ def streak_details(streak_id):
     streakdetail = Streak.query.filter_by(user_id=current_user.id, id = streak_id).first()
 
     return render_template('pmg/details.html', streak=streak, detail=streakdetail)
+
 
 @pmg_bp.route('/update_streak/<int:streak_id>/<action>', methods=['POST'])
 def update_streak(streak_id, action):
@@ -161,6 +176,7 @@ def update_streak(streak_id, action):
 
 
     return redirect(url_for('pmg.myday'))
+
 
 @pmg_bp.route('/delete-streak/<int:streak_id>', methods=['POST'])
 def delete_streak(streak_id):
@@ -442,6 +458,8 @@ def milestones(goal_id):
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 @login_required
 def myday():
+    analyzer = UserScores(current_user.id)
+
     sida, sub_menu = common_route("Min Grind", ['/pmg/timebox'], ['My Day'])
     now = getSwetime()
     today = now.date()  # Hämta aktuell tid
@@ -449,13 +467,13 @@ def myday():
     tomorrow = today + timedelta(days=1)
     hour = now.hour  # Aktuell timme
     myStreaks = filter_mod(Streak, user_id=current_user.id)
-    yesterday_score = myDayScore(current_user.id, day_offset=-1)
-    total, point_details = myDayScore(current_user.id,day_offset=0)
+    yesterday_score = analyzer.myDayScore(day_offset=-1)
+    total, point_details = analyzer.myDayScore(day_offset=0)
     activity_points = point_details.get("activity_points", 0)
     streak_points = point_details.get("streak_points", 0)
 
-    this_week_scores, activity_scores = get_scores_by_period(current_user.id,'week',today)
-    last_week_scores,lastweek_activity_scores=get_scores_by_period(current_user.id,'week',today-timedelta(days=7))
+    this_week_scores, activity_scores = analyzer.get_scores_by_period('week',today)
+    last_week_scores,lastweek_activity_scores=analyzer.get_scores_by_period('week',today-timedelta(days=7))
 
     for row in last_week_scores:
         goal = row.goalName or "Okänt mål"
@@ -466,11 +484,11 @@ def myday():
 
    # plot_url = create_week_comparison_plot(this_week_scores, last_week_scores)
 
-    goalTime=sumGoal(last_week_scores)
-    lastWeek = sumDays(this_week_scores)
-    thisWeek = sumDays(last_week_scores)
+    goalTime = analyzer.sumGoal(last_week_scores)
+    lastWeek = analyzer.sumDays(this_week_scores)
+    thisWeek = analyzer.sumDays(last_week_scores)
 
-    actTime = sumAct(last_week_scores)
+    actTime = analyzer.sumAct(last_week_scores)
 
     for day, total_time in thisWeek.items():
         print(f"Day: {day}, Total tid: {total_time} min")
@@ -478,7 +496,11 @@ def myday():
     for goal, total_time in goalTime.items():
         print(f"Mål: {goal}, Total tid: {total_time} min")
 
-    goal_plot = create_grouped_bar_plot(data_dicts=[thisWeek,lastWeek],labels_list=['Denna vecka', 'Förra veckan'], title="Tid per dag", ylabel="Tid (min)")
+    goal_plot = datahand.create_grouped_bar_plot(
+        data_dicts=[thisWeek,lastWeek],
+        labels_list=['Denna vecka', 'Förra veckan'], 
+        title="Tid per dag", 
+        ylabel="Tid (min)")
 
     for activity, total_time in actTime.items():
         print(f"Activity: {activity}, Total tid: {total_time} min")
@@ -504,7 +526,7 @@ def myday():
 
     valid_streaks=SortStreaks(myStreaks)
 
-    message, list_type, list_date = get_daily_question()
+    message, list_type, list_date = texthand.get_daily_question()
 
     list_title = list_type.capitalize()
     topFive = TopFive.query.filter_by(title=list_title, user_id=current_user.id, list_type=list_type, date=list_date).first()
@@ -553,6 +575,7 @@ def myday():
 @pmg_bp.route('/myday/<date>')
 @login_required
 def myday_date(date):
+    analyzer = UserScores(current_user.id)
     selected_date = datetime.strptime(date, '%Y-%m-%d').date()
     session = scoped_session(db.session)
     now = getSwetime()
@@ -561,7 +584,7 @@ def myday_date(date):
     with session.begin():
         myGoals = filter_mod(Goals, user_id = current_user.id)
         myStreaks = Streak.query.filter(Streak.user_id == current_user.id, Streak.lastReg != today).all()
-        myScore, total = myDayScore(selected_date, current_user.id)
+        myScore, total = analyzer.myDayScore(selected_date, current_user.id)
 
     if selected_date < today:
         sida='Past Day'

@@ -2,17 +2,17 @@ from random import choice
 from extensions import db
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from sqlalchemy.orm import aliased
-from models import (Streak, Goals,
-                    Activity, Score,
-                    Event,TopFive)
+from models import (Streak, Goals,Activity, Score,Event,TopFive)
 
 from datetime import datetime, timedelta
 
-from pmg_func import (common_route,generate_calendar_weeks)
-
+from pmg_func import (common_route)
+from classes.calHandler import Calendar,UserCalendar
 from flask_login import current_user, login_required
 
 cal_bp = Blueprint('cal', __name__, template_folder='templates/cal')
+
+cal = Calendar()
 
 def get_daily_summary(user_id, date=None):
     """
@@ -77,87 +77,46 @@ def save_calendar_bullet(date, view_type):
     flash('Dagens anteckningar har sparats!', 'success')
     return redirect(url_for('cal.' + view_type))  # Omdirigera till motsvarande vy
 
-@cal_bp.route('/get_activities/<int:goal_id>', methods=['GET'])
-@login_required
-def get_activities(goal_id):
-    activities = Activity.query.filter_by(goal_id=goal_id).all()
-    activities_data = [{'id': act.id, 'name': act.name} for act in activities]
-    return jsonify(activities_data)
-
-
-def get_events_for_day(user_id, target_date):
-    """Hämtar alla event för en viss dag inklusive återkommande events."""
-    target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
-
-    # Hämta alla event (både vanliga och återkommande)
-    events = Event.query.filter(
-        (Event.user_id == user_id) & 
-        ((Event.date == target_date) | (Event.is_recurring == True))
-    ).all()
-
-    recurring_events = []
-    
-    for event in events:
-        if event.is_recurring:
-            if event.recurrence_type == 'daily':
-                if event.date <= target_date:
-                    recurring_events.append(event)
-            elif event.recurrence_type == 'weekly':
-                delta_days = (target_date - event.date).days
-                if delta_days % event.recurrence_interval == 0:
-                    recurring_events.append(event)
-            elif event.recurrence_type == 'monthly':
-                if event.date.day == target_date.day and event.date <= target_date:
-                    recurring_events.append(event)
-
-    return events + recurring_events
-
 @cal_bp.route('/day/<string:date>', methods=['GET', 'POST'])
 @login_required
 def day_view(date):
+    userCal = UserCalendar(current_user.id)
     # Konvertera `date` från sträng till datetime-objekt
     try:
         date = datetime.strptime(date, '%Y-%m-%d').date()
     except ValueError:
         flash("Ogiltigt datumformat. Använd 'YYYY-MM-DD'.", 'danger')
         return redirect(url_for('cal.month_view'))
+    
     myGoals=Goals.query.filter_by(user_id=current_user.id)
-    Goal = aliased(Goals)
-    event_goal_data = db.session.query(
-        Event.id.label('event_id'),
-        Event.name.label('event_name'),
-        Event.start_time,
-        Event.end_time,
-        Event.location,
-        Goal.id.label('goal_id'),
-        Goal.name.label('goal_name')
-    ).outerjoin(
-        Goal, Event.goal_id == Goal.id
-    ).filter(
-        Event.user_id == current_user.id,
-        Event.date == date
-    ).all()
+
+    events = userCal.get_events_for_day(date)
 
     # Strukturera data för mallen
     event_data = []
-    for row in event_goal_data:
+    for event, goal_name in events:
         event_data.append({
-            "event_id": row.event_id,
-            "event_name": row.event_name,
-            "start_time": row.start_time.strftime('%H:%M') if row.start_time else None,
-            "end_time": row.end_time.strftime('%H:%M') if row.end_time else None,
-            "location": row.location,
-            "goal_id": row.goal_id,
-            "goal_name": row.goal_name
+            "event_id": event.id,
+            "event_name": event.name,
+            "start_time": event.start_time.strftime('%H:%M') if event.start_time else None,
+            "end_time": event.end_time.strftime('%H:%M') if event.end_time else None,
+            "location": event.location,
+            "goal_id": event.goal_id,
+            "goal_name": goal_name or "Okänt mål"
         })
 
     if request.method == 'POST':
-        # Hantera POST för att skapa event eller deadline
         event_name = request.form.get('event-name')
         event_type = request.form.get('eventType')
         start_time = request.form.get('event-start')
         end_time = request.form.get('event-end')
+        location = request.form.get('event-location')
         goal_id = request.form.get('goal-id')
+        activity_id = request.form.get('activity-id')  # Här hämtar du den valda aktiviteten
+
+        is_recurring = request.form.get('is-recurring') == 'true'
+        recurrence_type = request.form.get('recurrance-type')
+        recurrence_interval = int(request.form.get('recurrance-interval') or 1)
 
         if event_name and event_type and start_time:
             new_event = Event(
@@ -165,9 +124,14 @@ def day_view(date):
                 event_type=event_type,
                 start_time=start_time,
                 end_time=end_time,
+                location=location,
                 date=date,
                 user_id=current_user.id,
-                goal_id=goal_id or None
+                goal_id=goal_id if goal_id else None,
+                activity_id=activity_id if activity_id else None,
+                is_recurring=is_recurring,
+                recurrence_type=recurrence_type if is_recurring else None,
+                recurrence_interval=recurrence_interval if is_recurring else None
             )
             db.session.add(new_event)
             db.session.commit()
@@ -193,7 +157,7 @@ def month(year=None, month=None):
     first_day_of_month = datetime(year, month, 1)
     month_name = first_day_of_month.strftime('%B')
 
-    weeks = generate_calendar_weeks(year, month)
+    weeks = cal.generate_calendar_weeks(year, month)
 
     sida = "Min Kalender"
     today = datetime.now()

@@ -52,6 +52,25 @@
                 <input type="text" id="event-location" name="event-location" placeholder="Event Location">
             </div>
             <div class="input-group">
+                <div class="input-half">
+                    <label for="is-recurring">Recurring Event</label>
+                    <input type="checkbox" name="is-recurring" id=is-recurring value="true" onchange="toggleRecurringOptions()">
+                </div>
+            </div>
+            <div id="recurring-options" class="hidden">
+                <div class="input-group">
+                    <label for="recurrance-type">Type</label>
+                    <select id="recurrance-type" name="recurrance-type" class=" select-style">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select> 
+
+                    <label for="recurrance-interval">Interval</label>
+                    <input type="number" name="recurrance-interval" id="recurrance-interval" style="width:50px">
+                </div>
+            </div>
+            <div class="input-group">
                 {% if goals %}
                     <label for="goal-select">Link to Goal (for deadlines):</label>
                     <select id="goal-select" name="goal-id" class="select-style">
@@ -62,6 +81,14 @@
                     </select>
                 {% endif %}
             </div>
+
+            <div id="activity-container" class="hidden">
+                <label for="activity-select">Link to Activity:</label>
+                <select id="activity-select" name="activity-id" class="select-style">
+                    <option value="">None</option>
+                </select>
+            </div>
+
             <button id="addEventButton" class="button-style">Add</button>
         </form>
     </div>
@@ -69,20 +96,29 @@
 
 
 <script>
+    function toggleRecurringOptions(){
+        const isRecurring = document.getElementById("is-recurring");
+        const recurringOptions = document.getElementById("recurring-options");
+
+        if (isRecurring.checked) {
+            recurringOptions.classList.remove("hidden");
+        } else {
+            recurringOptions.classList.add("hidden");
+        }
+    }
+
     function onDateClick(element, date) {
         if (!element.classList.contains('other-month')) {
             window.location.href = '/pmg/day/' + date;
         }
     }
 
-
-<script>
 function fetchActivities(goalId) {
     const activityContainer = document.getElementById('activity-container');
     const activitySelect = document.getElementById('activity-select');
 
     if (goalId) {
-        fetch(`/cal/get_activities/${goalId}`)
+        fetch(`/pmg/get_activities/${goalId}`)
             .then(response => response.json())
             .then(data => {
                 activitySelect.innerHTML = '<option value="">None</option>'; // Återställ alternativen
@@ -92,16 +128,24 @@ function fetchActivities(goalId) {
                     option.textContent = activity.name;
                     activitySelect.appendChild(option);
                 });
-                activityContainer.style.display = 'block'; // Visa aktivitet-listan
+                activityContainer.classList.remove("hidden"); // Visa aktivitet-listan
+                activityContainer.classList.add("input-group") 
             })
             .catch(error => {
                 console.error('Error fetching activities:', error);
             });
     } else {
         activitySelect.innerHTML = '<option value="">None</option>';
-        activityContainer.style.display = 'none';
+        activityContainer.classList.add("hidden"); // Visa aktivitet-listan
+        activityContainer.classList.remove("input-group") 
     }
 }
+
+document.getElementById('goal-select').addEventListener('change', function() {
+    const selectedGoalId = this.value;
+    
+    fetchActivities(selectedGoalId);
+});
 
 function toggleActivityInput() {
     const eventType = document.getElementById('eventType').value;

@@ -5,7 +5,7 @@ from flask import (Blueprint, render_template, redirect, url_for,
 from flask_login import (login_user, logout_user, current_user, login_required)
 from werkzeug.utils import secure_filename
 
-from pmg_func import (common_route,getInfo,filter_mod,add2db,readWords, add_words_from_file)
+from pmg_func import (common_route,getInfo,filter_mod,add2db)
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import  User, Streak, Goals, Activity, Settings, MyWords, Notification
@@ -14,12 +14,12 @@ from flask_mail import Message
 from datetime import datetime, timedelta
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from sqlalchemy.orm import scoped_session
-
+from classes.textHandler import textHandler
 
 
 auth_bp = Blueprint('auth', __name__, template_folder='auth/templates')
-
 s = URLSafeTimedSerializer("K6SM4x14")
+
 
 
 @auth_bp.route('/reset-password', methods=['GET', 'POST'])
@@ -86,6 +86,7 @@ def reset_password_token(token):
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     sida = 'P.M.G'
+    session.permanent = True
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -212,9 +213,6 @@ def confirm_email(token):
             ]
             db.session.add_all(aktiviteter)
 
-            # Lägg till ord från fil
-            add_words_from_file('orden.txt', user.id)
-
             # Lägg till standardinställningar
             imported = Settings(stInterval=5, wImp=True, user_id=user.id)
             db.session.add(imported)
@@ -251,18 +249,7 @@ def settings(section_name=None):
         page_info = getInfo('pageInfo.csv', 'Text-Settings')
         Sett = Settings.query.filter_by(user_id=current_user.id).first()
 
-        if not Sett.wImp:
-            ordet, ord_lista = readWords('orden.txt')
-            for ord in ord_lista:
-                # Kontrollera om ordet redan finns i MyWords för den specifika användaren
-                existing_word = MyWords.query.filter_by(word=ord, user_id=current_user.id).first()
-                if not existing_word:
-                    nyttOrd = MyWords(word=ord, user_id=current_user.id)
-                    db.session.add(nyttOrd)
-                    db.session.commit()
-                stInt = Settings.query.filter_by(user_id=current_user.id).first()
-                stInt.wImp = True
-                db.session.commit()
+
     elif section_name == 'konto':
         sida = 'Konto-inställningar'
         page_info = getInfo('pageInfo.csv', 'Account-Settings')

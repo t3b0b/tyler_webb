@@ -11,6 +11,7 @@ from blueprints.cal import cal_bp
 from blueprints.txt import txt_bp
 from logging.handlers import RotatingFileHandler
 import logging
+from datetime import timedelta
 from flask_migrate import Migrate
 
 def create_app():
@@ -25,6 +26,7 @@ def create_app():
     app.config['MAIL_USERNAME'] = "pmg.automatic.services@gmail.com"
     app.config['MAIL_PASSWORD'] = "gygfvycgvmjybgse"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.permanent_session_lifetime = timedelta(days=2)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@tylerobri.mysql.pythonanywhere-services.com/tylerobri$PMG'
     migrate = Migrate(app, db)
     

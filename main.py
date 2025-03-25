@@ -2,10 +2,11 @@
 from extensions import login_manager
 from app_factory import create_app
 from flask import render_template,request
-from pmg_func import read_info
 from flask_login import current_user
 from models import User
 from dotenv import load_dotenv
+
+
 
 # endregion
 
@@ -30,7 +31,8 @@ def cause_error():
 @app.route('/')
 def home():
     sida = "Hem"
-    info = read_info("texts/unikOrg.txt")
+    #info = read_info("texts/unikOrg.txt")
+    info = "info"
     unik = info.split("*")
     content_header = [unik[i] for i in range(len(unik)) if i % 2 == 0]
     content_text = [unik[i] for i in range(len(unik)) if i % 2 != 0]
