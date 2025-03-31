@@ -32,6 +32,7 @@ def create_app():
     app.config['MAIL_USERNAME'] = "pmg.automatic.services@gmail.com"
     app.config['MAIL_PASSWORD'] = "gygfvycgvmjybgse"
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_recycle': 280,
         'pool_pre_ping': True
     }
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -80,11 +81,3 @@ def create_app():
     # 🛠️ Skapa databastabeller om de inte finns
     with app.app_context():
         db.create_all()
-
-    # 🛠️ Error-handler
-    @app.errorhandler(500)
-    def internal_error(error):
-        app.logger.error(f"Server Error: {error}, User: {current_user.get_id()}, Route: {request.url}, Method: {request.method}, Data: {request.data}")
-        return render_template('500.html', sida='Server Fel', header='Server Fel'), 500
-
-    return app
