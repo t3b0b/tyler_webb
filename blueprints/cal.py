@@ -14,6 +14,37 @@ cal_bp = Blueprint('cal', __name__, template_folder='templates/cal')
 
 cal = Calendar()
 
+#region Milestones
+@cal_bp.route('milestones/<int:goal_id>')
+@login_required
+def milestones(goal_id):
+    return render_template('pmg/milestones.html')
+
+@cal_bp.route('/myday/<date>')
+@login_required
+def myday_date(date):
+    analyzer = UserScores(current_user.id)
+    selected_date = datetime.strptime(date, '%Y-%m-%d').date()
+    session = scoped_session(db.session)
+    now = getSwetime()
+    today = now.date()
+
+    with session.begin():
+        myGoals = filter_mod(Goals, user_id = current_user.id)
+        myStreaks = Streak.query.filter(Streak.user_id == current_user.id, Streak.lastReg != today).all()
+        myScore, total = analyzer.myDayScore(selected_date, current_user.id)
+
+    if selected_date < today:
+        sida='Past Day'
+        return render_template('cal/pastDays.html', sida=sida, header=sida, current_date=selected_date,
+                               my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
+    elif selected_date > today:
+        sida = 'Post Day'
+        return render_template('cal/postDays.html', sida=sida, header=sida, current_date=selected_date,
+                               my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
+    else:
+        return redirect(url_for('pmg.myday'))
+# endregion
 def get_daily_summary(user_id, date=None):
     """
     Hämtar summering av dagens poäng, streaks och avklarade streaks.

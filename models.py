@@ -145,9 +145,9 @@ class Activity(db.Model):
     shared_item_id = db.Column(db.Integer, db.ForeignKey('shared_items.id'), nullable=True)  # Koppling till shared_items
     shared_item = db.relationship('SharedItem', backref='shared_activities', lazy=True)
 
-    todo_list = db.relationship('ToDoList', backref='activity', lazy=True)
+    todo_list = db.relationship('Tasks', backref='activity', lazy=True)
 
-class ToDoList(db.Model):
+class Tasks(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task = db.Column(db.String(255), nullable=False)
     completed = db.Column(db.Boolean, default=False)
@@ -166,7 +166,7 @@ class ToDoList(db.Model):
     completed_repeats = db.Column(db.Integer, nullable=True, default=0)
 
     shared_item = db.relationship('SharedItem', backref='tasks')
-    subtasks = db.relationship('SubTask', backref='task', lazy=True)
+    subtasks = db.relationship('SubTask', backref='tasks', lazy=True)
 
     def add_repeat(self):
         if self.is_repeatable:
@@ -179,7 +179,7 @@ class SubTask(db.Model):
     name = db.Column(db.String(255), nullable=False)  # Namnet på subtasken
     completed = db.Column(db.Boolean, default=False)  # Om subtasken är klar
     order = db.Column(db.Integer, default=0)
-    task_id = db.Column(db.Integer, db.ForeignKey('to_do_list.id'), nullable=False)  # Koppling till huvudtasken
+    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)  # Koppling till huvudtasken
 
     def __repr__(self):
         return f"<SubTask {self.name}, Completed: {self.completed}>"

@@ -22,7 +22,7 @@
                 {% if activity.shared_item_id %}
                     <span class="shared-indicator">(Shared)</span>
                 {% endif %}
-                <form action="{{ url_for('pmg.delete_activity', activity_id=activity.id) }}" method="POST" style="display: inline;">
+                <form action="{{ url_for('activities.delete_activity', activity_id=activity.id) }}" method="POST" style="display: inline;">
                     <button type="submit" class="tgl-btn" onclick="event.stopPropagation();">&#10060;</button>
                 </form>
             </div>

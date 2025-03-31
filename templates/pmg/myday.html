@@ -32,7 +32,7 @@
 <div id="day-section" class="grid-container">
     <div id="score-section" class="list-container" style="width: 90%;height: 60vh;">
         <div class="list-header">
-            <h3 onclick="window.location.href = '/pmg/streak';">My Week</h3>
+            <h3 onclick="window.location.href = '/streaks/streak';">My Week</h3>
         </div>
         <div class="list-content">
             <img style=" width:100%; height: 100%" src="data:image/png;base64,{{ plot_url }}" alt="Aktivitetsgraf"/>
@@ -40,14 +40,14 @@
     </div>
 
     <div id="startaAktivitet" class="button-center">
-        <a  href="{{ url_for('pmg.goals', start_activity=1) }}" >
+        <a  href="{{ url_for('goals.goals', start_activity=1) }}" >
             <button class="button-style" style="border-radius: 50%; min-height: 15vh; min-width: 15vh; background-color: mediumseagreen; font-size: 0.7rem" type="submit">New</button>
         </a>
     </div>
 
     <div id="streak-section" class="list-container" style="width: 90%; height: 60vh;">
         <div class="list-header">
-            <h3 onclick="window.location.href = '/pmg/streak';">Streaks</h3>
+            <h3 onclick="window.location.href = '/streaks/streak';">Streaks</h3>
         </div>
         {% if my_streaks %}
             <div class="list-content">
@@ -55,7 +55,7 @@
                 <div class="list-item">
                     <label>{{ streak.name }}</label>
                     <label>Count: {{ streak.count }}</label>
-                    <form action="{{ url_for('pmg.update_streak', streak_id=streak.id, action='check') }}" method="post" style="display: flex; justify-content: center; align-items: center;">
+                    <form action="{{ url_for('streaks.update_streak', streak_id=streak.id, action='check') }}" method="post" style="display: flex; justify-content: center; align-items: center;">
                         {% if streak.type == "number" %}
                             <label>{{ streak.yesterday_value }}</label>
                             <input type="number" name="amount" style="background: #f0f0f0; height: 20px; width: 40px; text-align: center; margin-left: 10px;">

@@ -121,11 +121,11 @@
                     {{ task.completed_subtasks }} / {{ task.subtask_count }}
                 </span>
                 <div class="task-actions">
-                    <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
+                    <form method="POST" action="{{ url_for('tasks.update_task', activity_id=activity.id, task_id=task.id) }}">
                         <input type="hidden" name="origin" value="todo">
                         <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
                     </form>
-                    <form method="POST" action="{{ url_for('pmg.delete_task', activity_id=activity.id, task_id=task.id) }}" style="display: inline;">
+                    <form method="POST" action="{{ url_for('tasks.delete_task', activity_id=activity.id, task_id=task.id) }}" style="display: inline;">
                         <input type="hidden" name="page" value="fokus">
                         <button type="submit" class="delete-btn" onclick="return confirm('Är du säker på att du vill radera denna task?')">🗑️</button>
                     </form>
@@ -136,7 +136,7 @@
                     <li class="subtask-item" id="subtask-{{ subtask.id }}" draggable="true"
                     ondragstart="dragStart(event)" ondragover="allowDrop(event)" ondrop="dropTask(event)">
                         <span>{{ subtask.name }}</span>
-                        <form method="POST" action="{{ url_for('pmg.update_subtask', subtask_id=subtask.id) }}">
+                        <form method="POST" action="{{ url_for('tasks.update_subtask', subtask_id=subtask.id) }}">
                             <input type="hidden" name="page" value="fokus">
                             <input type="checkbox" name="completed" onchange="this.form.submit()" {% if subtask.completed %}checked{% endif %}>
                         </form>
@@ -144,7 +144,7 @@
                 {% endfor %}
 
                 <!-- Form för att lägga till ny subtask -->
-                <form method="POST" action="{{ url_for('pmg.add_subtask', task_id=task.id) }}" class="add-form-container">
+                <form method="POST" action="{{ url_for('tasks.add_subtask', task_id=task.id) }}" class="add-form-container">
                     <input type="hidden" name="page" value="fokus">
                     <input type="text" name="subtask_name" placeholder="Enter new subtask" required>
                     <button type="submit">Add</button>
@@ -156,7 +156,7 @@
             <p>No tasks found for this activity.</p>
         {% endif %}
 
-        <form action="{{ url_for('pmg.add_task', activity_id=activity.id) }}" method="POST">
+        <form action="{{ url_for('tasks.add_task', activity_id=activity.id) }}" method="POST">
             <input type="hidden" name="actId" value="{{ activity.id }}" style="display: none">
             <input type="hidden" name="page" value="fokus" style="display: none">
             <input type="text" name="task_name" placeholder="Enter new task" required>
@@ -172,7 +172,7 @@
             {% for note in activity_notes %}
                 <div class="list-item">
                     <h5 class="note-title" onclick="toggleList(this)" style="cursor: pointer;" data-note-id="{{ note.id }}">{{ note.title }}</h5>
-                    <form method="POST" action="{{ url_for('pmg.update_note', note_id=note.id) }}" class="note-form" style="display:inline;">
+                    <form method="POST" action="{{ url_for('activities.update_note', note_id=note.id) }}" class="note-form" style="display:inline;">
                         <div>
                             <textarea name="content" style="height:300px; max-height: 60%">{{ note.content }}</textarea>
                         </div>
@@ -182,7 +182,7 @@
             {% endfor %}
         {% endif %}
         <div class="activity-notes-">
-            <form method="POST" action="{{ url_for('pmg.create_notebook', activity_id=activity.id) }}">
+            <form method="POST" action="{{ url_for('activities.create_notebook', activity_id=activity.id) }}">
                 <div>
                     <label for="notebook-title">New Notebook:</label>
                     <input type="text" id="notebook-title" name="title" required>

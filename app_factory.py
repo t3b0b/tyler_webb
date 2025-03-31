@@ -3,12 +3,18 @@ import sshtunnel
 from flask import Flask
 from dotenv import load_dotenv
 from extensions import db, mail, csrf, login_manager
+
 from blueprints.auth import auth_bp
 from blueprints.pmg import pmg_bp
 from blueprints.base import base_bp
 from blueprints.friends import friends_bp
+from blueprints.activities import activities_bp
 from blueprints.cal import cal_bp
 from blueprints.txt import txt_bp
+from blueprints.streaks import streaks_bp
+from blueprints.goals import goals_bp
+from blueprints.tasks import tasks_bp
+
 from logging.handlers import RotatingFileHandler
 import logging
 from datetime import timedelta
@@ -55,6 +61,10 @@ def create_app():
     app.register_blueprint(friends_bp, url_prefix='/friends')
     app.register_blueprint(cal_bp, url_prefix='/cal')
     app.register_blueprint(txt_bp, url_prefix='/txt')
+    app.register_blueprint(activities_bp,url_prefix='/activities')
+    app.register_blueprint(tasks_bp,url_prefix='/tasks')
+    app.register_blueprint(streaks_bp,url_prefix='/streaks')
+    app.register_blueprint(goals_bp,url_prefix='/goals')
 
     app.config['UPLOAD_FOLDER'] = 'static/uploads'
     app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}

@@ -1,11 +1,44 @@
-from flask import Blueprint, request, render_template, redirect, url_for, flash
-from flask_login import current_user, login_required
 from extensions import db
+from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
+from models import (User,Friendship,Notification)
 from datetime import datetime
-from models import User, Friendship, Message
-from pmg_func import create_notification
+from pmg_func import (common_route, create_notification)
+
+from flask_login import current_user, login_required
+
+
+from classes.scoreHandler import ScoreAnalyzer,UserScores
+from classes.textHandler import textHandler
+from classes.plotHandler import PlotHandler
+
+scorehand = ScoreAnalyzer()
+datahand = PlotHandler()
+texthand = textHandler()
+
+
 
 friends_bp = Blueprint('friends', __name__)
+
+@friends_bp.route('/notifications/unread', methods=['GET'])
+@login_required
+def get_unread_notifications():
+    notifications = Notification.query.filter_by(user_id=current_user.id, is_read=False).order_by(Notification.created_at.desc()).all()
+    return jsonify([{
+        'id': notification.id,
+        'message': notification.message,
+        'created_at': notification.created_at.strftime('%Y-%m-%d %H:%M:%S')
+    } for notification in notifications])
+
+@friends_bp.route('/notifications/mark_as_read', methods=['POST'])
+def mark_notifications_as_read():
+    try:
+        data = request.get_json()  # Kontrollera inkommande JSON
+        notification_ids = data.get('notificationIds', [])
+        # Validera och uppdatera
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
 
 def common_route(title,sub_url,sub_text):
     sida = title
