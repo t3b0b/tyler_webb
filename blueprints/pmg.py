@@ -22,7 +22,6 @@ scorehand = ScoreAnalyzer()
 datahand = PlotHandler()
 texthand = textHandler()
 
-
 pmg_bp = Blueprint('pmg', __name__, template_folder='templates/pmg')
 
 Questions = {
@@ -56,14 +55,12 @@ Questions = {
                     "Vad kan du göra för att underlätta den här dagen?"],
 }
 
-
 # region Start
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 @login_required
 def myday():
     analyzer = UserScores(current_user.id)
-
-    sida, sub_menu = common_route("Min Grind", ['/pmg/timebox'], ['My Day'])
+    sida, sub_menu = common_route("Min Grind", ['/cal/timebox'], ['My Day'])
     now = getSwetime()
     today = now.date()  # Hämta aktuell tid
     yesterday = datetime.now().date() - timedelta(days=1)
@@ -108,6 +105,7 @@ def myday():
     for activity, total_time in actTime.items():
         print(f"Activity: {activity}, Total tid: {total_time} min")
 
+    # ladda Amount till streaks
     for streak in myStreaks:
                 yesterday_score = db.session.query(Score.Amount).filter(
                     Score.Streak == streak.id,
@@ -213,3 +211,5 @@ def focus_room(activity_id):
 
     return render_template('pmg/focus_room.html',activity_notes=activity_notes, activity=activity, tasks=tasks, current_date=current_date,goal_id=goal_id)
 
+def GetScore:
+    score = Score.query.filter_by(user_id=current_user.id).all()

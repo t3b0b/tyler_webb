@@ -1,9 +1,9 @@
 import os
 import sshtunnel
-from flask import Flask
+from flask import Flask, render_template,request
+from flask_login import current_user
 from dotenv import load_dotenv
 from extensions import db, mail, csrf, login_manager
-
 from blueprints.auth import auth_bp
 from blueprints.pmg import pmg_bp
 from blueprints.base import base_bp
@@ -31,6 +31,9 @@ def create_app():
     app.config['MAIL_PORT'] = 465
     app.config['MAIL_USERNAME'] = "pmg.automatic.services@gmail.com"
     app.config['MAIL_PASSWORD'] = "gygfvycgvmjybgse"
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True
+    }
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.permanent_session_lifetime = timedelta(days=2)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@tylerobri.mysql.pythonanywhere-services.com/tylerobri$PMG'
