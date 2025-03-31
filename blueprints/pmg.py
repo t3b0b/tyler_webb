@@ -3,7 +3,7 @@ from extensions import db
 import random
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from models import (User, Streak, Goals, Friendship, Notes, SharedItem, Notification,
-                    Activity, Score, ToDoList, TopFive, SubTask)
+                    Activity, Score, Tasks, TopFive, SubTask)
 from datetime import datetime, timedelta, date
 from sqlalchemy import and_
 from pmg_func import (common_route, add2db, getSwetime,get_user_goals,get_user_tasks,update_streak_details,
@@ -244,7 +244,7 @@ def goals():
             goal_id = request.form.get('goalId')
             task_content = request.form.get('task')
             if goal_id and task_content:
-                new_task = ToDoList(task=task_content, goal_id=goal_id, user_id=current_user.id)
+                new_task = Tasks(task=task_content, goal_id=goal_id, user_id=current_user.id)
                 db.session.add(new_task)
                 db.session.commit()
             return redirect(url_for('pmg.goals'))
@@ -404,7 +404,7 @@ def delete_goal(goal_id):
         # Radera relaterade aktiviteter och tasks
         for activity in goal.activities:
             # Ta bort relaterade tasks
-            ToDoList.query.filter_by(activity_id=activity.id).delete()
+            Tasks.query.filter_by(activity_id=activity.id).delete()
 
             # Ta bort relaterade notes
             Notes.query.filter_by(activity_id=activity.id).delete()
@@ -609,7 +609,7 @@ def update_task_order():
     # Uppdatera ordningen för varje task och subtask
     for task_data in data:
         task_id = int(task_data['id'])
-        task = ToDoList.query.get(task_id)
+        task = Tasks.query.get(task_id)
         if task:
             task.order = task_data['order']
             db.session.add(task)
@@ -653,7 +653,7 @@ def focus_room(activity_id):
         task_id = request.json.get('taskId')
         completed = request.json.get('completed')
 
-        task = ToDoList.query.get_or_404(task_id)
+        task = Tasks.query.get_or_404(task_id)
         task.completed = completed
         db.session.commit()
 
@@ -669,7 +669,7 @@ def delete_activity(activity_id):
 
     try:
         # Ta bort relaterade tasks
-        ToDoList.query.filter_by(activity_id=activity.id).delete()
+        Tasks.query.filter_by(activity_id=activity.id).delete()
 
         # Ta bort relaterade notes
         Notes.query.filter_by(activity_id=activity.id).delete()
@@ -755,7 +755,7 @@ def activity_tasks(activity_id):
 
 @pmg_bp.route('/activity/<int:activity_id>/update_task/<int:task_id>', methods=['GET','POST'])
 def update_task(activity_id, task_id):
-    task = ToDoList.query.get_or_404(task_id)
+    task = Tasks.query.get_or_404(task_id)
 
     # Hämta den nya statusen från formuläret
     completed = 'completed' in request.form  # Checkbox skickar bara värde om den är markerad
@@ -795,7 +795,7 @@ def add_task(activity_id):
         return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
 
     # Skapa ny task
-    new_task = ToDoList(
+    new_task = Tasks(
         task=task_name,
         completed=False,
         is_repeatable=is_repeatable,
@@ -830,7 +830,7 @@ def add_task(activity_id):
 @login_required
 def delete_task(activity_id, task_id):
     # Hämta tasken
-    task = ToDoList.query.get_or_404(task_id)
+    task = Tasks.query.get_or_404(task_id)
 
     # Kontrollera om användaren har åtkomst till aktiviteten
     if task.activity_id != activity_id:
@@ -858,7 +858,7 @@ def delete_task(activity_id, task_id):
 @pmg_bp.route('/task/<int:task_id>/add_subtask', methods=['POST'])
 @login_required
 def add_subtask(task_id):
-    task = ToDoList.query.get_or_404(task_id)
+    task = Tasks.query.get_or_404(task_id)
     subtask_name = request.form.get('subtask_name')
 
     if not subtask_name:
@@ -887,7 +887,7 @@ def update_subtask(subtask_id):
 
     # 🟢 Hämta alla subtasks för denna task
     all_subtasks = SubTask.query.filter_by(task_id=subtask.task_id).all()
-    task = ToDoList.query.get(subtask.task_id)
+    task = Tasks.query.get(subtask.task_id)
 
     # 🔍 Kontrollera om alla subtasks är avklarade
     if all(sub.completed for sub in all_subtasks):  # Om alla subtasks är klara
@@ -906,7 +906,7 @@ def update_subtask(subtask_id):
 @pmg_bp.route('/task/<int:task_id>/subtasks', methods=['GET'])
 @login_required
 def get_subtasks(task_id):
-    task = ToDoList.query.get_or_404(task_id)
+    task = Tasks.query.get_or_404(task_id)
     subtasks = SubTask.query.filter_by(task_id=task_id).order_by(SubTask.completed.asc()).all()
 
     return render_template('pmg/subtasks.html', task=task, subtasks=subtasks)

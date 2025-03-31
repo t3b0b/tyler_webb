@@ -1,5 +1,5 @@
 from models import (Streak, Goals, Friendship, 
-                    Activity, Score,ToDoList,SharedItem,
+                    Activity, Score,Tasks,SharedItem,
                     Notification)
 from extensions import db
 
@@ -364,13 +364,13 @@ def get_user_tasks(user_id, model, activity_id=None):
     activity_ids = [activity.id for activity in all_activities]
 
     # Om activity_id anges, filtrera på den specifika aktiviteten
-    query = ToDoList.query.filter(ToDoList.activity_id.in_(activity_ids))
+    query = Tasks.query.filter(Tasks.activity_id.in_(activity_ids))
     if activity_id:
-        query = query.filter(ToDoList.activity_id == activity_id)
+        query = query.filter(Tasks.activity_id == activity_id)
 
     # Ladda subtasks och sortera tasks
-    tasks = query.options(db.joinedload(ToDoList.subtasks)).order_by(
-        ToDoList.completed.desc(), ToDoList.task.asc()
+    tasks = query.options(db.joinedload(Tasks.subtasks)).order_by(
+        Tasks.completed.desc(), Tasks.task.asc()
     ).all()
 
     # Lägg till antalet avklarade och oavklarade deluppgifter
