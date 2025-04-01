@@ -6,13 +6,17 @@ from models import (Streak, Goals,Activity, Score,Event,TopFive)
 
 from datetime import datetime, timedelta
 
-from pmg_func import (common_route)
+from pmg_func import (getSwetime,common_route,filter_mod)
 from classes.calHandler import Calendar,UserCalendar
 from flask_login import current_user, login_required
+
+from classes.scoreHandler import ScoreAnalyzer,UserScores
+from classes.calHandler import Calendar
 
 cal_bp = Blueprint('cal', __name__, template_folder='templates/cal')
 
 cal = Calendar()
+scoreHandler = ScoreAnalyzer()
 
 #region Milestones
 @cal_bp.route('milestones/<int:goal_id>')

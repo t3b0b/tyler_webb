@@ -14,11 +14,6 @@ load_dotenv()
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-@app.errorhandler(500)
-def internal_error(error):
-    app.logger.error(f"Server Error: {error}, User: {current_user.get_id()}, Route: {request.url}, "
-                     f"Method: {request.method}, Data: {request.data}")
-    return render_template('500.html',sida='Server Fel',header='Server Fel'), 500
 
 # Exempelrutt som kan orsaka ett fel
 @app.route('/cause_error')

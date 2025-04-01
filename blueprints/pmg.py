@@ -74,14 +74,7 @@ def myday():
 
     this_week_scores, activity_scores = analyzer.get_scores_by_period('week',today)
     last_week_scores,lastweek_activity_scores=analyzer.get_scores_by_period('week',today-timedelta(days=7))
-
-    for row in last_week_scores:
-        goal = row.goalName or "Okänt mål"
-        activity = row.actName or "Okänd aktivitet"
-        time = row.Time
-        date = row.Date
-        print(f"Mål: {goal}, Aktivitet: {activity}, Tid: {time}, Datum: {date}")
-
+    print (last_week_scores)
    # plot_url = create_week_comparison_plot(this_week_scores, last_week_scores)
 
     goalTime = analyzer.sumGoal(last_week_scores)
@@ -90,11 +83,6 @@ def myday():
 
     actTime = analyzer.sumAct(last_week_scores)
 
-    for day, total_time in thisWeek.items():
-        print(f"Day: {day}, Total tid: {total_time} min")
-
-    for goal, total_time in goalTime.items():
-        print(f"Mål: {goal}, Total tid: {total_time} min")
 
     goal_plot = datahand.create_grouped_bar_plot(
         data_dicts=[thisWeek,lastWeek],
@@ -102,8 +90,6 @@ def myday():
         title="Tid per dag", 
         ylabel="Tid (min)")
 
-    for activity, total_time in actTime.items():
-        print(f"Activity: {activity}, Total tid: {total_time} min")
 
     # ladda Amount till streaks
     for streak in myStreaks:
@@ -210,6 +196,3 @@ def focus_room(activity_id):
         return jsonify({"success": True}), 200
 
     return render_template('pmg/focus_room.html',activity_notes=activity_notes, activity=activity, tasks=tasks, current_date=current_date,goal_id=goal_id)
-
-def GetScore:
-    score = Score.query.filter_by(user_id=current_user.id).all()

@@ -23,6 +23,7 @@ def goals():
     start_activity = request.args.get('start_activity', None)
 
     if request.method == 'POST':
+
         if 'addGoal' in request.form['action']:
             goal_name = request.form.get('goalName')
             friend_id = request.form.get('friend_id')
@@ -129,6 +130,7 @@ def goals():
                        Friendship.query.filter_by(friend_id=current_user.id, status='accepted').all()
     accepted_user_ids = [friend.user_id if friend.user_id != current_user.id else friend.friend_id for friend in
                          accepted_friends]
+    
     friends = User.query.filter(User.id.in_(accepted_user_ids)).all()
 
     return render_template('pmg/goals.html',
