@@ -245,6 +245,13 @@
     });
 
     function updateEndTime() {
+        const locale = 'sv-SE';
+        const options = {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false
+        };
+
         const startTimeStr = startInput.value;
         const scoreMinutes = parseInt(scoreInput.value, 10) || 0; // Hämta score i minuter, standardvärde 0
 
@@ -254,10 +261,10 @@
 
         if (isNaN(startTime.getTime())) return; // Avbryt om startTime är ogiltigt
 
-        startTime.setMinutes(startTime.getMinutes() + scoreMinutes+60); // Lägg till score-minuter
+        startTime.setMinutes(startTime.getMinutes() + scoreMinutes); // Lägg till score-minuter
 
-        // Uppdatera End Time-fältet i format 'YYYY-MM-DD HH:MM:SS'
-        endInput.value = startTime.toISOString().slice(0, 19).replace("T", " ");
+        // Uppdatera End Time-fältet i format 'YYYY-MM-DD HH:MM:SS' i lokal tid
+        endInput.value = new Intl.DateTimeFormat(locale, options).format(startTime).replace(",", "");
     }
 });
         let draggedItem = null;

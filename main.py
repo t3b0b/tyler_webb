@@ -14,11 +14,12 @@ load_dotenv()
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-
 # Exempelrutt som kan orsaka ett fel
 @app.route('/cause_error')
 def cause_error():
     raise Exception("This is a test exception")
+
+
 
 #region Userless
 @app.route('/')

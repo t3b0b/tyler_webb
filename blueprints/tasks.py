@@ -56,12 +56,12 @@ def update_task(activity_id, task_id):
 
     # Omdirigera till rätt sida baserat på ursprungssidan
     if page == 'todo':
-        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
-    elif page == 'focus':
+        return redirect(url_for('tasks.activity_tasks', activity_id=activity_id))
+    elif page == 'fokus':
         return redirect(url_for('pmg.focus_room', activity_id=activity_id))
 
     # Om ingen origin skickas med, omdirigera till standard-sidan
-    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+    return redirect(url_for('tasks.activity_tasks', activity_id=activity_id))
 
 
 @tasks_bp.route('/activity/<int:activity_id>/add_task', methods=['POST'])
@@ -82,7 +82,7 @@ def add_task(activity_id):
     # Validera task-namn
     if not task_name:
         flash("Task name is required", "danger")
-        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+        return redirect(url_for('tasks.activity_tasks', activity_id=activity_id))
 
     # Skapa ny task
     new_task = Tasks(
@@ -114,7 +114,7 @@ def add_task(activity_id):
         return redirect(url_for('pmg.focus_room', activity_id=activity_id))
     elif 'list' in request.form.get('page'):
         flash("Task added successfully", "success")
-        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+        return redirect(url_for('tasks.activity_tasks', activity_id=activity_id))
 
 
 @tasks_bp.route('/activity/<int:activity_id>/delete_task/<int:task_id>', methods=['POST'])
@@ -126,12 +126,12 @@ def delete_task(activity_id, task_id):
     # Kontrollera om användaren har åtkomst till aktiviteten
     if task.activity_id != activity_id:
         flash("Ogiltig förfrågan: Aktiviteten matchar inte.", "danger")
-        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+        return redirect(url_for('tasks.activity_tasks', activity_id=activity_id))
 
     # Kontrollera om användaren är ägare till tasken eller att aktiviteten är delad
     if not current_user.id == task.user_id:
         flash("Du har inte behörighet att ta bort denna task.", "danger")
-        return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+        return redirect(url_for('tasks.activity_tasks', activity_id=activity_id))
 
     try:
         db.session.delete(task)
@@ -141,7 +141,7 @@ def delete_task(activity_id, task_id):
         db.session.rollback()
         flash(f"Något gick fel vid raderingen: {str(e)}", "danger")
 
-    return redirect(url_for('pmg.activity_tasks', activity_id=activity_id))
+    return redirect(url_for('tasks.activity_tasks', activity_id=activity_id))
 
 # endregion
 

@@ -32,6 +32,7 @@
                 <button class="page-toggle-btn" onclick="window.location.href='/cal/timebox'">Day</button>
             </div>
         </div>
+
         <div class="scrollable">
             <table>
                 <thead>
@@ -52,16 +53,17 @@
                     <td>{{ '{:02d}:00'.format(hour) }}</td>
 
                     {% for day_str in week_dates %}
-                        <td>
+                        <td style="position: relative;">
                             {% if week_scores.get(day_str) %}
                                 {% for score in week_scores[day_str] %}
                                     {% if score.Start.hour <= hour and hour <= score.End.hour %}
-                                        <div>
-                                            {{ score.activity_name }} <!--<br>
-                                         Från: {{ score.Start.strftime('%H:%M') }}<br>
-                                            Till: {{ score.End.strftime('%H:%M') }}<br> -->
-                                            {{ score.Time }} minuter
+                                        {% set relative_start = (score.Start.hour - hour) * 100 %}
+                                        {% set height = score.duration_hours * 100 %}
+                                        {% if 0 <= relative_start < 100 %}
+                                        <div style="position:absolute;top:{{relative_start}}%;height:{{height}}%;width:90%;left:5%;background:#add8e6;border:1px solid #555;">
+                                            {{ score.activity_name }} - {{ score.minutes }} min
                                         </div>
+                                        {% endif %}
                                     {% endif %}
                                 {% endfor %}
                             {% endif %}
@@ -73,7 +75,6 @@
             </table>
         </div>
     </div>
-
 
 <script>
 function toggleList(element) {

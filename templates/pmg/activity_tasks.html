@@ -37,11 +37,11 @@
                     <span class="shared-indicator">(Shared)</span>
                 {% endif %}
                 <div class="task-actions">
-                    <form method="POST" action="{{ url_for('pmg.update_task', activity_id=activity.id, task_id=task.id) }}">
+                    <form method="POST" action="{{ url_for('tasks.update_task', activity_id=activity.id, task_id=task.id) }}">
                         <input type="hidden" name="page" value="list">
                         <input type="checkbox" name="completed" value="list" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
                     </form>
-                    <form method="POST" action="{{ url_for('pmg.delete_task', activity_id=activity.id, task_id=task.id) }}" style="display: inline;">
+                    <form method="POST" action="{{ url_for('tasks.delete_task', activity_id=activity.id, task_id=task.id) }}" style="display: inline;">
                         <input type="hidden" name="page" value="list">
                         <button type="submit" class="delete-btn" onclick="return confirm('Är du säker på att du vill radera denna task?')">🗑️</button>
                     </form>
@@ -51,7 +51,7 @@
                 {% for subtask in task.subtasks %}
                     <li class="list-item">
                         <span>{{ subtask.name }}</span>
-                        <form method="POST" action="{{ url_for('pmg.update_subtask', subtask_id=subtask.id) }}">
+                        <form method="POST" action="{{ url_for('tasks.update_subtask', subtask_id=subtask.id) }}">
                             <input type="hidden" name="page" value="list">
                             <input type="checkbox" name="completed" onchange="this.form.submit()" {% if subtask.completed %}checked{% endif %}>
                         </form>
@@ -59,7 +59,7 @@
                 {% endfor %}
 
                 <!-- Form för att lägga till ny subtask -->
-                <form method="POST" action="{{ url_for('pmg.add_subtask', task_id=task.id) }}" class="add-form-container">
+                <form method="POST" action="{{ url_for('tasks.add_subtask', task_id=task.id) }}" class="add-form-container">
                     <input type="text" name="subtask_name" placeholder="Enter new subtask" required>
                     <input type="hidden" name="page" value="list">
                     <button type="submit">Add</button>
@@ -73,7 +73,7 @@
     </div>
 </div>
 <div class="add-form-container">
-    <form action="{{ url_for('pmg.add_task', activity_id=activity.id) }}" method="POST" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+    <form action="{{ url_for('tasks.add_task', activity_id=activity.id) }}" method="POST" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
         <input type="hidden" name="page" value="list">
         <input type="text" name="task_name" placeholder="New Task Name" required>
 

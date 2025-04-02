@@ -182,6 +182,7 @@ def day_view(date):
 @cal_bp.route('/month/<int:year>/<int:month>')
 @login_required
 def month(year=None, month=None):
+
     sida, sub_menu = common_route('Min Månad', ['/cal/month', '/cal/week', '/cal/timebox'],
                                   ['Min Månad', 'Min Vecka', 'Min Dag'])
 
@@ -207,6 +208,30 @@ def month(year=None, month=None):
 
     return render_template('cal/month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida,
                            sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data)
+
+def prepWeekData(scores):
+    """
+    Konverterar score-objekt till en struktur med 'start_hour' och 'duration_in_hours'.
+    """
+    processed = {}
+
+    for score in scores:
+        date_str = score.Date.strftime('%Y-%m-%d')
+        if date_str not in processed:
+            processed[date_str] = []
+
+        start_hour = score.Start.hour + score.Start.minute / 60
+        duration = score.Time / 60  # omvandla till timmar
+
+        processed[date_str].append({
+            'activity_name': score.activity_name,
+            'Start': score.Start,
+            'End': score.End,
+            'duration_hours': duration,
+            'minutes': score.Time
+        })
+
+    return processed
 
 @cal_bp.route('/week', methods=['GET', 'POST'])
 @login_required
@@ -241,6 +266,9 @@ def week():
 
     # Organize scores by day and hour
     week_scores = {date: [] for date in week_dates}  # Initiera alla datum i veckan med tomma listor
+    
+    weekData = prepWeekData(scores)
+
     for score in scores:
         day_str = score.Date.strftime('%Y-%m-%d')
         week_scores[day_str].append(score)
@@ -299,7 +327,7 @@ def week():
         remember_list = remember_list.content.split(',')
     else:
         remember_list = []
-    return render_template('cal/myWeek.html', sida='Veckoplanering', week_scores=week_scores, header='Veckoplanering',
+    return render_template('cal/myWeek.html', sida='Veckoplanering', week_scores=weekData, header='Veckoplanering',
                            total_score=0, sub_menu=sub_menu, bullet=bullet, timedelta=timedelta,
                            week=week_num, week_dates=week_dates, to_do_list=to_do_list, to_think_list=to_think_list,
                            remember_list=remember_list, current_date=current_date)
