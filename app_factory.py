@@ -27,7 +27,7 @@ def create_app():
     app = Flask(__name__)
 
     # 🛠️ Ladda konfiguration a,dnam,dn.
-    app.config['SECRET_KEY'] =  os.getenv("SECRET_KEY")
+    app.config['SECRET_KEY'] =  os.getenv("SECRET_KEY","K6SM4x14")
     app.config['MAIL_SERVER'] = os.getenv("MAIL_SERVER")
     app.config['MAIL_USE_SSL'] = True
     app.config['MAIL_PORT'] = os.getenv("MAIL_PORT")
