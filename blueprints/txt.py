@@ -101,6 +101,7 @@ def journal():
     activity_names = [act.name for act in my_act]
     texthand=userText(current_user.id)
     topFiveList = []  # Se till att variabeln alltid har ett värde
+
     if not section_name:
         return redirect(url_for('txt.journal', section_name='Mina Ord'))
 
@@ -226,7 +227,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
 #                    add2db(WhyGoals,request,['post-ord','blogg-content','goal'],['title','text','goal'],user)
             elif option == "write-on-time":
                 add2db(Score, request, ['gID', 'aID', 'aDate', 'start', 'end', 'score'],
-                               ['Goal', 'Activity', 'Date', 'Start', 'End', 'Time'], user)
+                               ['Goal', 'Activity', 'Date', 'Start', 'End', 'Time'], current_user)
                 if sida == 'Dagbok':
                     add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
                 elif sida == 'Mina Ord':

@@ -21,18 +21,17 @@ from datetime import timedelta
 from flask_migrate import Migrate
 
 def create_app():
-
     load_dotenv()  # Ladda miljövariabler från .env-filen
     
     app = Flask(__name__)
 
     # 🛠️ Ladda konfiguration a,dnam,dn.
-    app.config['SECRET_KEY'] =  os.getenv("SECRET_KEY","K6SM4x14")
-    app.config['MAIL_SERVER'] = os.getenv("MAIL_SERVER")
+    app.config['SECRET_KEY'] = os.getenv("SECRET_KEY",'K6SM4x14')
+    app.config['MAIL_SERVER'] = os.getenv("MAIL_SERVER","smtp.gmail.com")
     app.config['MAIL_USE_SSL'] = True
-    app.config['MAIL_PORT'] = os.getenv("MAIL_PORT")
-    app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME")
-    app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
+    app.config['MAIL_PORT'] = os.getenv("MAIL_PORT",465)
+    app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME","pmg.automatic.services@gmail.com")
+    app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD","gygfvycgvmjybgse")
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_recycle': 280,
         'pool_pre_ping': True
@@ -51,7 +50,7 @@ def create_app():
         tunnel.start()
         app.config['SQLALCHEMY_DATABASE_URI'] = f'{os.getenv("LOCAL_DB_URI")}{tunnel.local_bind_port}/{os.getenv("DB_NAME")}'
     else:
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tylerobri:Tellus420@tylerobri.mysql.pythonanywhere-services.com/tylerobri$PMG'
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
 
     # 🛠️ Initiera Flask-tillägg
     db.init_app(app)

@@ -47,6 +47,7 @@ function stopActivity(event) {
     if (event) {
         event.preventDefault(); // Förhindra sidomladdning
     }
+    
     const closeTime = new Date(); // Spara stopptiden
     localStorage.setItem('active', false);
     localStorage.setItem('end', closeTime.getTime()); // Spara UNIX-tid istället för UTC
@@ -55,6 +56,8 @@ function stopActivity(event) {
     const startStored = localStorage.getItem('start');
     const endStored = localStorage.getItem('end');
     const activityId = localStorage.getItem('selectedActivityId');
+    const timeless = document.getElementById('time-less')
+    const writeOnTime = document.getElementById("write-on-time");
 
     if (startStored && endStored && activityId) {
         // Omvandla UNIX-tid till lokal tid
@@ -80,9 +83,10 @@ function stopActivity(event) {
         document.getElementById("aDate").classList.remove("hidden");
         document.getElementById("complete-form").classList.remove("hidden");
         document.getElementById("continueButton").classList.remove("hidden");
+
     }
     
-    document.getElementById('stopButton').classList.add ("hidden");
+    document.getElementById('stopButton').classList.add("hidden");
 
     // **Beräkna elapsed time korrekt**
     if (startStored) {

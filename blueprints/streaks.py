@@ -36,7 +36,7 @@ def streak():
                         'lastReg','dayOne']
         add2db(Streak, request, form_fields, model_fields, current_user)
 
-        return redirect(url_for('pmg.streak'))
+        return redirect(url_for('streaks.streak'))
     return render_template('pmg/streak.html', sida=sida, header=sida,
                            todayDate=current_date, streaks=myStreaks, sub_menu=sub_menu,
                            goals=myGoals)

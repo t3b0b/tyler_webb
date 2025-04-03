@@ -70,17 +70,17 @@
                     <label for="endValue">End:</label>
                     <input id="endValue" type="text" name="end" class="input-half">
                 </div>
-                <div class="button-center">
-                    <button id="stopButton" class="button-style hidden" style="background-color:red" onclick="stopActivity(event)">Stop</button>
+                <div id="StopBtn" class="button-center hidden">
+                    <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity(event)">Stop</button>
                 </div>
                 <div class="input-group hidden" id="elapsedTime">
                     <label for="scoreValue">Score:</label>
                     <input id="scoreValue" type="number" name="score" class="input-half" oninput="updateEndTime()">
                 </div>
                 <div class="input-group">
-                    <div class="button-center" id="complete-form">
-                        <button type="submit" id="time-less" class="button-style hidden" name="option" value="timeless">Skicka</button>
-                        <button onclikc="turnOff()" type="submit" id="write-on-time" class="button-style hidden" name="option" value="write-on-time">Save</button>
+                    <div class="button-center hidden" id="complete-form">
+                        <button type="submit" id="time-less" class="button-style" name="option" value="timeless">Skicka</button>
+                        <button onclick="turnOff()" type="submit" id="write-on-time" class="button-style" name="option" value="write-on-time">Save</button>
                     </div>
                 </div>
             </div>
@@ -108,6 +108,27 @@
 <script>
 
 document.addEventListener("DOMContentLoaded", function() {
+    console.log("Checking for active activity...");
+
+    const savedActive = localStorage.getItem('active');
+    const selectedAct = localStorage.getItem('selectedActivityId');
+
+    const stopButton = document.getElementById("stopButton");
+    const stop = document.getElementById("StopBtn");
+    const completeForm = document.getElementById("complete-form");
+    const timeLessButton = document.getElementById("time-less");
+    const writeOnTimeButton = document.getElementById("write-on-time");
+
+    if (savedActive === 'true' && selectedAct) {
+        console.log("Activity is active, showing Stop button.");
+        if (stop) stop.classList.remove("hidden");
+        if (completeForm) completeForm.classList.add("hidden");
+    } else {
+        console.log("No active activity, hiding Stop button.");
+        if (stop) stop.classList.add("hidden");
+        if (completeForm) completeForm.classList.remove("hidden");
+    }
+
     const scoreInput = document.getElementById("scoreValue");
     const startInput = document.getElementById("startValue");
     const endInput = document.getElementById("endValue");
@@ -115,8 +136,15 @@ document.addEventListener("DOMContentLoaded", function() {
     scoreInput.addEventListener("input", function() {
         updateEndTime();
     });
-
+    
     function updateEndTime() {
+        const locale = 'sv-SE';
+        const options = {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false
+        };
+
         const startTimeStr = startInput.value;
         const scoreMinutes = parseInt(scoreInput.value, 10) || 0; // Hämta score i minuter, standardvärde 0
 
@@ -126,41 +154,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (isNaN(startTime.getTime())) return; // Avbryt om startTime är ogiltigt
 
-        startTime.setMinutes(startTime.getMinutes() + scoreMinutes+60); // Lägg till score-minuter
+        startTime.setMinutes(startTime.getMinutes() + scoreMinutes); // Lägg till score-minuter
 
-        // Uppdatera End Time-fältet i format 'YYYY-MM-DD HH:MM:SS'
-        endInput.value = startTime.toISOString().slice(0, 19).replace("T", " ");
+        // Uppdatera End Time-fältet i format 'YYYY-MM-DD HH:MM:SS' i lokal tid
+        endInput.value = new Intl.DateTimeFormat(locale, options).format(startTime).replace(",", "");
     }
 });
-
-document.addEventListener('DOMContentLoaded', function () {
-    console.log("Checking for active activity...");
-
-    const savedActive = localStorage.getItem('active');
-    const selectedAct = localStorage.getItem('selectedActivityId');
-
-    const stopButton = document.getElementById("stopButton");
-    const completeForm = document.getElementById("complete-form");
-    const timeLessButton = document.getElementById("time-less");
-    const writeOnTimeButton = document.getElementById("write-on-time");
-
-    if (savedActive === 'true' && selectedAct) {
-        console.log("Activity is active, showing Stop button.");
-        if (stopButton) stopButton.classList.remove("hidden");
-        if (completeForm) completeForm.classList.remove("hidden");
-        if (timeLessButton) timeLessButton.classList.remove("hidden");
-        if (writeOnTimeButton) writeOnTimeButton.classList.remove("hidden");
-    } else {
-        console.log("No active activity, hiding Stop button.");
-        if (stopButton) stopButton.classList.add("hidden");
-        if (completeForm) completeForm.classList.add("hidden");
-        if (timeLessButton) timeLessButton.classList.remove("hidden");
-        if (writeOnTimeButton) writeOnTimeButton.classList.remove("hidden");
-    }
-});
-
-
-
 
 </script>
 {% endblock body %}

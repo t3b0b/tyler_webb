@@ -74,7 +74,7 @@ def myday():
 
     this_week_scores, activity_scores = analyzer.get_scores_by_period('week',today)
     last_week_scores,lastweek_activity_scores=analyzer.get_scores_by_period('week',today-timedelta(days=7))
-    print (last_week_scores)
+
    # plot_url = create_week_comparison_plot(this_week_scores, last_week_scores)
 
     goalTime = analyzer.sumGoal(last_week_scores)
