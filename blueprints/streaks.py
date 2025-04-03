@@ -1,7 +1,7 @@
 
 from extensions import db
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
-from models import (Streak, Goals)
+from models import (Streak, Goals, Score)
 from datetime import datetime, date
 from pmg_func import (common_route, add2db,update_streak_details, filter_mod)
 
