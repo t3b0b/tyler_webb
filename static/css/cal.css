@@ -6,6 +6,7 @@
     align-items: center;
     margin: 0 auto;
     width: 90vw; /* Se till att den alltid täcker hela skärmens bredd */
+    max-height: 100%;
     height: 100vh;
     max-width: 100%; /* Förhindra att den växer större än skärmen */
     box-sizing: border-box;
@@ -19,7 +20,6 @@
     height: 90%;
     width: 90%; /* Låt grid ta upp hela tillgängliga bredden */
     max-width: 100%; /* Undvik att den blir bredare än skärmen */
-
     margin: 0 auto;
 }
 
