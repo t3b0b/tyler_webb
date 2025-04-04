@@ -20,7 +20,6 @@ def cause_error():
     raise Exception("This is a test exception")
 
 
-
 #region Userless
 @app.route('/')
 def home():

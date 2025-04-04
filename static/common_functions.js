@@ -56,7 +56,8 @@ function stopActivity(event) {
     const startStored = localStorage.getItem('start');
     const endStored = localStorage.getItem('end');
     const activityId = localStorage.getItem('selectedActivityId');
-    const timeless = document.getElementById('time-less')
+    const stopBtn = document.getElementById('stopBtn');
+    const timeless = document.getElementById('time-less');
     const writeOnTime = document.getElementById("write-on-time");
 
     if (startStored && endStored && activityId) {
@@ -79,10 +80,20 @@ function stopActivity(event) {
         document.getElementById("aID").value = activityId;
         document.getElementById("end").classList.remove("hidden");
         document.getElementById("start").classList.remove("hidden");
-        document.getElementById("elapsedTime").classList.remove("hidden");
-        document.getElementById("aDate").classList.remove("hidden");
+        document.getElementById("time").classList.remove("hidden");
+        document.getElementById("date").classList.remove("hidden");
         document.getElementById("complete-form").classList.remove("hidden");
-        document.getElementById("continueButton").classList.remove("hidden");
+
+        if (stopBtn) {
+            stopBtn.classList.add("hidden");
+        }
+        if (timeless) {
+            timeless.classList.add("hidden");
+        }
+        if (writeOnTime) {
+            writeOnTime.classList.remove("hidden");
+        }
+
 
     }
     

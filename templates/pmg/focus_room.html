@@ -205,9 +205,9 @@
             <input type="text" id="aID" name="aID" style="display: none">
             <input type="hidden" id="gID" name="gID" value="{{ goal_id }}">
             
-            <div class="input-group hidden" id = aDate>
+            <div class="input-group hidden" id = date>
                 <label for="aDate">Date:</label>
-                <input type="text" name="aDate" value="{{ current_date }}">
+                <input id =aDate type="text" name="aDate" value="{{ current_date }}">
             </div>
             <div class="input-group hidden" id="start">
                 <label for="startValue">Start:</label>
@@ -217,7 +217,7 @@
                 <label for="endValue">End:</label>
                 <input id="endValue" type="text" name="end" class="input-half">
             </div>
-            <div class="input-group hidden" id="elapsedTime">
+            <div class="input-group hidden" id="time">
                 <label for="scoreValue">Score:</label>
                 <input id="scoreValue" type="number" name="score" class="input-half" oninput="updateEndTime()">
             </div>
@@ -228,12 +228,11 @@
             </div>
         </div>
     </form>
-    <div class="button-center">
-        <button id="continueButton" class="button-style hidden" style="background-color: green" onclick="location.reload()">Continue</button>
-    </div>
+    <button id="continueButton" class="button-style" style="background-color: green" onclick="location.reload()">Continue</button>
 </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script src="{{ url_for('static', filename='activityHandler.js') }}"></script>
+
 <script>
 
     document.addEventListener("DOMContentLoaded", function() {

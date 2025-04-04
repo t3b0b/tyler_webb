@@ -18,6 +18,26 @@
     .hidden {
         display: none;
     }
+
+    .top5-form{
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        background-color: wheat;
+    }
+    
+    .top5-content{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 15px;
+        align-items: center;
+        margin-top: 20px;
+        width: 70%;
+    }
+
     </style>
 {% endblock head %}
 
@@ -42,62 +62,64 @@
         {% if sida == "Mina Ord" or sida == "Dagbok" or sida == "Mina Mål" %}
             <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
         {% elif sida == "Bullet" %}
-            <div class="five-list-content">
-                {% for num in range(1, 6) %}
-                    <input type="text" name="Prio_{{ num }}" placeholder="{{ num }}:"
-                    {% if topFiveList|length >= num %}        
-                        value="{{ topFiveList[num-1] }}">
-                    {% endif %}
-                {% endfor %}
-                <button type="submit" name="my_list">Spara</button>
+        <div class="top5">
+            <div class="top5-form">
+                <div class="top5-content">
+                    <form method="POST">
+                        <div class="top5-header">{{ordet}}</div>
+                        {% for num in range(1, 6) %}
+                        <input type="text" name="Prio_{{ num }}" placeholder="{{ num }}:"
+                               value="{{ topFiveList[num-1] if topFiveList|length >= num else '' }}">
+                        {% endfor %}
+                        <button type="submit" name="my_list">Spara</button>
+                    </form>
+                </div>
             </div>
+        </div>
         {% endif %}
-        <form method="POST" class="form-container"  id="completed-form" style="border: none; background-color: #f0f0f0;">
-            <div>
-                <input type="number" id ="activeAct" style="display: none;">
-                <input type="hidden" id="gID" name="gID" value="{{ goal_id }}" style="display: none">
-                <input type="text" id="aID" name="aID" style="display: none">
+    </form>
 
-                <div class="input-group hidden" id = aDate>
-                    <label for="aDate">Date:</label>
-                    <input type="text" name="aDate" value="{{ current_date }}">
-                </div>
-                
-                <div class="input-group hidden" id="start">
-                    <label for="startValue">Start:</label>
-                    <input id="startValue" type="text" name="start">
-                </div>
-                <div class="input-group hidden" id="end">
-                    <label for="endValue">End:</label>
-                    <input id="endValue" type="text" name="end" class="input-half">
-                </div>
+    <div class="button-center">
+        <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
+    </div>
 
-                <div id="StopBtn" class="button-center hidden">
-                    <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity(event)">Stop</button>
-                </div>
+    <form method="POST"  id="completed-form">
+        <div style=" display: flex; flex-direction: column;">
+            <input type="number" id ="activeAct" class="hidden">
+            <input type="text" class="hidden" id="gID" name="gID" value="{{ goal_id }}">
+            <input type="text" class="hidden" id="aID" name="aID">
 
-                <div class="input-group hidden" id="elapsedTime">
-                    <label for="scoreValue">Score:</label>
-                    <input id="scoreValue" type="number" name="score" class="input-half" oninput="updateEndTime()">
-                </div>
-
-                <div class="input-group">
-                    <div class="button-center hidden" id="complete-form">
-                        <button type="submit" id="time-less" class="button-style" name="option" value="timeless">Skicka</button>
-                        <button onclick="turnOff()" type="submit" id="write-on-time" class="button-style" name="option" value="write-on-time">Save</button>
-                    </div>
-                </div>
-
+            <div class="input-group hidden" id = date>
+                <label for="aDate">Date:</label>
+                <input id=aDate type="text" name="aDate" value="{{ current_date }}">
             </div>
-        </form>
-    {% endif %}
+            
+            <div class="input-group hidden" id="start">
+                <label for="startValue">Start:</label>
+                <input id="startValue" type="text" name="start">
+            </div>
+            <div class="input-group hidden" id="end">
+                <label for="endValue">End:</label>
+                <input id="endValue" type="text" name="end" class="input-half">
+            </div>
+            <div class="input-group hidden" id="time">
+                <label for="scoreValue">Score:</label>
+                <input id="scoreValue" type="number" name="score" class="input-half" oninput="updateEndTime()">
+            </div>
+            <div class="input-group">
+                <div class="button-center hidden" id="complete-form">
+                    <button type="submit" id="time-less" class="button-style" name="option" value="timeless">Skicka</button>
+                    <button onclick="turnOff()" type="submit" id="write-on-time" class="button-style" name="option" value="write-on-time">Save</button>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endif %}
 </div>
-<script src="{{ url_for('static', filename='common_functions.js') }}"></script>
+
+<script src="{{ url_for('static', filename='activityHandler.js') }}"></script>
 
 <script>
-src= "{{ url_for('static', filename='activityHandler.js') }}"
-
-
 document.addEventListener("DOMContentLoaded", function() {
     console.log("Checking for active activity...");
 
@@ -105,19 +127,19 @@ document.addEventListener("DOMContentLoaded", function() {
     const selectedAct = localStorage.getItem('selectedActivityId');
 
     const stopButton = document.getElementById("stopButton");
-    const stop = document.getElementById("StopBtn");
     const completeForm = document.getElementById("complete-form");
     const timeLessButton = document.getElementById("time-less");
     const writeOnTimeButton = document.getElementById("write-on-time");
 
     if (savedActive === 'true' && selectedAct) {
         console.log("Activity is active, showing Stop button.");
-        if (stop) stop.classList.remove("hidden");
+        if (stopButton) stopButton.classList.remove("hidden");
         if (completeForm) completeForm.classList.add("hidden");
     } else {
         console.log("No active activity, hiding Stop button.");
-        if (stop) stop.classList.add("hidden");
+        if (stopButton) stopButton.classList.add("hidden");
         if (completeForm) completeForm.classList.remove("hidden");
+
     }
 
     const scoreInput = document.getElementById("scoreValue");
@@ -127,6 +149,29 @@ document.addEventListener("DOMContentLoaded", function() {
     scoreInput.addEventListener("input", function() {
         updateEndTime();
     });
+
+    function updateEndTime() {
+        const locale = 'sv-SE';
+        const options = {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false
+        };
+
+        const startTimeStr = startInput.value;
+        const scoreMinutes = parseInt(scoreInput.value, 10) || 0; // Hämta score i minuter, standardvärde 0
+
+        if (!startTimeStr) return; // Avbryt om starttid saknas
+
+        const startTime = new Date(startTimeStr.replace(" ", "T")); // Konvertera till Date-objekt
+
+        if (isNaN(startTime.getTime())) return; // Avbryt om startTime är ogiltigt
+
+        startTime.setMinutes(startTime.getMinutes() + scoreMinutes); // Lägg till score-minuter
+
+        // Uppdatera End Time-fältet i format 'YYYY-MM-DD HH:MM:SS' i lokal tid
+        endInput.value = new Intl.DateTimeFormat(locale, options).format(startTime).replace(",", "");
+    }
 });
 
 </script>

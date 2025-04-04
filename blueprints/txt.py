@@ -135,6 +135,7 @@ def journal():
 @login_required
 def journal_section(act_id, sida, sub_menu, my_posts):
     texthand=userText(current_user.id)
+    activity = Activity.query.filter_by(user_id=current_user.id,name=sida).first()
     start_activity = request.args.get('start_activity', None)
     topFiveList=[]
     page_info = ""
@@ -211,39 +212,45 @@ def journal_section(act_id, sida, sub_menu, my_posts):
         user = User.query.filter_by(id=current_user.id).first()
         content_check = request.form['blogg-content']
         if content_check:
-            if option == 'timeless':
-                if sida == 'Dagbok':
-                    add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
-                elif sida == 'Mina Ord':
-                    nytt_ord = request.form.get('post-ord')
-                    texthand.add_unique_word(nytt_ord)
-                    add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
-                elif sida == 'Bullet':
-                    theme = request.form['post-ord']
-                    bullet_list = [request.form['#1'], request.form['#2'], request.form['#3'], request.form['#4'], request.form['#5']]
-                    newBullet = Bullet(theme=theme, author=f'{user.firstName} {user.lastName}', content=bullet_list, date=current_date, user_id=current_user.id)
-                    db.session.add(newBullet)
-                    db.session.commit()
-#                elif sida == 'Mina Mål':
-#                    add2db(WhyGoals,request,['post-ord','blogg-content','goal'],['title','text','goal'],user)
-            elif option == "write-on-time":
-                add2db(Score, request, ['gID', 'aID', 'aDate', 'start', 'end', 'score'],
-                               ['Goal', 'Activity', 'Date', 'Start', 'End', 'Time'], current_user)
-                if sida == 'Dagbok':
-                    add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
-                elif sida == 'Mina Ord':
-                    add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
-                elif sida == 'Bullet':
-                    theme = request.form['post-ord']
-                    bullet_list = [request.form['#1'], request.form['#2'], request.form['#3'], request.form['#4'],
-                                   request.form['#5']]
-                    newBullet = Bullet(theme=theme, author=f'{user.firstName} {user.lastName}', content=bullet_list,
-                                       date=current_date, user_id=current_user.id)
-                    db.session.add(newBullet)
-                    db.session.commit()
+            if option == "write-on-time":
+                goal_id = request.form.get('gID')
+                activity_id = request.form.get('aID')
+                actDate = request.form.get('aDate')
+                start = request.form.get('start')
+                end = request.form.get('end')
+                score = request.form.get('score')
+                
+                NewScore = Score(
+                    user_id=current_user.id,
+                    Goal=goal_id,
+                    Activity=activity_id,
+                    Date=actDate,
+                    Start=start,
+                    End=end,
+                    Time=score
+                )
+                db.session.add(NewScore)
+                print (NewScore)
+            if sida == 'Dagbok':
+                add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+            elif sida == 'Mina Ord':
+                nytt_ord = request.form.get('post-ord')
+                texthand.add_unique_word(nytt_ord)
+                add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
 
+            elif sida == 'Bullet':
+                theme = request.form['post-ord']
+                bullet_list = [request.form['#1'], request.form['#2'], request.form['#3'], request.form['#4'], request.form['#5']]
+                newBullet = Bullet(theme=theme, author=f'{user.firstName} {user.lastName}', content=bullet_list, date=current_date, user_id=current_user.id)
+                db.session.add(newBullet)
+                db.session.commit()
 
-    return render_template('txt/journal.html', goal=myGoals, activities=activities, side_options=titles,
+            
+    #                elif sida == 'Mina Mål':
+    #                    add2db(WhyGoals,request,['post-ord','blogg-content','goal'],['title','text','goal'],user)
+        
+
+    return render_template('txt/journal.html', goal=myGoals, activities=activities, side_options=titles, goal_id =activity.goal_id,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,
                            current_date=current_date, page_url=page_url, act_id=act_id, myPosts=my_posts,
                            page_info=page_info, why_G=why_G, topFiveList = topFiveList,start_activity=start_activity)
@@ -270,7 +277,6 @@ def blog(section_name):
         my_posts = Notes.query.filter_by(title=section_name, user_id=current_user.id).order_by(Notes.date.desc()).all()
     else:
         my_posts = Notes.query.filter_by(user_id=current_user.id, activity_id=None).order_by(Notes.date.desc()).all()
-
     sida, sub_menu = common_route("Blog", [
         url_for('txt.journal', section_name='skriva'),
         url_for('txt.blog', section_name=None)

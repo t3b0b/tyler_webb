@@ -15,6 +15,7 @@ function stopActivity(event) {
     if (event) {
         event.preventDefault(); // Förhindra sidomladdning
     }
+    const savedActive = localStorage.getItem('active');
     
     const closeTime = new Date(); // Spara stopptiden
     localStorage.setItem('active', false);
@@ -24,8 +25,11 @@ function stopActivity(event) {
     const startStored = localStorage.getItem('start');
     const endStored = localStorage.getItem('end');
     const activityId = localStorage.getItem('selectedActivityId');
-    const timeless = document.getElementById('time-less')
-    const writeOnTime = document.getElementById("write-on-time");
+    
+    const stopBtn = document.getElementById('stopBtn');
+    const end = document.getElementById('endValue');
+    const start = document.getElementById('startValue');
+    const score = document.getElementById('scoreValue');
 
     if (startStored && endStored && activityId) {
         // Omvandla UNIX-tid till lokal tid
@@ -47,7 +51,7 @@ function stopActivity(event) {
         document.getElementById("aID").value = activityId;
         document.getElementById("end").classList.remove("hidden");
         document.getElementById("start").classList.remove("hidden");
-        document.getElementById("elapsedTime").classList.remove("hidden");
+        document.getElementById("time").classList.remove("hidden");
         document.getElementById("aDate").classList.remove("hidden");
         document.getElementById("complete-form").classList.remove("hidden");
         document.getElementById("continueButton").classList.remove("hidden");
@@ -60,7 +64,7 @@ function stopActivity(event) {
     if (startStored) {
         const elapsedTimeMs = closeTime - new Date(Number(startStored));  // Se till att vi konverterar
         const elapsedTimeMin = Math.floor(elapsedTimeMs / 60000);
-        document.getElementById("scoreValue").value = elapsedTimeMin;
+        score.value = elapsedTimeMin;
         saveActivity(elapsedTimeMin);
     } else {
         console.error("Start time is missing in localStorage.");
@@ -69,7 +73,6 @@ function stopActivity(event) {
 
 // Spara aktivitet
 function saveActivity(time) {
-    document.getElementById('completed-form').style.display = "block";
     document.getElementById('complete-form').classlist.remove ("hidden");
     document.getElementById('elapsedTime').classList.remove ("hidden");
     document.getElementById("scoreValue").value = time; // Använd rätt element-ID
