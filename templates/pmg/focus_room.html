@@ -233,8 +233,9 @@
     </div>
 </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
-
+<script src="{{ url_for('static', filename='activityHandler.js') }}"></script>
 <script>
+
     document.addEventListener("DOMContentLoaded", function() {
     const scoreInput = document.getElementById("scoreValue");
     const startInput = document.getElementById("startValue");
@@ -243,7 +244,6 @@
     scoreInput.addEventListener("input", function() {
         updateEndTime();
     });
-
     function updateEndTime() {
         const locale = 'sv-SE';
         const options = {
@@ -315,7 +315,7 @@
     };
     });
 
-        fetch('pmg/update-task-order', {
+        fetch('tasks/update-task-order', {
         method: 'POST',
         headers: {
         'Content-Type': 'application/json',
