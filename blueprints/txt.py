@@ -93,6 +93,7 @@ def update_post(post_id):
     db.session.commit()
     return jsonify({'success': 'Inlägget uppdaterades!'})
 
+
 @txt_bp.route('/journal', methods=['GET', 'POST'])
 @login_required
 def journal():
