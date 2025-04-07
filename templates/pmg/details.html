@@ -7,48 +7,114 @@
 {% block body %}
 <div class="details-container">
     <h2>Streak Details</h2>
-    <table>
-        <tr>
-            <th>Name:</th>
-            <td>{{ streak.name }}</td>
-        </tr>
-        <tr>
-            <th>Interval:</th>
-            <td>{{ streak.interval }}</td>
-        </tr>
+    <form method="POST">
+        <button type="button" class="edit-button" id="edit-button" onclick="toggleEdit('edit')">Edit</button>
+        <button type="button" class="cancel-button" id="cancel-button" onclick="toggleEdit('cancel')">Cancel</button>
+        <button type="submit" class="save-button hidden" id="save-button">Save</button>
+        <table>
+            <tr>
+                <th>Name:</th>
+                <td id="nameEdit" class="hidden"> 
+                    <input type="text" name="name" value="{{ streak.name }}">
+                </td>
+                <td id = nameDisplay>{{ streak.name }}</td>
+            </tr>
+            
+            <tr>
+                <th>Count:</th>
+                <td>{{ streak.count }}</td>
+            </tr>
+            <tr>
+                <th>Level:</th>
+                <td>{{ streak.level }}</td>
+            </tr>
+            <tr>
+                <th>Interval:</th>
+                <td id = intervalEdit class="hidden">
+                    <input type="text" name="interval" value="{{ streak.interval }}">
+                </td>
+                <td id="intervalDisplay" >{{ streak.interval }}</td>
+            </tr>
+            <tr>
+                <th>Condition:</th>
+                <td id = conditionEdit class="hidden">
+                    <input type="text" name="condition" value="{{ streak.condition }}">
+                </td>
+                <td id = conditionDisplay>{{ streak.condition }}</td>
+            </tr>
+            <tr>
+                <th>Type:</th>
+                <td id = typeEdit class="hidden">
+                    <select name="type">
+                        <option value="check">Check</option>
+                        <option value="number">Amount</option>
+                    </select>
+                </td>
+                <td id = typeDisplay>{{ streak.type }}</td>
+            </tr>
 
-        <tr>
-            <th>Count:</th>
-            <td>{{ streak.count }}</td>
-        </tr>
-        <tr>
-            <th>Condition:</th>
-            <td>{{ streak.condition }}</td>
-        </tr>
-        <tr>
-            <th>Type:</th>
-            <td>{{ streak.type }}</td>
-        </tr>
-        <tr>
-            <th>Best Streak:</th>
-            <td>{{ streak.best }}</td>
-        </tr>
-        <tr>
-            <th>Last Registration Date:</th>
-            <td>{{ streak.lastReg }}</td>
-        </tr>
-        <tr>
-            <th>Start Date:</th>
-            <td>{{ streak.dayOne }}</td>
-        </tr>
-        {% if streak.goal %}
-        <tr>
-            <th>Goal:</th>
-            <td>{{ streak.goal.name }}</td>
-        </tr>
-        {% endif %}
-    </table>
+            <tr>
+                <th>Best Streak:</th>
+                <td>{{ streak.best }}</td>
+            </tr>
 
-    <a href="{{ url_for('pmg.streak') }}" class="button-style">Back to Streaks</a>
+            <tr>
+                <th>Last Registration Date:</th>
+                <td>{{ streak.lastReg }}</td>
+            </tr>
+
+            <tr>
+                <th>Start Date:</th>
+                <td>{{ streak.dayOne }}</td>
+            </tr>
+
+            {% if streak.goal %}
+            <tr>
+                <th>Goal:</th>
+                <td>{{ streak.goal.name }}</td>
+            </tr>
+            {% endif %}
+        </table>
+    </form>
+    <a href="{{ url_for('streaks.streak') }}" class="button-style">Back to Streaks</a>
 </div>
+
+<script>
+
+    function toggleEdit(action) {
+
+    const editButton = document.getElementById('edit-button');
+    const cancelButton = document.getElementById('cancel-button');
+    const saveButton = document.getElementById('save-button');
+
+    const editFields = ['name', 'interval', 'condition', 'type'];
+
+    editFields.forEach(field => {
+        const inputField = document.getElementById(`${field}Edit`);
+        const displayField = document.getElementById(`${field}Display`);
+
+        if (action === 'edit') {
+            inputField.classList.remove('hidden');
+            displayField.classList.add('hidden');
+        } else {
+            inputField.classList.add('hidden');
+            displayField.classList.remove('hidden');
+        }
+    });
+    
+    if (action === 'edit') {
+        editButton.classList.add('hidden');
+        saveButton.classList.remove('hidden');
+        cancelButton.classList.remove('hidden');
+    } else {
+        editButton.classList.remove('hidden');
+        saveButton.classList.add('hidden');
+        cancelButton.classList.add('hidden');
+    }
+}
+
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+</script>
 {% endblock body %}

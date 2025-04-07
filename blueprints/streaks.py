@@ -17,6 +17,7 @@ scorehand = ScoreAnalyzer()
 datahand = PlotHandler()
 texthand = textHandler()
 streaks_bp = Blueprint('streaks', __name__, template_folder='templates/pmg')
+
 #region Streak
 @streaks_bp.route('/streak',methods=['GET', 'POST'])
 @login_required
@@ -37,6 +38,7 @@ def streak():
         add2db(Streak, request, form_fields, model_fields, current_user)
 
         return redirect(url_for('streaks.streak'))
+    
     return render_template('pmg/streak.html', sida=sida, header=sida,
                            todayDate=current_date, streaks=myStreaks, sub_menu=sub_menu,
                            goals=myGoals)
@@ -72,15 +74,26 @@ def respond_to_streak_invitation(shared_streak_id):
         flash("Du har avböjt inbjudan.", "info")
 
     db.session.commit()
-    return redirect(url_for('pmg.streak'))
+    return redirect(url_for('streaks.streak'))
 """
 
 
-@streaks_bp.route('/streak/<int:streak_id>/details', methods=['GET'])
+@streaks_bp.route('/streak/<int:streak_id>/details', methods=['GET', 'POST'])
 def streak_details(streak_id):
     streak = Streak.query.get_or_404(streak_id)
     streakdetail = Streak.query.filter_by(user_id=current_user.id, id = streak_id).first()
 
+    if request.method == 'POST':
+
+        streak.name = request.form.get('name')
+        streak.interval = request.form.get('interval')
+        streak.condition = request.form.get('condition')
+        streak.type = request.form.get('type')
+        
+        db.session.commit()
+        flash("Streaken har uppdaterats!", "success")
+        return redirect(url_for('streaks.streak'))
+    
     return render_template('pmg/details.html', streak=streak, detail=streakdetail)
 
 

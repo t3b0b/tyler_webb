@@ -14,7 +14,7 @@
         {% if streaks %}
             <div class="list-content">
             {% for streak in streaks %}
-                <div class="list-item" data-level="{{ streak.level }}" onclick="window.location.href = '/pmg/streak/{{ streak.id }}/details';"> {{ streak.name }}
+                <div class="list-item" data-level="{{ streak.level }}" onclick="window.location.href = '/streaks/streak/{{ streak.id }}/details';"> {{ streak.name }}
                     <form action="{{ url_for('streaks.delete_streak', streak_id=streak.id) }}" method="POST" style="display: inline;">
                         <button type="submit" class="tgl-btn" onclick="event.stopPropagation();">&#10060;</button>
                     </form>

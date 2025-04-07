@@ -164,11 +164,15 @@ def myday():
 @login_required
 def focus_room(activity_id):
     activity = Activity.query.get_or_404(activity_id)
-    goal_id = activity.goal_id  # Hämta goal_id från aktiviteten
-    today = date.today()
-    current_date = today
+
+
+    if activity.name == 'Springa':
+       print(activity.name)
+    
+    goalId = activity.goal_id
+    currentDate = date.today()
     tasks = get_user_tasks(current_user.id, Activity,activity_id)  # Hämta och sortera tasks
-    activity_notes = Notes.query.filter_by(user_id=current_user.id, activity_id=activity_id).all()
+    activityNotes = Notes.query.filter_by(user_id=current_user.id, activity_id=activity_id).all()
     if request.method == 'POST':
         if 'save-score' in request.form['action']:
             score_str = request.form.get('score', '').strip()
@@ -195,4 +199,4 @@ def focus_room(activity_id):
 
         return jsonify({"success": True}), 200
 
-    return render_template('pmg/focus_room.html',activity_notes=activity_notes, activity=activity, tasks=tasks, current_date=current_date,goal_id=goal_id)
+    return render_template('pmg/focus_room.html',activityNotes=activityNotes, activity=activity, tasks=tasks, currentDate=currentDate,goalId=goalId, activityName=activity.name)
