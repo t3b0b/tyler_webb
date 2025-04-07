@@ -19,6 +19,10 @@ def load_user(user_id):
 def cause_error():
     raise Exception("This is a test exception")
 
+@app.route('/run_test')
+def run_test():
+    # Här kan du köra din testko
+    return render_template('run_test.html')
 
 #region Userless
 @app.route('/')
