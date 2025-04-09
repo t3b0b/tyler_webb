@@ -1,14 +1,148 @@
 {% extends 'base.html' %}
 
 {% block head %}
+<style>
+    #deadlineDescription{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: left;
+    }
+    #deadlineDescription label {
+        margin-bottom: 5px;
+    }
+    #deadlineDescription textarea {
+        width: 100%;
+        height: 80px;
+        resize: none;
+    }
+    #container1 {
+    position: absolute;
+    }
+    #container3 {
+        position: absolute;
+    }
+    #container2 {
+        position: absolute;
+    }
 
+    .frontPos {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    }
+
+    .middlePos {
+    top: 50%;
+    left: 65%;
+    transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    .backPos {
+    top: 50%;
+    left: 35%;
+    transform: translate(-50%, -50%) rotate(-0deg);
+    }
+
+    .front {
+    z-index: 2;
+    box-shadow: -5px 0px 2px rgba(0, 0, 0, 0.3),
+                5px 0px 2px rgba(0, 0, 0, 0.3),
+                0px 3px 2px rgba(0, 0, 0, 0.3),
+                0px -3px 2px rgba(0, 0, 0, 0.3);
+    }
+    .back {
+    z-index: 1;
+    }
+
+    .hidden {
+        display: none;
+    }
+</style>
 {% endblock head %}
 
 {% block body %}
-<div class="day-container">
-    <h2>Events for {{ date.strftime('%Y-%m-%d') }}</h2>
 
-    <div class="events-list">
+<div class="day-container">
+    <div id="container1" class="form-container">
+        <h3 id="form-header">New Event</h3>
+        <form id=eventForm method="POST">
+
+            <div class="input-group">
+                <label for="eventType">Type:</label>
+                <select id="eventType" name="type" class="select-style" onchange="switchForm()">
+                    <option value="event">Event</option>
+                    <option value="deadline">Deadline</option>
+                </select>
+            </div>
+
+            <div class = "input-group">
+                <label for="event-name">Name:</label>
+                <input type="text" id="event-name" name="name" placeholder="Event/Deadline Name" required>
+            </div>
+
+            <div id="eventTime" class = "input-group">
+                <label for="event-start">Start Time:</label>
+                <input type="time" id="event-start" name="start" required>
+
+                <label for="event-end">End Time:</label>
+                <input type="time" id="event-end" name="end">
+            </div>
+
+            <div id="deadlineTime" class = "input-group hidden">
+                <label for="deadTime">Time:</label>
+                <input type="time" id="deadTime" name="time">
+            </div>
+
+            <div id="eventLocation" class = "input-group">
+                <label for="event-location">Location (optional):</label>
+                <input type="text" id="event-location" name="location" placeholder="Event Location">
+            </div>
+
+            <div id="eventRecurring" class = "input-group">
+                <div class="input-half">
+                    <label for="is-recurring">Recurring Event</label>
+                    <input type="checkbox" name="is-recurring" id=is-recurring value="true" onchange="toggleRecurringOptions()">
+                </div>
+            </div>
+            <div id="recurringOptions" class = "input-group hidden">
+                <label for="recurrance-type">Type</label>
+                <select id="recurrance-type" name="recurrance-type" class=" select-style">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select> 
+
+                <label for="recurrance-interval">Interval</label>
+                <input type="number" name="recurrance-interval" id="recurrance-interval" style="width:50px">
+            </div>
+            <div id="eventGoal" class = "input-group">
+                {% if goals %}
+                    <label for="goal-select">Goal:</label>
+                    <select id="goal-select" name="goal-id" class="select-style">
+                        <option value="">None</option>
+                        {% for goal in goals %}
+                            <option value="{{ goal.id }}">{{ goal.name }}</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </div>
+
+            <div id="eventActivity" class = "input-group">
+                <label for="activity-select">Activity:</label>
+                <select id="activity-select" name="activity-id" class="select-style">
+                    <option value="">None</option>
+                </select>
+            </div>
+            <div id="deadlineDescription" style="display: none;">
+                <label for="description">Description:</label>
+                <textarea type="text" id="description" name="description" placeholder="Description (optional)"></textarea>
+            </div>
+            <button id="addEventButton" class="button-style">Add</button>
+        </form>
+    </div>
+
+    <div id="container2" class="list-container">
         {% if events %}
             {% for event in events %}
                 <div class="event-item">
@@ -26,99 +160,84 @@
         {% endif %}
     </div>
 
-   <div class="form-container">
-        <h3>Add Event or Deadline</h3>
-        <form method="POST">
-            <div class="input-group">
-                <label for="eventType">Type:</label>
-                <select id="eventType" name="eventType" class="select-style">
-                    <option value="event">Event</option>
-                    <option value="deadline">Deadline</option>
-                </select>
-            </div>
-            <div class = "input-group">
-                <label for="event-name">Name:</label>
-                <input type="text" id="event-name" name="event-name" placeholder="Event/Deadline Name" required>
-            </div>
-            <div class="input-group">
-                <label for="event-start">Start Time:</label>
-                <input type="time" id="event-start" name="event-start" required>
 
-                <label for="event-end">End Time:</label>
-                <input type="time" id="event-end" name="event-end">
-            </div>
-            <div class="input-group">
-                <label for="event-location">Location (optional):</label>
-                <input type="text" id="event-location" name="event-location" placeholder="Event Location">
-            </div>
-            <div class="input-group">
-                <div class="input-half">
-                    <label for="is-recurring">Recurring Event</label>
-                    <input type="checkbox" name="is-recurring" id=is-recurring value="true" onchange="toggleRecurringOptions()">
-                </div>
-            </div>
-            <div id="recurring-options" class="hidden">
-                <div class="input-group">
-                    <label for="recurrance-type">Type</label>
-                    <select id="recurrance-type" name="recurrance-type" class=" select-style">
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
-                    </select> 
-
-                    <label for="recurrance-interval">Interval</label>
-                    <input type="number" name="recurrance-interval" id="recurrance-interval" style="width:50px">
-                </div>
-            </div>
-            <div class="input-group">
-                {% if goals %}
-                    <label for="goal-select">Link to Goal (for deadlines):</label>
-                    <select id="goal-select" name="goal-id" class="select-style">
-                        <option value="">None</option>
-                        {% for goal in goals %}
-                            <option value="{{ goal.id }}">{{ goal.name }}</option>
+    <div id="container3" class="list-container">
+        <h2>Events for {{ date.strftime('%Y-%m-%d') }}</h2>
+        <div class="scrollable">
+            <table>
+                <thead>
+                </thead>
+                <tbody>
+                {% for i in range(6, 23) %}
+                <tr>
+                    <td>{{ '{:02d}:00'.format(i) }}</td>
+                    <td>
+                        {% for event in events %}
+                        <div class="event-item">
+                            {% if event.start_time.hour == i %}
+                                <div>
+                                    <strong>{{ event.event_name }}</strong>
+                                </div>
+                            {% endif %}
+                        </div>
                         {% endfor %}
-                    </select>
-                {% endif %}
-            </div>
-
-            <div id="activity-container" class="hidden">
-                <label for="activity-select">Link to Activity:</label>
-                <select id="activity-select" name="activity-id" class="select-style">
-                    <option value="">None</option>
-                </select>
-            </div>
-
-            <button id="addEventButton" class="button-style">Add</button>
-        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-
+<script src="{{ url_for('static', filename='animations.js') }}"></script>
 <script>
-    function toggleRecurringOptions(){
-        const isRecurring = document.getElementById("is-recurring");
-        const recurringOptions = document.getElementById("recurring-options");
+function toggleRecurringOptions(){
+    const isRecurring = document.getElementById("is-recurring");
+    const recurringOptions = document.getElementById("recurringOptions");
 
-        if (isRecurring.checked) {
-            recurringOptions.classList.remove("hidden");
-        } else {
-            recurringOptions.classList.add("hidden");
-        }
+    if (isRecurring.checked) {
+        recurringOptions.classList.remove("hidden");
+    } else {
+        recurringOptions.classList.add("hidden");
     }
+}
 
-    function onDateClick(element, date) {
-        if (!element.classList.contains('other-month')) {
-            window.location.href = '/pmg/day/' + date;
-        }
+function onDateClick(element, date) {
+    if (!element.classList.contains('other-month')) {
+        window.location.href = '/pmg/day/' + date;
     }
+}
+
+function switchForm() {
+
+    const eventType = document.getElementById('eventType');
+    const fields = ['eventTime', 'eventLocation', 'eventRecurring', 'recurringOptions', 'deadDescription', 'deadlineTime'];
+    if (eventType.value === 'deadline') {
+        document.getElementById('form-header').textContent = "New Deadline";
+        document.getElementById('eventLocation').classList.add('hidden'); 
+        document.getElementById('eventRecurring').classList.add('hidden');
+        document.getElementById('recurringOptions').classList.add('hidden');
+        document.getElementById('eventTime').classList.add('hidden');
+        document.getElementById('deadlineDescription').style.display = 'flex';
+        document.getElementById('deadlineTime').classList.remove('hidden');
+    } else {
+        document.getElementById('form-header').textContent = "New Event";
+        document.getElementById('eventTime').classList.remove('hidden');
+        document.getElementById('eventLocation').classList.remove('hidden'); 
+        document.getElementById('eventRecurring').classList.remove('hidden');
+        document.getElementById('recurringOptions').classList.add('hidden');
+        document.getElementById('deadlineDescription').style.display = 'none';
+        document.getElementById('deadlineTime').classList.add('hidden');
+    }
+}
 
 function fetchActivities(goalId) {
     const activityContainer = document.getElementById('activity-container');
     const activitySelect = document.getElementById('activity-select');
 
     if (goalId) {
-        fetch(`/pmg/get_activities/${goalId}`)
+        fetch(`/activities/get_activities/${goalId}`)
             .then(response => response.json())
             .then(data => {
                 activitySelect.innerHTML = '<option value="">None</option>'; // Återställ alternativen
@@ -159,6 +278,8 @@ function toggleActivityInput() {
         activityContainer.style.display = 'none';
     }
 }
+// Anropa funktionen en gång från start
+setPositionsAndZIndex();
 
 </script>
 {% endblock body %}

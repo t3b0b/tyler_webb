@@ -26,8 +26,19 @@
     align-items: center;
     width:80%;
     width: inherit;
-
     margin: 5px 0 5px 0;
+}
+.hidden {
+    display: none;
+}
+
+.textbox-label-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: left;
+    width: 100%;
+
 }
 
 input:focus {

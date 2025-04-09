@@ -125,14 +125,17 @@ class Goals(db.Model):
         return f"{self.name}, {self.user_id}"
 
 class Milestones(db.Model):
+    
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    estimated_time = db.Column(db.Integer, nullable=False)  # Estimated time in minutes
-    deadline = db.Column(db.DateTime, nullable=True)
+    estimated_time = db.Column(db.Integer, nullable=False)
+    date = db.Column(db.DateTime, nullable=True)
+    time = db.Column(db.Time, nullable=True)
     achieved = db.Column(db.Boolean, default=False)
     date_achieved = db.Column(db.DateTime, nullable=True)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)  # Koppling till aktivitet
 
 class Activity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
