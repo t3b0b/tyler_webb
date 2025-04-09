@@ -59,6 +59,10 @@ Questions = {
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 @login_required
 def myday():
+    user_goals = current_user.user_goals  # Hämta alla mål för den inloggade användaren
+    for goal in user_goals:
+        print(f"Goal ID: {goal.id}, Name: {goal.name}, Deadline: {goal.deadline}")
+        
     analyzer = UserScores(current_user.id)
     sida, sub_menu = common_route("Min Grind", ['/cal/timebox'], ['My Day'])
     now = getSwetime()

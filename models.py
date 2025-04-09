@@ -8,6 +8,14 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
+class Subscriber(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Subscriber {self.email}>'
+
 #region User
 
 class User(db.Model, UserMixin):
@@ -21,8 +29,11 @@ class User(db.Model, UserMixin):
     profilePic = db.Column(db.String(150), default=None, nullable=True)  # Kolumn för profilbild
 
     # Justera namnet på backref till 'user_friendships' istället för 'user'
-    friendships = db.relationship('Friendship', foreign_keys='Friendship.user_id', backref='user_friendships', lazy=True)
-    shared_items = db.relationship('SharedItem', foreign_keys='SharedItem.owner_id', backref='user_shared_items', lazy=True)
+    user_goals = db.relationship('Goals', foreign_keys='Goals.user_id', backref='user', lazy=True)
+    user_streaks = db.relationship('Streak', foreign_keys='Streak.user_id', backref='user', lazy=True)
+    user_settings = db.relationship('Settings', foreign_keys='Settings.user_id', backref='user', lazy=True)
+    friendships = db.relationship('Friendship', foreign_keys='Friendship.user_id', back_populates='user', lazy=True)
+    shared_items = db.relationship('SharedItem', foreign_keys='SharedItem.owner_id', backref='user', lazy=True)
 
     def __repr__(self):
         return f'<User {self.username}, ID: {self.id}>'
@@ -45,6 +56,7 @@ class Settings(db.Model):
     wImp = db.Column(db.Boolean, nullable=False, default=False)
     stInterval = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
     def __repr__(self):
         return f'{self.stInterval}, {self.wImp} ,{self.user_id}'
 
@@ -58,13 +70,13 @@ class Friendship(db.Model):
     status = db.Column(db.Enum('pending', 'accepted', 'rejected', 'blocked'), default='pending')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    user = db.relationship('User', foreign_keys=[user_id])
+    user = db.relationship('User', foreign_keys=[user_id], back_populates='friendships')
     friend = db.relationship('User', foreign_keys=[friend_id])
 
 class SharedItem(db.Model):
     __tablename__ = 'shared_items'
     id = db.Column(db.Integer, primary_key=True)
-    item_type = db.Column(db.Enum('goal', 'list', 'streak', 'challenge'), nullable=False)
+    item_type = db.Column(db.Enum('goal', 'list', 'streak', 'challenge','event','deadline'), nullable=False)
     item_id = db.Column(db.Integer, nullable=False)
 
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -79,6 +91,7 @@ class SharedItem(db.Model):
     streak = db.relationship('Streak', foreign_keys=[item_id],
                              primaryjoin="and_(SharedItem.item_id == Streak.id, SharedItem.item_type == 'streak')")
     owner = db.relationship('User', foreign_keys=[owner_id], backref='shared_items_owned')
+
     shared_with = db.relationship('User', foreign_keys=[shared_with_id], backref='shared_with_items')
 
     def __repr__(self):
@@ -96,7 +109,6 @@ class ActivityTracking(db.Model):
     item = db.relationship('SharedItem', backref='activities')
     user = db.relationship('User', backref='activities')
 
-
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -111,21 +123,25 @@ class Message(db.Model):
 #region Development
 
 class Goals(db.Model):
+
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     streakCount = db.Column(db.Integer, default=0, nullable=True)
     name = db.Column(db.String(50), nullable=False)
     deadline = db.Column(db.String, nullable=True)
     timeLimit = db.Column(db.Integer, nullable=True)
+
     activities = db.relationship('Activity', backref='goal', lazy=True)
     milestones = db.relationship('Milestones', backref='goal', lazy=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    deadlines = db.relationship('Deadline', backref='goal', lazy=True)
+    events = db.relationship('Event', backref='goal', lazy=True)
+
     shared_items = association_proxy('shared_items', 'id', creator=lambda goal: SharedItem(item_type='goal', item_id=goal.id))
 
     def __repr__(self):
         return f"{self.name}, {self.user_id}"
 
 class Milestones(db.Model):
-    
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
@@ -145,12 +161,13 @@ class Activity(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ForeignKey till user
     milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=True)
     
+
     shared_item_id = db.Column(db.Integer, db.ForeignKey('shared_items.id'), nullable=True)  # Koppling till shared_items
     shared_item = db.relationship('SharedItem', backref='shared_activities', lazy=True)
-
-    todo_list = db.relationship('Tasks', backref='activity', lazy=True)
+    tasks = db.relationship('Tasks', backref='activity', lazy=True)
 
 class Tasks(db.Model):
+
     id = db.Column(db.Integer, primary_key=True)
     task = db.Column(db.String(255), nullable=False)
     completed = db.Column(db.Boolean, default=False)
@@ -187,15 +204,8 @@ class SubTask(db.Model):
     def __repr__(self):
         return f"<SubTask {self.name}, Completed: {self.completed}>"
 
-class Subscriber(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def __repr__(self):
-        return f'<Subscriber {self.email}>'
-
 class Streak(db.Model):
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     active = db.Column(db.Boolean, nullable=True)
@@ -210,12 +220,14 @@ class Streak(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False)
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=True)
     level = db.Column(db.Integer, nullable=True, default=1)
+
     shared_items = association_proxy('shared_items', 'id', creator=lambda streak: SharedItem(item_type='streak', item_id=streak.id))
 
     def __repr__(self):
         return f"{self.name}, {self.interval}, {self.count}, {self.goal_id}, {self.best}, {self.condition}, {self.lastReg}, {self.dayOne}, {self.user_id}"
 
 class Score(db.Model):
+
     id = db.Column(db.Integer, primary_key=True)
     Goal = db.Column(db.Integer, db.ForeignKey(Goals.id))
     Activity = db.Column(db.Integer, db.ForeignKey(Activity.id), nullable=False)
@@ -226,6 +238,7 @@ class Score(db.Model):
     Time = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     Streak = db.Column(db.Integer, db.ForeignKey('streak.id'), nullable=False)
+
     def __repr__(self):
         return f'{self.Goal}, {self.Activity}, {self.Date}, {self.Time}, {self.user_id}'
 
@@ -252,6 +265,19 @@ class Event(db.Model):
     def __repr__(self):
         return f'{self.name} on {self.date} at {self.location}'
 
+class Deadline(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    due_date = db.Column(db.Date, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)
+    goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=True)
+    completed = db.Column(db.Boolean, default=False)
+    completed_date = db.Column(db.Date, nullable=True)
+    def __repr__(self):
+        return f'{self.name} - Due: {self.due_date}'
+    
 # endregion
 
 #region Text
@@ -267,7 +293,7 @@ class TopFive(db.Model):
     def __repr__(self):
         return f"<CalendarBullet {self.date}>"
 
-class Bullet(db.Model):
+class Lists(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     author = db.Column(db.String(50), nullable=False)
     theme = db.Column(db.String(50), nullable=False)
@@ -275,7 +301,7 @@ class Bullet(db.Model):
     date = db.Column(db.Date, unique=False, nullable=False, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     shared_items = association_proxy('shared_items', 'id',
-                                     creator=lambda bullet: SharedItem(item_type='bullet', item_id=bullet.id))
+                                     creator=lambda bullet: SharedItem(item_type='list', item_id=bullet.id))
 
 class Notes(db.Model):
     id = db.Column(db.Integer, primary_key=True)
