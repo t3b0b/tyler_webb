@@ -19,7 +19,13 @@
         border-radius: 5px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
-    
+    @media (max-width: 768px) {
+    .three-split-screen {
+        grid-template-columns: 1fr; /* Ändra till en kolumn */
+        grid-template-rows: auto; /* Anpassa höjden automatiskt */
+        height: auto; /* Låt höjden anpassas efter innehållet */
+        width: 90%; /* Använd hela bredden på skärmen */
+    }
 </style>
 
 {% endblock head %}
