@@ -12,7 +12,13 @@
         transition: grid-template-columns 0.8s ease; /* Smidig övergång */
 
     }
-
+    @media (max-width: 768px) {
+    .three-split-screen {
+        grid-template-columns: 1fr; /* Ändra till en kolumn */
+        grid-template-rows: auto; /* Anpassa höjden automatiskt */
+        height: auto; /* Låt höjden anpassas efter innehållet */
+        width: 100%; /* Använd hela bredden på skärmen */
+    }
 </style>
 
 {% endblock head %}
