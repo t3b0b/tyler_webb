@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from extensions import db
-from models import Event, Goals
+from models import Event, Goals, Activity
 from sqlalchemy.orm import aliased
 
 class Calendar:
@@ -46,14 +46,18 @@ class UserCalendar(Calendar):
         """Hämtar alla event för en viss dag inklusive återkommande events."""
         #target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
         
-        Goal = aliased(Goals)
-        
+        GoalAlias = aliased(Goals)
+        ActivityAlias = aliased(Activity)
+
         # Hämta endast vanliga (icke-återkommande) events
         regular_events = db.session.query(
             Event,
-            Goal.name.label('goal_name')
+            GoalAlias.name.label('goal_name'),
+            ActivityAlias.name.label('activity_name')
         ).outerjoin(
-            Goal, Event.goal_id == Goal.id
+            GoalAlias, Event.goal_id == GoalAlias.id
+        ).outerjoin(
+            ActivityAlias, Event.activity_id == ActivityAlias.id
         ).filter(
             (Event.user_id == self.user_id) & 
             (Event.date == target_date) & 
@@ -63,9 +67,12 @@ class UserCalendar(Calendar):
         # Hämta återkommande events
         recurring_events = db.session.query(
             Event,
-            Goal.name.label('goal_name')
+            GoalAlias.name.label('goal_name'),
+            ActivityAlias.name.label('activity_name')
         ).outerjoin(
-            Goal, Event.goal_id == Goal.id
+            GoalAlias, Event.goal_id == GoalAlias.id
+        ).outerjoin(
+            ActivityAlias, Event.activity_id == ActivityAlias.id
         ).filter(
             (Event.user_id == self.user_id) & 
             (Event.is_recurring == True)
@@ -73,18 +80,18 @@ class UserCalendar(Calendar):
 
         valid_recurring_events = []
         
-        for event, goal_name in recurring_events:
+        for event, goal_name, activity_name in recurring_events:
             if event.recurrence_type == 'daily':
                 if event.date <= target_date:
-                    valid_recurring_events.append((event, goal_name))
+                    valid_recurring_events.append((event, goal_name, activity_name))
             elif event.recurrence_type == 'weekly':
                 if event.date <= target_date and event.date.weekday() == target_date.weekday():
                     delta_days = (target_date - event.date).days
                     if delta_days % (event.recurrence_interval * 7) == 0:
-                        valid_recurring_events.append((event, goal_name))
+                        valid_recurring_events.append((event, goal_name, activity_name))
             elif event.recurrence_type == 'monthly':
                 if event.date.day == target_date.day and event.date <= target_date:
-                    valid_recurring_events.append((event, goal_name))
+                    valid_recurring_events.append((event, goal_name, activity_name))
 
         # Kombinera vanliga och giltiga återkommande events
         return regular_events + valid_recurring_events

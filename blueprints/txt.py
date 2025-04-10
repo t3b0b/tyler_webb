@@ -1,7 +1,7 @@
 from random import choice
 from extensions import db
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
-from models import (User, Notes, Goals, Bullet, TopFive,
+from models import (User, Notes, Goals, Lists, TopFive,
                     Activity, Score, MyWords)
 
 from pmg_func import (common_route,getInfo,add2db)
@@ -241,7 +241,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
             elif sida == 'Bullet':
                 theme = request.form['post-ord']
                 bullet_list = [request.form['#1'], request.form['#2'], request.form['#3'], request.form['#4'], request.form['#5']]
-                newBullet = Bullet(theme=theme, author=f'{user.firstName} {user.lastName}', content=bullet_list, date=current_date, user_id=current_user.id)
+                newBullet = Lists(theme=theme, author=f'{user.firstName} {user.lastName}', content=bullet_list, date=current_date, user_id=current_user.id)
                 db.session.add(newBullet)
                 db.session.commit()
 

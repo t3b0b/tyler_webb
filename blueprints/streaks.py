@@ -110,7 +110,7 @@ def update_streak(streak_id, action):
         amount = request.form.get("amount")
         # Kontrollera att goal_id och score har giltiga värden
         if score:
-            new_score = Score(Goal=goal_id, Activity=None, Time=score, Date=current_date, user_id=current_user.id, Streak=streak_id, Amount=amount)
+            new_score = Score(goal_id=goal_id, activity_id = None, Time=score, Date=current_date, user_id=current_user.id, streak_id=streak_id, Amount=amount)
             db.session.add(new_score)
             db.session.commit()
             print("New score added successfully")  # Lägg till denna rad för felsökning

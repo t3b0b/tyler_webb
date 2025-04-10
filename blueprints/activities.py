@@ -26,6 +26,8 @@ activities_bp = Blueprint('activities', __name__, template_folder='templates/pmg
 def goal_activities(goal_id):
     goal = Goals.query.get_or_404(goal_id)
     user = current_user.id
+    milestones = goal.milestones
+    deadlines = goal.deadlines
     shared_item = SharedItem.query.filter_by(item_id=goal_id, item_type='goal', status='active').first()
     start_activity = request.args.get('start_activity', None)
 
@@ -64,8 +66,8 @@ def goal_activities(goal_id):
             flash('Activity name and measurement are required', 'danger')
 
     # Hantera GET-begäran för att visa aktiviteterna
-    activities = Activity.query.filter_by(goal_id=goal_id).all()
-    return render_template('pmg/activities.html', goal=goal, start_activity=start_activity, activities=activities)
+    activities = goal.activities
+    return render_template('pmg/activities.html', goal=goal, start_activity=start_activity, activities=activities, deadlines=deadlines, milestones=milestones)
 
 
 

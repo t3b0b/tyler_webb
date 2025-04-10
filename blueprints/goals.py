@@ -21,7 +21,8 @@ def goals():
     sida, sub_menu = common_route("Mina Mål", ['/streaks/streak', '/goals/goals', '/cal/milestones'],
                                   ['Streaks', 'Goals', 'Milestones'])
     start_activity = request.args.get('start_activity', None)
-
+    mygoals = current_user.user_goals
+    
     if request.method == 'POST':
 
         if 'addGoal' in request.form['action']:
@@ -75,25 +76,9 @@ def goals():
                 db.session.commit()
             return redirect(url_for('pmg.goals'))
 
-    # Hämta mål på nytt varje gång sidan laddas för att säkerställa att listan är uppdaterad
-    personal_goals = Goals.query.filter(
-        Goals.user_id == current_user.id,  # Mål som tillhör nuvarande användare
-        ~Goals.id.in_(db.session.query(SharedItem.item_id).filter(
-            SharedItem.item_type == 'goal'  # Endast SharedItems kopplade till mål
-        ))
-    ).all()
+    personal_goals = [goal for goal in mygoals if not SharedItem.query.filter_by(item_id=goal.id, item_type='goal').first()]
 
-    # Hämta alla mål som antingen skapats av användaren eller som användaren har blivit inbjuden till och accepterat
-    shared_goals = db.session.query(Goals).select_from(Goals).join(
-        SharedItem,
-        and_(
-            SharedItem.item_id == Goals.id,  # Kopplar mål med SharedItem baserat på item_id
-            SharedItem.item_type == 'goal'  # Ser till att det är mål som delas
-        )
-    ).filter(
-        (Goals.user_id == current_user.id) |  # Mål skapade av användaren
-        ((SharedItem.shared_with_id == current_user.id) & (SharedItem.status == 'accepted'))  # Accepterade inbjudningar
-    ).all()
+    shared_goals = [goal for goal in mygoals if SharedItem.query.filter_by(item_id=goal.id, item_type='goal').first()]
 
     # Hämta mottagna mål-förfrågningar som ännu inte accepterats
     received_requests = db.session.query(
@@ -128,11 +113,13 @@ def goals():
     # Hämta vänner för att kunna dela mål
     accepted_friends = Friendship.query.filter_by(user_id=current_user.id, status='accepted').all() + \
                        Friendship.query.filter_by(friend_id=current_user.id, status='accepted').all()
+    
     accepted_user_ids = [friend.user_id if friend.user_id != current_user.id else friend.friend_id for friend in
                          accepted_friends]
     
     friends = User.query.filter(User.id.in_(accepted_user_ids)).all()
 
+    
     return render_template('pmg/goals.html',
                            received_requests=received_requests,
                            sent_requests=sent_requests,

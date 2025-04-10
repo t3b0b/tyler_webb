@@ -97,9 +97,9 @@ def get_activities_for_user(user_id, start_date, end_date):
         Activity.name.label('activity_name'),
         Goals.name.label('goal_name')
     ).join(
-        Activity, Activity.id == Score.Activity
+        Activity, Activity.id == Score.activity_id
     ).outerjoin(
-        Goals, Goals.id == Score.Goal
+        Goals, Goals.id == Score.goal_id
     ).filter(
         Score.user_id == user_id,
         Score.Start >= start_date,
@@ -217,7 +217,7 @@ def get_yesterdays_streak_values(user_id):
         Streak.amount,
         Score.Amount.label('yesterday_value')
     ).join(Score, and_(
-        Score.Streak == Streak.id,  # Koppla score till streak
+        Score.streak_id == Streak.id,  # Koppla score till streak
         Score.Date == yesterday,  # Endast gårdagens datum
         Score.user_id == user_id  # Endast för aktuell användare
     )).filter(

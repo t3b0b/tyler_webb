@@ -131,9 +131,9 @@ class UserScores(ScoreAnalyzer):
             Goals.name.label('goalName'),         # Mål-namn
             Activity.name.label('actName')   # Aktivitet-namn
         ).outerjoin(
-            Goals, Goals.id == Score.Goal
+            Goals, Goals.id == Score.goal_id
         ).outerjoin(
-            Activity, Activity.id == Score.Activity
+            Activity, Activity.id == Score.activity_id
         ).filter(
             Score.user_id == self.user_id,
             Score.Date >= start_date,
@@ -146,7 +146,7 @@ class UserScores(ScoreAnalyzer):
             Goals.name.label('goal_name'),                # Namnet på målet som aktiviteten tillhör
             db.func.sum(Score.Time).label('total_time')   # Summan av tid för aktiviteten
         ).join(
-            Score, Score.Activity == Activity.id          # Join till Score baserat på aktiviteten
+            Score, Score.activity_id == Activity.id          # Join till Score baserat på aktiviteten
         ).outerjoin(
             Goals, Goals.id == Activity.goal_id           # Join till Goals baserat på goal_id
         ).filter(
@@ -167,14 +167,14 @@ class UserScores(ScoreAnalyzer):
         streak_points = db.session.query(db.func.sum(Score.Time)).filter(
             Score.user_id == self.user_id,
             db.func.date(Score.Date) == date,
-            Score.Activity == None  # Streaks har ingen aktivitet kopplad
+            Score.activity_id == None  # Streaks har ingen aktivitet kopplad
         ).scalar() or 0
 
         # Beräkna aktivitetspoäng
         activity_points = db.session.query(db.func.sum(Score.Time)).filter(
             Score.user_id == self.user_id,
             db.func.date(Score.Date) == date,
-            Score.Activity != None  # Poäng kopplade till aktiviteter
+            Score.activity_id != None  # Poäng kopplade till aktiviteter
         ).scalar() or 0
 
         # Totalpoäng

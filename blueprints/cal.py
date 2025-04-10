@@ -1,8 +1,8 @@
 from random import choice
 from extensions import db
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
-from sqlalchemy.orm import aliased
-from models import (Streak, Goals,Activity, Score,Event,TopFive)
+from sqlalchemy.orm import aliased, scoped_session
+from models import (Streak, Goals,Activity, Score,Event,TopFive, Milestones)
 
 from datetime import datetime, timedelta
 
@@ -48,6 +48,7 @@ def myday_date(date):
                                my_goals=myGoals, my_streaks=myStreaks, my_score=myScore, total_score=total)
     else:
         return redirect(url_for('pmg.myday'))
+    
 # endregion
 def get_daily_summary(user_id, date=None):
     """
@@ -67,7 +68,7 @@ def get_daily_summary(user_id, date=None):
     total_streaks = Streak.query.filter_by(user_id=user_id).count()
 
     # ✅ Hämta antal avklarade streaks (de som har `active=False` och uppdaterades idag)
-    completed_streaks = db.session.query(db.func.count(db.distinct(Score.Streak))).filter(
+    completed_streaks = db.session.query(db.func.count(db.distinct(Score.streak_id))).filter(
         Score.user_id == user_id,
         Score.Date == date,
     ).scalar() or 0
@@ -126,50 +127,74 @@ def day_view(date):
     myGoals=Goals.query.filter_by(user_id=current_user.id)
 
     events = userCal.get_events_for_day(date)
-
     # Strukturera data för mallen
     event_data = []
-    for event, goal_name in events:
+    for event, goal_name, activity_name in events:
         event_data.append({
             "event_id": event.id,
             "event_name": event.name,
-            "start_time": event.start_time.strftime('%H:%M') if event.start_time else None,
-            "end_time": event.end_time.strftime('%H:%M') if event.end_time else None,
+            "start_time": datetime.combine(date,event.start_time) if event.start_time else None,
+            "end_time": datetime.combine(date,event.end_time) if event.end_time else None,
             "location": event.location,
             "goal_id": event.goal_id,
-            "goal_name": goal_name or "Okänt mål"
+            "goal_name": goal_name or "Okänt mål",
+            "activity_name": activity_name or "Okänd aktivitet",
         })
 
     if request.method == 'POST':
-        event_name = request.form.get('event-name')
-        event_type = request.form.get('eventType')
-        start_time = request.form.get('event-start')
-        end_time = request.form.get('event-end')
-        location = request.form.get('event-location')
-        goal_id = request.form.get('goal-id')
-        activity_id = request.form.get('activity-id')  # Här hämtar du den valda aktiviteten
+        if "event" in request.form.get('type'):
+            name = request.form.get('name')
+            type = request.form.get('type')
+            start = request.form.get('start')
+            end = request.form.get('end')
+            location = request.form.get('location')
+            goal_id = request.form.get('goal-id')
+            activity_id = request.form.get('activity-id')  # Här hämtar du den valda aktiviteten
 
-        is_recurring = request.form.get('is-recurring') == 'true'
-        recurrence_type = request.form.get('recurrance-type')
-        recurrence_interval = int(request.form.get('recurrance-interval') or 1)
+            is_recurring = request.form.get('is-recurring') == 'true'
+            recurrence_type = request.form.get('recurrance-type')
+            recurrence_interval = int(request.form.get('recurrance-interval') or 1)
 
-        if event_name and event_type and start_time:
-            new_event = Event(
-                name=event_name,
-                event_type=event_type,
-                start_time=start_time,
-                end_time=end_time,
-                location=location,
-                date=date,
-                user_id=current_user.id,
-                goal_id=goal_id if goal_id else None,
-                activity_id=activity_id if activity_id else None,
-                is_recurring=is_recurring,
-                recurrence_type=recurrence_type if is_recurring else None,
-                recurrence_interval=recurrence_interval if is_recurring else None
-            )
-            db.session.add(new_event)
-            db.session.commit()
+            if name and start:
+                new_event = Event(
+                    name=name,
+                    start_time=start,
+                    end_time=end,
+                    location=location,
+                    date=date,
+                    user_id=current_user.id,
+                    goal_id=goal_id if goal_id else None,
+                    activity_id=activity_id if activity_id else None,
+                    is_recurring=is_recurring,
+                    recurrence_type=recurrence_type if is_recurring else None,
+                    recurrence_interval=recurrence_interval if is_recurring else None
+                )
+                db.session.add(new_event)
+                db.session.commit()
+                
+        elif "deadline" in request.form.get('type'):
+
+            name = request.form.get('name')
+            description = request.form.get('description')
+            estTime = request.form.get('estTime')
+            date = request.form.get('date')
+            time = request.form.get('time')
+            goal_id = request.form.get('goal-id')
+            activity_id = request.form.get('activity-id')
+
+            if name and date and time:
+                newDeadline = Milestones(
+                    name = name,
+                    description = description,
+                    estimated_time = estTime,
+                    date = date,
+                    time = time,
+                    user_id=current_user.id,
+                    goal_id = goal_id if goal_id else None,
+                    activity_id = activity_id if activity_id else None
+                )
+                db.session.add(newDeadline)
+                db.session.commit()
             flash('Event added successfully!', 'success')
         else:
             flash('Please provide all required fields.', 'danger')
@@ -255,7 +280,7 @@ def week():
         Score.Time,
         Score.Date
     ).join(
-        Activity, Activity.id == Score.Activity
+        Activity, Activity.id == Score.activity_id
     ).filter(
         Score.user_id == user_id
     ).filter(
@@ -352,7 +377,7 @@ def timebox():
         Score.Time,
         Score.Date
     ).join(
-        Activity, Activity.id == Score.Activity
+        Activity, Activity.id == Score.activity_id
     ).filter(
         Score.user_id == current_user.id
     ).filter(

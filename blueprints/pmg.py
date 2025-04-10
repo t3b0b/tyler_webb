@@ -59,6 +59,10 @@ Questions = {
 @pmg_bp.route('/myday', methods=['GET', 'POST'])
 @login_required
 def myday():
+    user_goals = current_user.user_goals  # Hämta alla mål för den inloggade användaren
+    for goal in user_goals:
+        print(f"Goal ID: {goal.id}, Name: {goal.name}, Deadline: {goal.deadline}")
+        
     analyzer = UserScores(current_user.id)
     sida, sub_menu = common_route("Min Grind", ['/cal/timebox'], ['My Day'])
     now = getSwetime()
@@ -80,10 +84,9 @@ def myday():
     goalTime = analyzer.sumGoal(last_week_scores)
     lastWeek = analyzer.sumDays(this_week_scores)
     thisWeek = analyzer.sumDays(last_week_scores)
-
     actTime = analyzer.sumAct(last_week_scores)
 
-
+    
     goal_plot = datahand.create_grouped_bar_plot(
         data_dicts=[thisWeek,lastWeek],
         labels_list=['Denna vecka', 'Förra veckan'], 
@@ -94,7 +97,7 @@ def myday():
     # ladda Amount till streaks
     for streak in myStreaks:
                 yesterday_score = db.session.query(Score.Amount).filter(
-                    Score.Streak == streak.id,
+                    Score.streak_id == streak.id,
                     Score.Date == yesterday,
                     Score.user_id == streak.user_id
                 ).scalar()  # Returnerar endast värdet
