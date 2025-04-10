@@ -68,7 +68,7 @@ def get_daily_summary(user_id, date=None):
     total_streaks = Streak.query.filter_by(user_id=user_id).count()
 
     # ✅ Hämta antal avklarade streaks (de som har `active=False` och uppdaterades idag)
-    completed_streaks = db.session.query(db.func.count(db.distinct(Score.Streak))).filter(
+    completed_streaks = db.session.query(db.func.count(db.distinct(Score.streak_id))).filter(
         Score.user_id == user_id,
         Score.Date == date,
     ).scalar() or 0
@@ -280,7 +280,7 @@ def week():
         Score.Time,
         Score.Date
     ).join(
-        Activity, Activity.id == Score.Activity
+        Activity, Activity.id == Score.activity_id
     ).filter(
         Score.user_id == user_id
     ).filter(
@@ -377,7 +377,7 @@ def timebox():
         Score.Time,
         Score.Date
     ).join(
-        Activity, Activity.id == Score.Activity
+        Activity, Activity.id == Score.activity_id
     ).filter(
         Score.user_id == current_user.id
     ).filter(

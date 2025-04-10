@@ -66,17 +66,16 @@
             </div>
         </div>
     </header>
-
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
+    {% if messages %}
         <ul class="flashes">
-          {% for category, message in messages %}
+        {% for category, message in messages %}
             <li class="{{ category }}">{{ message }}</li>
-          {% endfor %}
+        {% endfor %}
         </ul>
-      {% endif %}
+    {% endif %}
     {% endwith %}
-
+    
     <div class="info-button" onmouseover="showTooltip()" onmouseout="hideTooltip()">
         <i>i</i>
     </div>
@@ -85,7 +84,9 @@
             <p> {{ page_info }} </p>
         {% endif %}
     </div>
+
 <div class="main-container">
+
     {% if side_options %}
             <div class="side-menu">
                 <nav class="side-menu-nav">
@@ -97,7 +98,6 @@
                 </nav>
             </div>
     {% endif %}
-
     {% block body %}{% endblock %}
 </div>
     <footer class="footer">

@@ -97,7 +97,7 @@ def myday():
     # ladda Amount till streaks
     for streak in myStreaks:
                 yesterday_score = db.session.query(Score.Amount).filter(
-                    Score.Streak == streak.id,
+                    Score.streak_id == streak.id,
                     Score.Date == yesterday,
                     Score.user_id == streak.user_id
                 ).scalar()  # Returnerar endast värdet

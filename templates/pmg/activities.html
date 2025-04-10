@@ -1,60 +1,182 @@
 {% extends 'base.html' %}
 
 {% block head %}
-
+<style>
+    .three-split-screen {
+        display: grid;
+        grid-template-columns: 1fr 3fr 1fr; /* Standardlayout */
+        gap: 5px;
+        padding: 20px;
+        width: 85%;
+        height: 90vh;
+        transition: grid-template-columns 0.8s ease; /* Smidig övergång */
+    }
+    .form-box {
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+</style>
 
 {% endblock head %}
 
 {% block body %}
+<div id="three-split" class="three-split-screen">
 
-<div class="list-container">
-
-    <div class="list-header">
-        <h3>Activities for {{ goal.name }}</h3>
-        <button class="new-button" id="show-form" onclick="showAddActivityForm(this)()">New Activity</button>
-        <button class="new-button" id="hide-form" onclick="hideAddActivityForm(this)()" style="display:none">Cancel</button>
-    </div>
-
-    <div class="list-content">
-        {% for activity in activities %}
-            <div class="list-item" data-goal-name="{{ goal.name }}" data-activity-id="{{ activity.id }}" data-act-name="{{ activity.name }}" data-start-activity="{{ start_activity }}" onclick="handleActivityClick(this)">
-                {{ activity.name }}
-                {% if activity.shared_item_id %}
-                    <span class="shared-indicator">(Shared)</span>
-                {% endif %}
-                <form action="{{ url_for('activities.delete_activity', activity_id=activity.id) }}" method="POST" style="display: inline;">
-                    <button type="submit" class="tgl-btn" onclick="event.stopPropagation();">&#10060;</button>
-                </form>
+    <div class="list-container" id="milestones" style="width: 100%;">
+        <div class="list-header">
+            <h3>Goal Milestones</h3>
+            <button class="new-button" id="new-milestone-button" onclick="expandForm('milestone')">+</button>
+        </div>
+        <div class = "list-content">
+            {% for milestone in milestones %}
+            <div class="list-item">
+                {{ milestone.name }}
             </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
+        <div class="form-box" id="new-milestone-form" style="display: none;">
+            <form method="POST">
+                <div class="input-group",id=milestoneName>
+                    <label for="milestoneName">Name:</label>
+                    <input type="text" placeholder="Milestone Name" name="milestoneName">    
+                </div>
+                <div class="input-group" id="milestoneDescription">
+                    <label for="description">Description:</label>
+                    <textarea type="text" id="description" name="milestoneDescription" placeholder="Description (optional)"></textarea>
+                </div>
+                <button class="button-style" type="button" style="background-color: firebrick;" onclick="cancelForm('milestone')">Cancel</button>
+                <button class="button-style" type="submit" name="action" value="addMilestone" style="background-color: cornflowerblue;">Save</button>
+            </form>
+        </div>
     </div>
-</div>
-<div class="add-form-container" id="add-form" style="display: none;">
-    <form method="POST">
-        <input type="hidden" name="goalId" value="{{ goal.id }}">
-        <input type="text" name="activity-name" placeholder="Activity Name" required>
-        <select id="new-goal-activity" name="activity-measurement">
-            <option value="tid">Tid</option>
-            <option value="antal">Antal</option>
-        </select>
-        <button type="submit" name="action" value="addActivity">Save Activity</button>
-    </form>
+
+    <div class="list-container" id="activities" style="width: 100%;">
+        <div class="list-header">
+            <h3>Activities for {{ goal.name }}</h3>
+            <button class="new-button" id="new-activity-button" onclick="expandForm('activity')">+</button>
+        </div>
+        <div class="list-content">
+            {% for activity in activities %}
+                <div class="list-item" data-goal-name="{{ goal.name }}" data-activity-id="{{ activity.id }}" data-act-name="{{ activity.name }}" data-start-activity="{{ start_activity }}" onclick="handleActivityClick(this)">
+                    {{ activity.name }}
+                    {% if activity.shared_item_id %}
+                        <span class="shared-indicator">(Shared)</span>
+                    {% endif %}
+                    <form action="{{ url_for('activities.delete_activity', activity_id=activity.id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="tgl-btn" onclick="event.stopPropagation();">&#10060;</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="form-box" id="new-activity-form" style="display: none;">
+            <form method="POST">
+                <input type="hidden" name="goalId" value="{{ goal.id }}">
+                <div class="input-group" id="activityName">
+                    <label for="activity-name">Name:</label>
+                    <input type="text" name="activity-name" placeholder="Activity Name" required>
+                </div>
+                <div class="input-group">
+                    <label for="activity-measurement">Measurement:</label>
+                    <select id="new-goal-activity" name="activity-measurement">
+                        <option value="tid">Tid</option>
+                        <option value="antal">Antal</option>
+                    </select>
+                </div>
+                <div class="button-center">
+                    <button class="button-style" type="submit" name="action" value="addActivity">Save</button>
+                    <button class="button-style" type="button" style="background-color: firebrick;" onclick="cancelForm('activity')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="list-container" id="deadlines" style="width: 100%;">
+        <div class="list-header">
+            <h3>Goal Deadlines</h3>
+            <button class="new-button" id="new-deadline-button" onclick="expandForm('deadline')">+</button>
+        </div>
+        <div class = "list-content">
+            {% for deadline in deadlines %}
+            <div class="list-item">
+                {{ deadline.name }}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="form-box" id="new-deadline-form" style="display: none;">
+            <form method="POST">
+                <div class="input-group" id=deadlineName>
+                    <label for="deadlineName">Name:</label>
+                    <input type="text" placeholder="Deadline Name" name="deadlineName">    
+                </div>
+                <div id="deadlineTime" class = "input-group">
+                    <label for="deadTime">Time:</label>
+                    <input type="time" id="deadTime" name="time">
+                </div>
+                <div id="deadlineDescription" style="display: none;">
+                    <label for="description">Description:</label>
+                    <textarea type="text" id="description" name="description" placeholder="Description (optional)"></textarea>
+                </div>
+                <button class="button-style" type="button" style="background-color: firebrick;" onclick="cancelForm('deadline')">Cancel</button>
+                <button class="button-style" type="submit" name="action" value="addDeadline" style="background-color: cornflowerblue;">Save</button>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 
 <script>
-function showAddActivityForm(button) {
-    document.getElementById('show-form').style.display = 'none';
-    document.getElementById('add-form').style.display = 'flex';
-    document.getElementById('hide-form').style.display = 'block'
+    document.addEventListener('DOMContentLoaded', function () {
+    const milestones = document.getElementById('milestones');
+    const goals = document.getElementById('activities');
+    const deadlines = document.getElementById('deadlines');
+    const container = document.getElementById('three-split');
+
+    // Funktion för att ändra kolumnstorlekar
+    function adjustColumns(hoveredId) {
+        if (hoveredId === 'milestones') {
+            container.style.gridTemplateColumns = '1fr 1fr 0.5fr'; // Expandera första kolumnen
+        } else if (hoveredId === 'goals') {
+            container.style.gridTemplateColumns = '0.5fr 2.5fr 0.5fr'; // Expandera andra kolumnen
+        } else if (hoveredId === 'deadlines') {
+            container.style.gridTemplateColumns = '0.5fr 1fr 1fr'; // Expandera tredje kolumnen
+        }
+    }
+
+    // Återställ kolumnstorlekar
+    function resetColumns() {
+        container.style.gridTemplateColumns = '1fr 2.5fr 1fr'; // Standardlayout
+    }
+
+    // Lägg till event listeners för hover
+    milestones.addEventListener('mouseenter', () => adjustColumns('milestones'));
+    goals.addEventListener('mouseenter', () => adjustColumns('goals'));
+    deadlines.addEventListener('mouseenter', () => adjustColumns('deadlines'));
+
+    // Återställ layouten när muspekaren lämnar containern
+    container.addEventListener('mouseleave', resetColumns);
+});
+
+function expandForm(formType) {
+    // Dölj alla knappar och formulär
+    document.querySelectorAll('.new-button').forEach(button => button.style.display = 'block');
+    document.querySelectorAll('.form-box').forEach(form => form.style.display = 'none');
+
+    // Visa det specifika formuläret och dölj dess knapp
+    document.getElementById(`new-${formType}-button`).style.display = 'none';
+    document.getElementById(`new-${formType}-form`).style.display = 'flex';
 }
 
-function hideAddActivityForm(button) {
-    document.getElementById('show-form').style.display = 'block';
-    document.getElementById('hide-form').style.display = 'none'
-    document.getElementById('add-form').style.display = 'none';
+function cancelForm(formType) {
+    // Dölj det specifika formuläret och visa dess knapp
+    document.getElementById(`new-${formType}-form`).style.display = 'none';
+    document.getElementById(`new-${formType}-button`).style.display = 'block';
 }
+
 
 </script>
 {% endblock body %}
