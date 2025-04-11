@@ -55,12 +55,34 @@
                         <td style="position: relative;">
                             {% if week_scores.get(day_str) %}
                                 {% for score in week_scores[day_str] %}
-                                    {% if score.Start.hour <= hour and hour <= score.End.hour %}
-                                        {% set relative_start = (score.Start.hour - hour) * 100 %}
+                                    {% if score.type == 'score' %}
+                                        {% if score.Start.hour <= hour and hour <= score.End.hour %}
+                                            {% set relative_start = ((score.Start.hour - hour) * 60 + score.Start.minute) / 60 * 100 %}
+                                            {% set height = score.duration_hours * 100 %}
+                                            {% if 0 <= relative_start < 100 %}
+                                            <div style="position:absolute;top:{{relative_start}}%;height:{{height}}%;width:90%;left:5%;background:#add8e6;border:1px solid #555;font-size:11px;">
+                                                <a href="{{ url_for('cal.edit_score', score_id=score.id) }}" style="color: inherit; text-decoration: none;">
+                                                    {{ score.activity_name }} - {{ score.minutes }} min
+                                                </a>
+                                            </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% elif score.type == 'event' %}
+                                        {% if score.Start.hour <= hour and hour <= score.End.hour %}
+                                            {% set relative_start = ((score.Start.hour - hour) * 60 + score.Start.minute) / 60 * 100 %}
+                                            {% set height = score.duration_hours * 100 %}
+                                            {% if 0 <= relative_start < 100 %}
+                                            <div style="position:absolute;top:{{relative_start}}%;height:{{height}}%;width:90%;left:5%;background:#90ee90;border:1px solid #555;font-size:11px;">
+                                                {{ score.event_name }}{% if score.location %} ({{ score.location }}){% endif %}
+                                            </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% elif score.type == 'milestone' %}
+                                        {% set relative_start = ((score.Start.hour - hour) * 60 + score.Start.minute) / 60 * 100 %}
                                         {% set height = score.duration_hours * 100 %}
                                         {% if 0 <= relative_start < 100 %}
-                                        <div style="position:absolute;top:{{relative_start}}%;height:{{height}}%;width:90%;left:5%;background:#add8e6;border:1px solid #555;font-size:11px;">
-                                            {{ score.activity_name }} - {{ score.minutes }} min
+                                        <div style="position:absolute;top:{{relative_start}}%;height:{{height}}%;width:90%;left:5%;background:#ffa07a;border:1px solid #555;font-size:11px;">
+                                            {{ score.name }} - Milestone
                                         </div>
                                         {% endif %}
                                     {% endif %}

@@ -234,29 +234,6 @@ def month(year=None, month=None):
     return render_template('cal/month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida,
                            sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data)
 
-def prepWeekData(scores):
-    """
-    Konverterar score-objekt till en struktur med 'start_hour' och 'duration_in_hours'.
-    """
-    processed = {}
-
-    for score in scores:
-        date_str = score.Date.strftime('%Y-%m-%d')
-        if date_str not in processed:
-            processed[date_str] = []
-
-        start_hour = score.Start.hour + score.Start.minute / 60
-        duration = score.Time / 60  # omvandla till timmar
-
-        processed[date_str].append({
-            'activity_name': score.activity_name,
-            'Start': score.Start,
-            'End': score.End,
-            'duration_hours': duration,
-            'minutes': score.Time
-        })
-
-    return processed
 
 @cal_bp.route('/week', methods=['GET', 'POST'])
 @login_required
@@ -273,89 +250,101 @@ def week():
     week_dates = [(start_week + timedelta(days=day)).strftime('%Y-%m-%d') for day in range(7)]
 
     # Fetch all scores for the user during the week
-    scores = db.session.query(
-        Activity.name.label('activity_name'),
-        Score.Start,
-        Score.End,
-        Score.Time,
-        Score.Date
-    ).join(
-        Activity, Activity.id == Score.activity_id
-    ).filter(
-        Score.user_id == user_id
-    ).filter(
-        Score.Date >= start_week.date()
-    ).filter(
+    scores = Score.query.filter(
+        Score.user_id == user_id,
+        Score.Date >= start_week.date(),
         Score.Date <= end_week.date()
+    ).all()
+
+    events = Event.query.filter(
+        Event.user_id == user_id,
+        Event.date >= start_week.date(),
+        Event.date <= end_week.date()
     ).all()
 
     # Organize scores by day and hour
     week_scores = {date: [] for date in week_dates}  # Initiera alla datum i veckan med tomma listor
     
-    weekData = prepWeekData(scores)
+    weekData = prepWeekData(scores,events)
 
     for score in scores:
         day_str = score.Date.strftime('%Y-%m-%d')
         week_scores[day_str].append(score)
-        print(f"Added score: {score.activity_name} to {score.Date} from {score.Start} to {score.End}")
+        if score.activity_score:
+            print(f"Added score: {score.activity_score.name} to {score.Date} from {score.Start} to {score.End}")
+        print(f"Added score: {score} to {score.Date} from {score.Start} to {score.End}")
 
-    bullet = TopFive.query.filter_by(user_id=current_user.id).first()
 
-    # Om det inte finns något, skapa ett nytt objekt
-    if not bullet:
-        bullet = TopFive(user_id=current_user.id)
-        db.session.add(bullet)
+    return render_template('cal/myWeek.html', sida='Veckoplanering', week_scores=weekData, header='Veckoplanering', 
+                           total_score=0, sub_menu=sub_menu, timedelta=timedelta,week=week_num, 
+                           week_dates=week_dates, current_date=current_date)
 
-    # Om POST-förfrågan skickas, uppdatera listorna
-    today = current_date.date()
+def prepWeekData(scores, events):
+    """
+    Konverterar score-objekt till en struktur med 'start_hour' och 'duration_in_hours'.
+    """
+    processed = {}
+
+    for score in scores:
+        date_str = score.Date.strftime('%Y-%m-%d')
+        if date_str not in processed:
+            processed[date_str] = []
+
+        if score.activity_score:
+            start_hour = score.Start.hour + score.Start.minute / 60
+            duration = score.Time / 60  # omvandla till timmar
+
+            processed[date_str].append({
+                'id': score.id,
+                'type': 'score',
+                'activity_name': score.activity_score.name,
+                'Start': score.Start,
+                'End': score.End,
+                'duration_hours': duration,
+                'minutes': score.Time
+            })
+
+    for event in events:
+        date_str = event.date.strftime('%Y-%m-%d')
+        if date_str not in processed:
+            processed[date_str] = []
+
+        if event.start_time is not None:
+            start_hour = event.start_time.hour + event.start_time.minute / 60
+            end_hour = event.end_time.hour + event.end_time.minute / 60 if event.end_time else start_hour + 1
+            duration = end_hour - start_hour
+
+            processed[date_str].append({
+                'id': event.id,
+                'type': 'event',
+                'event_name': event.name,
+                'Start': event.start_time,
+                'End': event.end_time,
+                'duration_hours': duration,
+                'location': event.location
+            })
+
+    return processed
+
+@cal_bp.route('/edit_score/<int:score_id>', methods=['GET', 'POST'])
+@login_required
+def edit_score(score_id):
+    score = Score.query.get_or_404(score_id)
+    activities = current_user.user_activities
+    current_activity = score.activity_score
+    
     if request.method == 'POST':
-        # Spara To-Do listan
-        if 'save_todo' in request.form:
-            todo_list = [request.form.get(f'todo_{i}') for i in range(1, 6) if request.form.get(f'todo_{i}')]
-            # Skapa en ny post med titel "To-Do" och spara listan som innehåll
-            todo_bullet = TopFive(title='To-Do', content=','.join(todo_list), user_id=current_user.id,
-                                  date=today)
-            db.session.add(todo_bullet)
-            db.session.commit()
-        # Spara Think listan
-        if 'save_think' in request.form:
-            think_list = [request.form.get(f'think_{i}') for i in range(1, 6) if request.form.get(f'think_{i}')]
-            think_bullet = TopFive(title='Think', content=','.join(think_list), user_id=current_user.id,
-                                   date=today)
-            db.session.add(think_bullet)
-            db.session.commit()
-        # Spara Remember listan
-        if 'save_remember' in request.form:
-            remember_list = [request.form.get(f'remember_{i}') for i in range(1, 6) if
-                             request.form.get(f'remember_{i}')]
-            remember_bullet = TopFive(title='Remember', content=','.join(remember_list), user_id=current_user.id,
-                                      date=today)
-            db.session.add(remember_bullet)
-            db.session.commit()
-          # Spara ändringarna i databasen
-        flash('Listor sparade!', 'success')
+        # Uppdatera score med data från formuläret
+        score.Start = datetime.strptime(request.form.get('start_time'), '%Y-%m-%d %H:%M:%S')
+        score.End = datetime.strptime(request.form.get('end_time'), '%Y-%m-%d %H:%M:%S')
+        score.Time = int(request.form.get('time'))
+        score.activity_id = request.form.get('activity_id')  # Uppdatera aktivitet om det behövs
 
-    # Hämta listor för att visa på sidan
-    priorities = TopFive.query.filter_by(user_id=current_user.id, title="To-Do").first()
-    if priorities:
-        to_do_list = priorities.content.split(',')
-    else:
-        to_do_list = []
-    to_think_list = TopFive.query.filter_by(user_id=current_user.id, title="Think").first()
-    if to_think_list:
-        to_think_list = to_think_list.content.split(',')
-    else:
-        to_think_list = []
+        db.session.commit()
+        flash('Score updated successfully!', 'success')
+        return redirect(url_for('cal.week'))
 
-    remember_list = TopFive.query.filter_by(user_id=current_user.id, title="Remember").first()
-    if remember_list:
-        remember_list = remember_list.content.split(',')
-    else:
-        remember_list = []
-    return render_template('cal/myWeek.html', sida='Veckoplanering', week_scores=weekData, header='Veckoplanering',
-                           total_score=0, sub_menu=sub_menu, bullet=bullet, timedelta=timedelta,
-                           week=week_num, week_dates=week_dates, to_do_list=to_do_list, to_think_list=to_think_list,
-                           remember_list=remember_list, current_date=current_date)
+    return render_template('cal/edit_score.html', score=score, activities=activities, current_activity=current_activity)
 
 @cal_bp.route('/timebox', methods=['GET', 'POST'])
 @login_required

@@ -26,8 +26,8 @@
 {% endblock head %}
 
 {% block body %}
-<div id="three-split" class="three-split-screen">
-    <div class="list-container" id="milestones" style="width: 100%;">
+
+    <div class="list-container" id="milestones" style="display: none;">
         <div class="list-header">
             <h3>Milestones</h3>
             <button class="new-button" id="new-milestone-button" onclick="expandForm('milestone')">+</button>
@@ -39,7 +39,7 @@
             </div>
             {% endfor %}
         </div>
-        <div class="form-box" id="new-milestone-form" style="display: none;">
+        <div class="form-box" id="new-milestone-form">
             <form method="POST">
                 <div class="input-group",id=milestoneName>
                     <label for="milestoneName">Name:</label>
@@ -55,7 +55,7 @@
         </div>
     </div>
 
-    <div class="list-container" id="goals"style="width: 100%;">
+    <div class="list-container" id="goals">
         <div class="list-header">
             <h3>My Goals</h3>
             <div class="view-toggle" style="justify-content: center; align-items: center; top: 0; background-color:white">
@@ -104,7 +104,7 @@
 
     </div>
 
-    <div class="list-container" id="deadlines" style="width: 100%;">
+    <div class="list-container" id="deadlines" style="display: none;">
         <div class="list-header">
             <h3>Deadlines</h3>
             <button class="new-button" id="new-deadline-button" onclick="expandForm('deadline')">+</button>
@@ -171,7 +171,7 @@
             </ul>
     </div>
 {% endif %}
-</div>
+
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
