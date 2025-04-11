@@ -30,6 +30,7 @@ class User(db.Model, UserMixin):
 
     #Relationships
     user_goals = db.relationship('Goals', foreign_keys='Goals.user_id', back_populates='user', lazy=True)
+    user_activities = db.relationship('Activity', foreign_keys='Activity.user_id', backref='user', lazy=True)
     user_streaks = db.relationship('Streak', foreign_keys='Streak.user_id', back_populates='user', lazy=True)
     user_settings = db.relationship('Settings', foreign_keys='Settings.user_id', back_populates='user', lazy=True)
     friendships = db.relationship('Friendship', foreign_keys='Friendship.user_id', back_populates='user', lazy=True)
@@ -116,7 +117,6 @@ class Milestones(db.Model):
     description = db.Column(db.Text, nullable=True)
     estimated_time = db.Column(db.Integer, nullable=False)
     date = db.Column(db.DateTime, nullable=True)
-    time = db.Column(db.Time, nullable=True)
     achieved = db.Column(db.Boolean, default=False)
     date_achieved = db.Column(db.DateTime, nullable=True)
     #ForeignKeys
@@ -153,7 +153,6 @@ class Activity(db.Model):
     #ForiegnKeys
     goal_id = db.Column(db.Integer, db.ForeignKey('goals.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False) 
-    milestone_id = db.Column(db.Integer, db.ForeignKey('milestones.id'), nullable=True)
     shared_item_id = db.Column(db.Integer, db.ForeignKey('shared_items.id'), nullable=True) 
     #Relationships
     scores = db.relationship('Score', back_populates='activity_score', lazy=True)
@@ -161,8 +160,10 @@ class Activity(db.Model):
     shared_item = db.relationship('SharedItem', backref='shared_activities', lazy=True)
     tasks = db.relationship('Tasks', backref='activity', lazy=True)
 
+    def __repr__(self):
+        return f"<Activity {self.name}, Goal ID: {self.goal_id}, User ID: {self.user_id}>"
+    
 class Tasks(db.Model):
-
     id = db.Column(db.Integer, primary_key=True)
     task = db.Column(db.String(255), nullable=False)
     completed = db.Column(db.Boolean, default=False)

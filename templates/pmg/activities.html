@@ -5,26 +5,52 @@
     .three-split-screen {
         display: grid;
         grid-template-columns: 1fr 3fr 1fr; /* Standardlayout */
-        gap: 5px;
+        gap: 0;
         padding: 20px;
-        width: 85%;
-        height: 90vh;
+        width: 95%;
+        height: 90%;
+        bottom: 5%;
+        border-radius: 20px;
         transition: grid-template-columns 0.8s ease; /* Smidig övergång */
     }
     .form-box {
         display: flex;
         flex-direction: column;
         padding: 10px;
-        background-color: #f0f0f0;
+        background-color: #c2c4bb;
+        justify-content: center;
+        align-items: center;
+        width: 90%;
         border-radius: 5px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
+
+    #milestones {
+    border-radius: 0;
+    border-top-left-radius: 20px; /* Rundar det övre vänstra hörnet */
+    border-bottom-left-radius: 20px; /* Rundar det nedre vänstra hörnet */
+    border-right: none;
+    }
+
+    #activities {
+        border-radius: 0; /* Ingen rundning för mittencontainern */
+        border-left: #222c09 solid 1px; /* Lägger till en vänsterkant för att separera från vänster container */
+        border-right: #222c09 solid 1px; /* Lägger till en högerkant för att separera från höger container */
+    }
+
+    #deadlines {
+        border-radius: 0;
+        border-top-right-radius: 20px; /* Rundar det övre vänstra hörnet */
+        border-bottom-right-radius: 20px; /* Rundar det nedre vänstra hörnet */
+        border-left: none;
+    }
     @media (max-width: 768px) {
-    .three-split-screen {
-        grid-template-columns: 1fr; /* Ändra till en kolumn */
-        grid-template-rows: auto; /* Anpassa höjden automatiskt */
-        height: auto; /* Låt höjden anpassas efter innehållet */
-        width: 90%; /* Använd hela bredden på skärmen */
+        .three-split-screen {
+            grid-template-columns: 1fr; /* Ändra till en kolumn */
+            grid-template-rows: auto; /* Anpassa höjden automatiskt */
+            height: auto; /* Låt höjden anpassas efter innehållet */
+            width: 90%; /* Använd hela bredden på skärmen */
+        }
     }
 </style>
 
@@ -32,13 +58,12 @@
 
 {% block body %}
 <div id="three-split" class="three-split-screen">
-
     <div class="list-container" id="milestones" style="width: 100%;">
         <div class="list-header">
             <h3>Goal Milestones</h3>
             <button class="new-button" id="new-milestone-button" onclick="expandForm('milestone')">+</button>
         </div>
-        <div class = "list-content">
+        <div class="scrollable">
             {% for milestone in milestones %}
             <div class="list-item">
                 {{ milestone.name }}
@@ -47,13 +72,17 @@
         </div>
         <div class="form-box" id="new-milestone-form" style="display: none;">
             <form method="POST">
-                <div class="input-group",id=milestoneName>
+                <div class="input-group" id=milestoneName >
                     <label for="milestoneName">Name:</label>
-                    <input type="text" placeholder="Milestone Name" name="milestoneName">    
+                    <input type="text" placeholder="Milestone Name" name="milestone-name">    
                 </div>
                 <div class="input-group" id="milestoneDescription">
                     <label for="description">Description:</label>
-                    <textarea type="text" id="description" name="milestoneDescription" placeholder="Description (optional)"></textarea>
+                    <textarea type="text" id="description" name="milestone-description" placeholder="Description (optional)"></textarea>
+                </div>
+                <div class="input-group" id="milestoneTime">
+                    <label for="milestone-time">Estimated Time (hours):</label>
+                    <input type="number" id="milestone-time" name="milestone-time">
                 </div>
                 <button class="button-style" type="button" style="background-color: firebrick;" onclick="cancelForm('milestone')">Cancel</button>
                 <button class="button-style" type="submit" name="action" value="addMilestone" style="background-color: cornflowerblue;">Save</button>
@@ -105,7 +134,7 @@
             <h3>Goal Deadlines</h3>
             <button class="new-button" id="new-deadline-button" onclick="expandForm('deadline')">+</button>
         </div>
-        <div class = "list-content">
+        <div class = "scrollable">
             {% for deadline in deadlines %}
             <div class="list-item">
                 {{ deadline.name }}
@@ -114,17 +143,17 @@
         </div>
         <div class="form-box" id="new-deadline-form" style="display: none;">
             <form method="POST">
-                <div class="input-group" id=deadlineName>
+                <div class="input-group" id=deadline-name>
                     <label for="deadlineName">Name:</label>
                     <input type="text" placeholder="Deadline Name" name="deadlineName">    
                 </div>
                 <div id="deadlineTime" class = "input-group">
                     <label for="deadTime">Time:</label>
-                    <input type="time" id="deadTime" name="time">
+                    <input type="datetime-local" id="deadTime" name="deadline-date">
                 </div>
                 <div id="deadlineDescription" style="display: none;">
                     <label for="description">Description:</label>
-                    <textarea type="text" id="description" name="description" placeholder="Description (optional)"></textarea>
+                    <textarea type="text" id="description" name="deadline-description" placeholder="Description (optional)"></textarea>
                 </div>
                 <button class="button-style" type="button" style="background-color: firebrick;" onclick="cancelForm('deadline')">Cancel</button>
                 <button class="button-style" type="submit" name="action" value="addDeadline" style="background-color: cornflowerblue;">Save</button>
@@ -136,51 +165,37 @@
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-    const milestones = document.getElementById('milestones');
-    const goals = document.getElementById('activities');
-    const deadlines = document.getElementById('deadlines');
-    const container = document.getElementById('three-split');
-
-    // Funktion för att ändra kolumnstorlekar
-    function adjustColumns(hoveredId) {
-        if (hoveredId === 'milestones') {
-            container.style.gridTemplateColumns = '1fr 1fr 0.5fr'; // Expandera första kolumnen
-        } else if (hoveredId === 'goals') {
-            container.style.gridTemplateColumns = '0.5fr 2.5fr 0.5fr'; // Expandera andra kolumnen
-        } else if (hoveredId === 'deadlines') {
-            container.style.gridTemplateColumns = '0.5fr 1fr 1fr'; // Expandera tredje kolumnen
-        }
-    }
-
-    // Återställ kolumnstorlekar
-    function resetColumns() {
-        container.style.gridTemplateColumns = '1fr 2.5fr 1fr'; // Standardlayout
-    }
-
-    // Lägg till event listeners för hover
-    milestones.addEventListener('mouseenter', () => adjustColumns('milestones'));
-    goals.addEventListener('mouseenter', () => adjustColumns('goals'));
-    deadlines.addEventListener('mouseenter', () => adjustColumns('deadlines'));
-
-    // Återställ layouten när muspekaren lämnar containern
-    container.addEventListener('mouseleave', resetColumns);
-});
 
 function expandForm(formType) {
     // Dölj alla knappar och formulär
+    const split = document.getElementById("three-split");
+
     document.querySelectorAll('.new-button').forEach(button => button.style.display = 'block');
     document.querySelectorAll('.form-box').forEach(form => form.style.display = 'none');
 
     // Visa det specifika formuläret och dölj dess knapp
     document.getElementById(`new-${formType}-button`).style.display = 'none';
     document.getElementById(`new-${formType}-form`).style.display = 'flex';
+    
+    if (formType === 'milestone') {
+        split.style.gridTemplateColumns = '2fr 1fr 1fr'; // Fokus på vänster container
+    } else if (formType === 'activity') {
+        split.style.gridTemplateColumns = '1fr 3fr 1fr'; // Fokus på mittencontainer
+    } else if (formType === 'deadline') {
+        split.style.gridTemplateColumns = '1fr 1fr 2fr'; // Fokus på höger container
+    } else {
+        split.style.gridTemplateColumns = '1fr 3fr 1fr'; // Standardlayout
+    }
 }
 
 function cancelForm(formType) {
     // Dölj det specifika formuläret och visa dess knapp
+    const split = document.getElementById("three-split");
+
     document.getElementById(`new-${formType}-form`).style.display = 'none';
     document.getElementById(`new-${formType}-button`).style.display = 'block';
+
+    split.style.gridTemplateColumns = '1fr 3fr 1fr'; // Återställ till standardlayout
 }
 
 

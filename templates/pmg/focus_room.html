@@ -24,14 +24,25 @@
     font-size: 16px;
     color: #333;
 }
+.progress-container {
+    position: absolute;
+    width: 94%;
+    bottom: 1px;
+    left: 3%;
+    height: 4px;
+    background-color: darkgray;
+    border-radius: 2px;
+    border-style: solid #000000;
+    z-index: 0; /* Se till att den ligger bakom texten */
+}
 .progress-bar {
     position: absolute;
+    height: 2px;
     bottom: 1px;
-    left: 1px;
-    height: 0.3px;
     background-color: lightgreen; /* Färg på progress-bar */
     transition: width 0.4s ease-in-out;
-    z-index: 0;
+    z-index: 1;
+    border-radius: 2px;
 }
 
 /* Indrag för subtasks för att indikera hierarki */
@@ -99,10 +110,11 @@ z-index: 1;
                     ondragstart="dragStart(event)" ondragover="allowDrop(event)" ondrop="dropTask(event)">
                 
                 <!-- Progress-bar ligger bakom text -->
-                <span class="progress-bar" 
-                    style="width: {{ (task.completed_subtasks / task.subtask_count) * 100 if task.subtask_count > 0 else 0 }}%;">
-                </span>  
-        
+                <div class="progress-container">
+                    <div class="progress-bar" 
+                        style="width: {{ (task.completed_subtasks / task.subtask_count) * 100 if task.subtask_count > 0 else 0 }}%;">
+                    </div>  
+                </div>
                 <!-- Text ska ligga ovanpå -->
                 <span>{{ task.task }}</span>
 

@@ -3,7 +3,7 @@ from extensions import db
 
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from models import (User, Streak, Goals, Friendship, Notes, SharedItem, Notification,
-                    Activity, Score, Tasks, TopFive, SubTask)
+                    Activity, Score, Tasks, TopFive, SubTask, Deadline, Milestones)
 from datetime import datetime, timedelta, date
 
 from pmg_func import (common_route, add2db, getSwetime, get_user_goals, get_user_tasks, update_streak_details,
@@ -32,41 +32,71 @@ def goal_activities(goal_id):
     start_activity = request.args.get('start_activity', None)
 
     if request.method == 'POST':
+        action = request.form.get('action', None)
         # Hantera POST-begäran för att lägga till en aktivitet
-        goalId = goal_id
-        activity_name = request.form.get('activity-name')
-        measurement = request.form.get('activity-measurement')
+        if action == 'addActivity':
+            goalId = goal_id
+            activity_name = request.form.get('activity-name')
+            measurement = request.form.get('activity-measurement')
 
-        if activity_name and measurement:
-            # Skapa aktivitet
-            new_activity = Activity(
-                name=activity_name,
-                goal_id=goal.id,
-                user_id=user,
-                shared_item_id=shared_item.id if shared_item else None  # Koppla till delning om målet är delat
-            )
-            db.session.add(new_activity)
-            db.session.commit()
+            if activity_name and measurement:
+                # Skapa aktivitet
+                new_activity = Activity(
+                    name=activity_name,
+                    goal_id=goal.id,
+                    user_id=user,
+                    shared_item_id=shared_item.id if shared_item else None  # Koppla till delning om målet är delat
+                )
+                db.session.add(new_activity)
 
-            if shared_item:
-                # Hämta alla användare som målet är delat med
-                shared_users = SharedItem.query.filter_by(item_id=goal_id, item_type='goal', status='active').all()
-                for shared_user in shared_users:
-                    if shared_user.shared_with_id != current_user.id:  # Hoppa över nuvarande användare
-                        create_notification(
-                            user_id=shared_user.shared_with_id,  # Mottagarens ID
-                            message=f"{current_user.username} created a new activity '{activity_name}' in goal '{goal.name}'.",
-                            related_item_id=new_activity.id,
-                            item_type='activity'
-                        )
+                if shared_item:
+                    # Hämta alla användare som målet är delat med
+                    shared_users = SharedItem.query.filter_by(item_id=goal_id, item_type='goal', status='active').all()
+                    for shared_user in shared_users:
+                        if shared_user.shared_with_id != current_user.id:  # Hoppa över nuvarande användare
+                            create_notification(
+                                user_id=shared_user.shared_with_id,  # Mottagarens ID
+                                message=f"{current_user.username} created a new activity '{activity_name}' in goal '{goal.name}'.",
+                                related_item_id=new_activity.id,
+                                item_type='activity'
+                            )
 
-            flash('Activity added successfully', 'success')
-            return redirect(url_for('activities.goal_activities', goal_id=goal_id))
-        else:
-            flash('Activity name and measurement are required', 'danger')
+                flash('Activity added successfully', 'success')
+                return redirect(url_for('activities.goal_activities', goal_id=goal_id))
+            else:
+                flash('Activity name and measurement are required', 'danger')
+        elif action == "addMilestone":
+            
+            milestone_name = request.form.get('milestone-name')
+            milestone_description = request.form.get('milestone-description')
+            milestone_est_time = request.form.get('milestone-time')
+            
+            new_milestone = Milestones(
+                name=milestone_name,
+                description=milestone_description,
+                estimated_time=milestone_est_time,
+                date=datetime.now(),
+                user_id=current_user.id,
+                goal_id=goal_id)
+            
+            db.session.add(new_milestone)
+        elif action == "addDeadline":
+            deadline_name = request.form.get('deadline-name')
+            deadline_description = request.form.get('deadline-description')
+            deadline_due_date = request.form.get('deadline-date')
+            
+            new_deadline = Deadline(
+                name=deadline_name,
+                description=deadline_description,
+                due_date=deadline_due_date,
+                user_id=current_user.id,
+                goal_id=goal_id)
+            db.session.add(new_deadline)
 
+        db.session.commit()
     # Hantera GET-begäran för att visa aktiviteterna
     activities = goal.activities
+    
     return render_template('pmg/activities.html', goal=goal, start_activity=start_activity, activities=activities, deadlines=deadlines, milestones=milestones)
 
 

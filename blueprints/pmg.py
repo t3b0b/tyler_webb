@@ -184,7 +184,7 @@ def focus_room(activity_id):
                     score_check = float(score_str)
                     if score_check >= 1:
                         add2db(Score, request, ['gID', 'aID', 'aDate', 'start', 'end', 'score'],
-                               ['Goal', 'Activity', 'Date', 'Start', 'End', 'Time'], current_user)
+                               ['goal_id', 'activity_id', 'Date', 'Start', 'End', 'Time'], current_user)
                         return redirect(url_for('pmg.myday'))
                 except ValueError:
                     print(f"Invalid score value: {score_str}")
