@@ -197,7 +197,7 @@ def delete_goal(goal_id):
         db.session.rollback()
         flash(f"Något gick fel vid raderingen: {str(e)}", "danger")
 
-    return redirect(url_for('pmg.goals'))
+    return redirect(url_for('goals.goals'))
 
 @goals_bp.route('pmg/goal_requests', methods=['GET'])
 @login_required
