@@ -44,12 +44,29 @@
         border-bottom-right-radius: 20px; /* Rundar det nedre vänstra hörnet */
         border-left: none;
     }
+
     @media (max-width: 768px) {
         .three-split-screen {
-            grid-template-columns: 1fr; /* Ändra till en kolumn */
-            grid-template-rows: auto; /* Anpassa höjden automatiskt */
-            height: auto; /* Låt höjden anpassas efter innehållet */
+            display: flex;
+            justify-content: center;
+            flex-direction: column; /* Ändra till kolumnlayout för mindre skärmar */
+            align-items: center;
+            min-height: 500px;
+            height: 90vh;
+            margin-inline: 0;
             width: 90%; /* Använd hela bredden på skärmen */
+        }
+        #deadlines, #milestones {
+            display: none;
+            border-left: none; /* Ta bort vänsterkant för högercontainern */
+            border-right: none; /* Ta bort högerkant för högercontainern */
+        }
+        #activities {
+            border-radius: 10px;
+            height: 90%;
+            border-left: 1px, solid, black; /* Ta bort vänsterkant för mittencontainern */
+            border-right: 1px, solid, black; /* Ta bort högerkant för mittencontainern */
+        
         }
     }
 </style>
@@ -89,7 +106,6 @@
             </form>
         </div>
     </div>
-
     <div class="list-container" id="activities" style="width: 100%;">
         <div class="list-header">
             <h3>Activities for {{ goal.name }}</h3>
