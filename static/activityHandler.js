@@ -101,7 +101,7 @@ function handleActivityClick(element) {
         startActivity(activityId,actName,goalName);
     } else {
         // Annars omdirigera till todos
-        window.location.href = `/pmg/activity/${activityId}/tasks`;
+        window.location.href = `/tasks/activity/${activityId}/tasks`;
     }
 }
 
