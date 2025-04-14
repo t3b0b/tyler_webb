@@ -274,6 +274,7 @@ class Deadline(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
     due_date = db.Column(db.Date, nullable=False)
+    est_time = db.Column(db.Integer, nullable=True)
     completed = db.Column(db.Boolean, default=False)
     completed_date = db.Column(db.Date, nullable=True)
     #ForiegnKeys

@@ -199,7 +199,7 @@ def focus_room(activity_id):
         task = Tasks.query.get_or_404(task_id)
         task.completed = completed
         db.session.commit()
-
+        
         return jsonify({"success": True}), 200
 
     return render_template('pmg/focus_room.html',activityNotes=activityNotes, activity=activity, tasks=tasks, currentDate=currentDate,goalId=goalId, activityName=activity.name)

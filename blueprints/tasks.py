@@ -109,6 +109,7 @@ def add_task(activity_id):
                     related_item_id=new_task.id,
                     item_type='task'
                 )
+                
     if 'fokus' in request.form.get('page'):
         flash("Task added successfully", "success")
         return redirect(url_for('pmg.focus_room', activity_id=activity_id))

@@ -19,10 +19,6 @@ cal = Calendar()
 scoreHandler = ScoreAnalyzer()
 
 #region Milestones
-@cal_bp.route('milestones/<int:goal_id>')
-@login_required
-def milestones(goal_id):
-    return render_template('pmg/milestones.html')
 
 @cal_bp.route('/myday/<date>')
 @login_required

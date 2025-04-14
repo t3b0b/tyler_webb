@@ -65,7 +65,8 @@ def goal_activities(goal_id):
                 return redirect(url_for('activities.goal_activities', goal_id=goal_id))
             else:
                 flash('Activity name and measurement are required', 'danger')
-                
+            return redirect(url_for('activities.goal_activities', goal_id=goal_id))
+            
         elif action == "addMilestone":
             
             milestone_name = request.form.get('milestone-name')
@@ -79,8 +80,9 @@ def goal_activities(goal_id):
                 date=datetime.now(),
                 user_id=current_user.id,
                 goal_id=goal_id)
-            
             db.session.add(new_milestone)
+            db.session.commit()
+            return redirect(url_for('activities.goal_activities', goal_id=goal_id))
         elif action == "addDeadline":
             deadline_name = request.form.get('deadline-name')
             deadline_description = request.form.get('deadline-description')
@@ -93,7 +95,8 @@ def goal_activities(goal_id):
                 user_id=current_user.id,
                 goal_id=goal_id)
             db.session.add(new_deadline)
-
+            db.session.commit()
+            return redirect(url_for('activities.goal_activities', goal_id=goal_id))
     # Hantera GET-begäran för att visa aktiviteterna
     activities = goal.activities
     

@@ -1,6 +1,6 @@
 from extensions import db
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
-from models import (User, Goals, Friendship, Notes, SharedItem, Tasks)
+from models import (User, Goals, Friendship, Notes, SharedItem, Tasks, Milestones,Deadline)
 from sqlalchemy import and_
 from pmg_func import (common_route, create_notification)
 from flask_login import current_user, login_required
@@ -14,6 +14,7 @@ datahand = PlotHandler()
 texthand = textHandler()
 
 goals_bp = Blueprint('goals', __name__, template_folder='templates/pmg')
+
 #region Goals
 @goals_bp.route('/goals', methods=['GET', 'POST'])
 @login_required
@@ -66,7 +67,8 @@ def goals():
                 )
 
             db.session.commit()  # Slutför allt i en transaktion
-
+            return redirect(url_for('goals.goals', goal_id=goal_id))
+        
         elif 'addTodo' in request.form['action']:
             goal_id = request.form.get('goalId')
             task_content = request.form.get('task')
@@ -164,7 +166,6 @@ def handle_goal_request(request_id, action):
 def delete_goal(goal_id):
     goal = Goals.query.get_or_404(goal_id)
 
-    # Kontrollera att användaren äger målet
     if goal.user_id != current_user.id:
         flash("Du har inte behörighet att ta bort detta mål.", "danger")
         return redirect(url_for('pmg.goals'))
@@ -210,4 +211,55 @@ def goal_requests():
 
     return render_template('goal_requests.html', received_requests=received_requests, sent_requests=sent_requests)
 
+@goals_bp.route('/milestone/<int:milestone_id>/delete', methods=['POST'])
+@login_required
+def delete_milestone(milestone_id):
+    milestone = Milestones.query.get_or_404(milestone_id)
+
+    # Kontrollera att användaren har behörighet att ta bort denna milestone
+    if milestone.goal.user_id != current_user.id:
+        flash("Du har inte behörighet att ta bort denna milestone.", "danger")
+        return redirect(url_for('activities.goal_activities', goal_id=milestone.goal_id))
+
+    db.session.delete(milestone)
+    db.session.commit()
+    flash("Milestone har tagits bort.", "success")
+    return redirect(url_for('activities.goal_activities', goal_id=milestone.goal_id))
+
+
+@goals_bp.route('/deadline/<int:deadline_id>/delete', methods=['POST'])
+@login_required
+def delete_deadline(deadline_id):
+    deadline = Deadline.query.get_or_404(deadline_id)
+
+    # Kontrollera att användaren har behörighet att ta bort denna deadline
+    if deadline.goal.user_id != current_user.id:
+        flash("Du har inte behörighet att ta bort denna deadline.", "danger")
+        return redirect(url_for('activities.goal_activities', goal_id=deadline.goal_id))
+
+    db.session.delete(deadline)
+    db.session.commit()
+    flash("Deadline har tagits bort.", "success")
+    return redirect(url_for('activities.goal_activities', goal_id=deadline.goal_id))
 # endregion
+
+@goals_bp.route('/milestone/<int:milestone_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_milestone(milestone_id):
+    milestone = Milestones.query.get_or_404(milestone_id)
+
+    if milestone.goal.user_id != current_user.id:
+        flash("Du har inte behörighet att redigera denna milestone.", "danger")
+        return redirect(url_for('activities.goal_activities', goal_id=milestone.goal_id))
+
+    if request.method == 'POST':
+        milestone.name = request.form.get('milestone-name')
+        milestone.description = request.form.get('milestone-description')
+        milestone.estimated_time = request.form.get('milestone-time')
+        
+        db.session.commit()
+
+        flash("Milestone har uppdaterats.", "success")
+        return redirect(url_for('activities.goal_activities', goal_id=milestone.goal_id))
+
+    return render_template('pmg/edit_milestone.html', milestone=milestone)

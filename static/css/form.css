@@ -17,9 +17,10 @@
     font-size: 0.8rem;
     text-align: left;
     font-weight: bold;
+    margin: 0;
 }
 
-.input-group {
+.input-group-row {
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
@@ -32,13 +33,28 @@
     display: none;
 }
 
-.textbox-label-group {
+.input-group-column {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: left;
-    width: 100%;
+    align-items: center;
+    max-width: 100%;
+    width: 300px;
+    margin: 0 auto;
 
+}
+.input-group-column textarea{
+    align-self: center;
+    width: 85%;
+    margin: 0 auto;
+    margin-bottom: 8px;
+
+}
+.input-group-column label {
+    align-self: flex-start; /* Positionera labeln till vänster */
+    text-align: left; /* Säkerställ att texten är vänsterjusterad */
+    margin-bottom: 5px; /* Lägg till lite mellanrum under labeln */
+    font-weight: bold; /* Gör texten tydligare */
 }
 
 input:focus {

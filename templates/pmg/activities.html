@@ -75,6 +75,7 @@
 
 {% block body %}
 <div id="three-split" class="three-split-screen">
+
     <div class="list-container" id="milestones" style="width: 100%;">
         <div class="list-header">
             <h3>Goal Milestones</h3>
@@ -82,22 +83,25 @@
         </div>
         <div class="scrollable">
             {% for milestone in milestones %}
-            <div class="list-item">
+            <div class="list-item" onclick="window.location.href='{{ url_for('goals.edit_milestone', milestone_id=milestone.id) }}'">
                 {{ milestone.name }}
+                <form action="{{ url_for('goals.delete_milestone', milestone_id=milestone.id) }}" method="POST" style="display: inline;">
+                    <button type="submit" class="tgl-btn" onclick="event.stopPropagation();">&#10060;</button>
+                </form>
             </div>
             {% endfor %}
         </div>
         <div class="form-box" id="new-milestone-form" style="display: none;">
             <form method="POST">
-                <div class="input-group" id=milestoneName >
+                <div class="input-group-row" id=milestoneName >
                     <label for="milestoneName">Name:</label>
                     <input type="text" placeholder="Milestone Name" name="milestone-name">    
                 </div>
-                <div class="input-group" id="milestoneDescription">
+                <div class="input-group-row" id="milestoneDescription">
                     <label for="description">Description:</label>
                     <textarea type="text" id="description" name="milestone-description" placeholder="Description (optional)"></textarea>
                 </div>
-                <div class="input-group" id="milestoneTime">
+                <div class="input-group-row" id="milestoneTime">
                     <label for="milestone-time">Estimated Time (hours):</label>
                     <input type="number" id="milestone-time" name="milestone-time">
                 </div>
@@ -106,6 +110,7 @@
             </form>
         </div>
     </div>
+
     <div class="list-container" id="activities" style="width: 100%;">
         <div class="list-header">
             <h3>Activities for {{ goal.name }}</h3>
@@ -127,11 +132,11 @@
         <div class="form-box" id="new-activity-form" style="display: none;">
             <form method="POST">
                 <input type="hidden" name="goalId" value="{{ goal.id }}">
-                <div class="input-group" id="activityName">
+                <div class="input-group-row" id="activityName">
                     <label for="activity-name">Name:</label>
                     <input type="text" name="activity-name" placeholder="Activity Name" required>
                 </div>
-                <div class="input-group">
+                <div class="input-group-row">
                     <label for="activity-measurement">Measurement:</label>
                     <select id="new-goal-activity" name="activity-measurement">
                         <option value="tid">Tid</option>
@@ -145,6 +150,7 @@
             </form>
         </div>
     </div>
+
     <div class="list-container" id="deadlines" style="width: 100%;">
         <div class="list-header">
             <h3>Goal Deadlines</h3>
@@ -152,18 +158,21 @@
         </div>
         <div class = "scrollable">
             {% for deadline in deadlines %}
-            <div class="list-item">
+            <div class="list-item" onclick="window.location.href='{{ url_for('goals.edit_deadline', deadline_id=deadline.id) }}'">
                 {{ deadline.name }}
+                <form action="{{ url_for('goals.delete_deadline', deadline_id=deadline.id) }}" method="POST" style="display: inline;">
+                    <button type="submit" class="tgl-btn" onclick="event.stopPropagation();">&#10060;</button>
+                </form>
             </div>
             {% endfor %}
         </div>
         <div class="form-box" id="new-deadline-form" style="display: none;">
             <form method="POST">
-                <div class="input-group" id=deadline-name>
+                <div class="input-group-row" id=deadline-name>
                     <label for="deadlineName">Name:</label>
                     <input type="text" placeholder="Deadline Name" name="deadlineName">    
                 </div>
-                <div id="deadlineTime" class = "input-group">
+                <div id="deadlineTime" class ="input-group-row">
                     <label for="deadTime">Time:</label>
                     <input type="datetime-local" id="deadTime" name="deadline-date">
                 </div>
@@ -213,7 +222,5 @@ function cancelForm(formType) {
 
     split.style.gridTemplateColumns = '1fr 3fr 1fr'; // Återställ till standardlayout
 }
-
-
 </script>
 {% endblock body %}

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block head %}
+<style>
+.styled-textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    resize: vertical;
+    font-size: 15px;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f9f9f9;
+    box-shadow: inset 1px 1px 4px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.styled-textarea:focus {
+    border-color: #66afe9;
+    outline: none;
+    box-shadow: 0 0 6px rgba(102, 175, 233, 0.6);
+}
+
+</style>
+{% endblock head %}
+{% block body %}
+<div class="form-container">
+    <h2>Redigera Milestone</h2>
+    <form method="POST">
+        <div class="input-group-column">
+            <label for="milestone-name">Name:</label>
+            <input style="width:90%;" type="text" id="milestone-name" name="milestone-name" value="{{ milestone.name }}" required>
+        </div>
+        <div class="input-group-column">
+            <label for="milestone-description">Description:</label>
+            <textarea class="styled-textarea" rows="5" id="milestone-description" name="milestone-description">{{ milestone.description }}</textarea>
+        </div>
+        <div class="input-group-column">
+            <label for="milestone-time">Estimated Time (hours):</label>
+            <input type="number" style="width:90%;" id="milestone-time" name="milestone-time" value="{{ milestone.estimated_time }}">
+        </div>
+        <button type="submit" class="button-style">Save</button>
+        <a href="{{ url_for('activities.goal_activities', goal_id=milestone.goal_id) }}" class="button-style" style="background-color: firebrick;">Cancel</a>
+    </form>
+</div>
+{% endblock %}
