@@ -60,11 +60,12 @@ def goal_activities(goal_id):
                                 related_item_id=new_activity.id,
                                 item_type='activity'
                             )
-
+                db.session.commit()
                 flash('Activity added successfully', 'success')
                 return redirect(url_for('activities.goal_activities', goal_id=goal_id))
             else:
                 flash('Activity name and measurement are required', 'danger')
+                
         elif action == "addMilestone":
             
             milestone_name = request.form.get('milestone-name')
@@ -93,7 +94,6 @@ def goal_activities(goal_id):
                 goal_id=goal_id)
             db.session.add(new_deadline)
 
-        db.session.commit()
     # Hantera GET-begäran för att visa aktiviteterna
     activities = goal.activities
     
@@ -132,6 +132,7 @@ def update_task_order():
 @login_required
 def delete_activity(activity_id):
     activity = Activity.query.get_or_404(activity_id)
+    goal_id = activity.goal_id
 
     try:
         # Ta bort relaterade tasks
@@ -149,7 +150,7 @@ def delete_activity(activity_id):
         db.session.rollback()
         flash(f"Något gick fel vid raderingen: {str(e)}", "danger")
 
-    return redirect(url_for('pmg.activities'))
+    return goal_activities(goal_id=goal_id)
 
 
 @activities_bp.route('/get_activities/<goal_id>')
