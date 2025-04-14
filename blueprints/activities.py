@@ -44,7 +44,7 @@ def goal_activities(goal_id):
                 new_activity = Activity(
                     name=activity_name,
                     goal_id=goal.id,
-                    user_id=user,
+                    user_id=current_user.id,
                     shared_item_id=shared_item.id if shared_item else None  # Koppla till delning om målet är delat
                 )
                 db.session.add(new_activity)

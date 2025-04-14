@@ -18,19 +18,35 @@
     padding: 20px; /* Ger lite extra padding inuti containern så att input-rutorna inte når kanten */
     box-sizing: border-box; /* Inkluderar padding i elementets totala storlek */
 }
+.cal-navigation-container {
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    top:55px;
+    left:5%;
+    width:90%;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
 </style>
 {% endblock head %}
 
 {% block body %}
-
 <div class="calendar-container">
-    <div>
+    <div class="cal-navigation-container">
+        <button onclick="window.location.href='{{ url_for('cal.week', week_offset=week_offset - 1) }}'">
+            <
+        </button>
         <h2 style="font-size: 14px;">Vecka {{ current_date.isocalendar()[1] }}</h2>
-        <div class="view-toggle">
-            <button class="page-toggle-btn" onclick="window.location.href='/cal/month'">Month</button>
-            <button class="active-view" onclick="window.location.href='/cal/week'">Week</button>
-            <button class="page-toggle-btn" onclick="window.location.href='/cal/timebox'">Day</button>
-        </div>
+        <button onclick="window.location.href='{{ url_for('cal.week', week_offset=week_offset + 1) }}'">
+            >
+        </button>
+    </div>
+    <div class="view-toggle">
+        <button class="page-toggle-btn" onclick="window.location.href='/cal/month'">Month</button>
+        <button class="active-view" onclick="window.location.href='/cal/week'">Week</button>
+        <button class="page-toggle-btn" onclick="window.location.href='/cal/timebox'">Day</button>
     </div>
     <div class="scrollable">
         <table>

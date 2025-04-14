@@ -238,7 +238,8 @@ def month(year=None, month=None):
 @cal_bp.route('/week', methods=['GET', 'POST'])
 @login_required
 def week():
-    current_date = datetime.now()
+    week_offset = request.args.get('week_offset', 0, type=int)
+    current_date = datetime.now() + timedelta(weeks=week_offset)
     year, week_num, weekday = current_date.isocalendar()
     start_week = current_date - timedelta(days=current_date.weekday())  # Start of the current week
     end_week = start_week + timedelta(days=6)  # End of the current week
@@ -277,7 +278,7 @@ def week():
 
     return render_template('cal/myWeek.html', sida='Veckoplanering', week_scores=weekData, header='Veckoplanering', 
                            total_score=0, sub_menu=sub_menu, timedelta=timedelta,week=week_num, 
-                           week_dates=week_dates, current_date=current_date)
+                           week_dates=week_dates, current_date=current_date, week_offset=week_offset)
 
 def prepWeekData(scores, events):
     """
