@@ -168,7 +168,7 @@ class Tasks(db.Model):
     task = db.Column(db.String(255), nullable=False)
     completed = db.Column(db.Boolean, default=False)
     time = db.Column(db.Integer, default=0)
-    confirmed_date = db.Column(db.DateTime, nullable=True)
+    date_completed = db.Column(db.DateTime, nullable=True)
     order = db.Column(db.Integer, default=0)
     #ForiegnKeys
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -196,6 +196,7 @@ class SubTask(db.Model):
     name = db.Column(db.String(255), nullable=False)  # Namnet på subtasken
     completed = db.Column(db.Boolean, default=False)  # Om subtasken är klar
     order = db.Column(db.Integer, default=0)
+    date_completed = db.Column(db.DateTime, nullable=True)
     #ForiegnKeys
     task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)  # Koppling till huvudtasken
     #Relationships
@@ -257,6 +258,7 @@ class Event(db.Model):
     end_time = db.Column(db.Time, nullable=True)
     location = db.Column(db.String(255), nullable=True)  # Lägg till plats som en sträng
     date = db.Column(db.Date, nullable=False)
+    weekday = db.Column(db.Integer, nullable=True) # 0=monday, 6=sunday
     #ForiegnKeys
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)

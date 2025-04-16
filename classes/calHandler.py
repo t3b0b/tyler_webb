@@ -36,12 +36,59 @@ class Calendar:
         return weeks
     
 
+    def prepWeekData(scores, events):
+        """
+        Konverterar score-objekt till en struktur med 'start_hour' och 'duration_in_hours'.
+        """
+        processed = {}
+
+        for score in scores:
+            date_str = score.Date.strftime('%Y-%m-%d')
+            if date_str not in processed:
+                processed[date_str] = []
+
+            if score.activity_score:
+                start_hour = score.Start.hour + score.Start.minute / 60
+                duration = score.Time / 60  # omvandla till timmar
+
+                processed[date_str].append({
+                    'id': score.id,
+                    'type': 'score',
+                    'activity_name': score.activity_score.name,
+                    'Start': score.Start,
+                    'End': score.End,
+                    'duration_hours': duration,
+                    'minutes': score.Time
+                })
+
+        for event in events:
+            date_str = event.date.strftime('%Y-%m-%d')
+            if date_str not in processed:
+                processed[date_str] = []
+
+            if event.start_time is not None:
+                start_hour = event.start_time.hour + event.start_time.minute / 60
+                end_hour = event.end_time.hour + event.end_time.minute / 60 if event.end_time else start_hour + 1
+                duration = end_hour - start_hour
+
+                processed[date_str].append({
+                    'id': event.id,
+                    'type': 'event',
+                    'event_name': event.name,
+                    'Start': event.start_time,
+                    'End': event.end_time,
+                    'duration_hours': duration,
+                    'location': event.location
+                })
+
+        return processed
+
 class UserCalendar(Calendar):
 
     def __init__(self, user_id):
         super().__init__()
         self.user_id = user_id
-    
+
     def get_events_for_day(self, target_date):
         """Hämtar alla event för en viss dag inklusive återkommande events."""
         #target_date = datetime.strptime(target_date, "%Y-%m-%d").date()
@@ -94,4 +141,24 @@ class UserCalendar(Calendar):
                     valid_recurring_events.append((event, goal_name, activity_name))
 
         # Kombinera vanliga och giltiga återkommande events
+        print(valid_recurring_events)
         return regular_events + valid_recurring_events
+        
+    def get_weekly_events(self, start_week):
+
+        recurring_events = Event.query.filter(
+            (Event.is_recurring == 1),
+            (Event.user_id == self.user_id)
+        ).all()
+
+        current_recurring_events = []
+
+        for event in recurring_events:
+            for i in range(7):
+                potential_date = start_week + timedelta(days=i)
+                if potential_date.weekday() ==  event.date.weekday():
+                    event.date = potential_date.date()
+                    current_recurring_events.append(event)
+
+        return current_recurring_events
+    

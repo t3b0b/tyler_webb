@@ -33,6 +33,10 @@ class PlotHandler:
         return plot_url
 
     def create_grouped_bar_plot(self, data_dicts=None, labels_list=None, title="Summering", ylabel="Tid (min)"):
+        """
+        Skapar en stapelgraf där denna veckas staplar visas ovanför förra veckans staplar,
+        och x-axelns etiketter innehåller veckodagarnas namn.
+        """
         # 1. Samla alla unika labels från alla dictionaries
         all_labels = set()
         for d in data_dicts:
@@ -45,27 +49,30 @@ class PlotHandler:
             values = [d.get(label, 0) for label in all_labels]
             all_values.append(values)
 
-        # 3. Gör snygg formatering om labels är datum
-        all_labels = [label.strftime('%a %d-%m') if isinstance(label, (datetime, date)) else label for label in all_labels]
+        # 3. Byt ut labels till veckodagarnas namn
+        all_labels = [label.strftime('%A') if isinstance(label, (datetime, date)) else label for label in all_labels]
 
         # 4. Plot inställningar
         x = np.arange(len(all_labels))  # x-axelns positioner
-        width = 0.8 / len(data_dicts)  # Bredd anpassad för antal grupper (max bredd 0.8)
+        width = 0.4  # Bredd för varje stapel
 
         plt.figure(figsize=(12, 6))
         colors = plt.cm.get_cmap('tab10', len(data_dicts))  # Unika färger för varje dataset
 
         # 5. Skapa staplar för varje data_dict
         for idx, values in enumerate(all_values):
-            offset = (idx - (len(data_dicts) - 1) / 2) * width  # Placera bredvid varandra
-            label = labels_list[idx] if labels_list and idx < len(labels_list) else f"Data {idx+1}"
-            bars = plt.bar(x + offset, values, width=width, label=label, color=colors(idx), alpha=0.8)
+            if idx == 0:
+                # Första datasetet (förra veckan)
+                bars = plt.bar(x, values, width=width, label=labels_list[idx] if labels_list else "Förra veckan", color=colors(idx), alpha=0.6)
+            elif idx == 1:
+                # Andra datasetet (denna veckan), staplas ovanpå
+                bars = plt.bar(x, values, width=width, label=labels_list[idx] if labels_list else "Denna vecka", color=colors(idx), alpha=0.8, bottom=all_values[0])
 
             # Lägg siffror ovanpå varje stapel
             for bar in bars:
                 height = bar.get_height()
                 if height > 0:
-                    plt.text(bar.get_x() + bar.get_width() / 2.0, height, f'{int(height)}',
+                    plt.text(bar.get_x() + bar.get_width() / 2.0, bar.get_y() + height, f'{int(height)}',
                             ha='center', va='bottom', fontsize=10)
 
         # 6. Layout och stil
@@ -118,14 +125,13 @@ class PlotHandler:
         plt.close()
         return base64.b64encode(img.getvalue()).decode('utf8')
 
-
-    def create_week_comparison_plot(this_week_scores, last_week_scores):
+    def create_week_comparison_plot(self, this_week_scores, last_week_scores):
         days = ['Mån', 'Tis', 'Ons', 'Tors', 'Fre', 'Lör', 'Sön']
         x = range(len(days))
 
         # Konvertera datan till en form som passar grafer
-        this_week_data = {score.Date.weekday(): score.total_points for score in this_week_scores}
-        last_week_data = {score.Date.weekday(): score.total_points for score in last_week_scores}
+        this_week_data = {score['Date'].weekday(): score.total_points for score in this_week_scores}
+        last_week_data = {score['Date'].weekday(): score.total_points for score in last_week_scores}
 
         this_week = [this_week_data.get(i, 0) for i in range(7)]
         last_week = [last_week_data.get(i, 0) for i in range(7)]
@@ -147,4 +153,42 @@ class PlotHandler:
         plt.close()
         return base64.b64encode(img.getvalue()).decode('utf8')
 
+    def create_week_comparison_line_plot(self, this_week_scores, last_week_scores):
+        """
+        Skapar en linjediagram som jämför denna vecka och föregående vecka.
+        """
+        days = ['Mån', 'Tis', 'Ons', 'Tors', 'Fre', 'Lör', 'Sön']
+        x = range(len(days))  # x-axelns positioner
+
+        # Konvertera datan till en form som passar grafer
+    # Konvertera datan till en form som passar grafer
+        this_week_data = {date.weekday(): total_points for date, total_points in this_week_scores}
+        last_week_data = {date.weekday(): total_points for date, total_points in last_week_scores}
+
+        # Fyll veckodagarna med data eller 0 om ingen data finns
+        this_week = [this_week_data.get(i, 0) for i in range(7)]
+        last_week = [last_week_data.get(i, 0) for i in range(7)]
+
+
+        # Skapa linjediagrammet
+        plt.figure(figsize=(10, 6))
+        plt.plot(x, this_week, label="Denna vecka", color="orange", marker='o', linewidth=2)
+        plt.plot(x, last_week, label="Föregående vecka", color="blue", marker='o', linestyle='--', linewidth=2)
+
+        # Anpassa axlar och etiketter
+        plt.xticks(x, days, fontsize=14)
+        plt.ylabel("Poäng", fontsize=14)
+        plt.ylim(0, max(max(this_week), max(last_week)) + 10)  # Dynamisk y-axel baserat på maxvärdet
+        plt.yticks(fontsize=12)
+        plt.title("Jämförelse av poäng: Denna vecka vs Föregående vecka", fontsize=16)
+        plt.legend(fontsize=14)
+        plt.grid(color='lightgray', linestyle='--', linewidth=0.5)  # Rutnät för bättre läsbarhet
+        plt.tight_layout()
+
+        # Exportera grafen som base64-sträng
+        img = io.BytesIO()
+        plt.savefig(img, format='png')
+        img.seek(0)
+        plt.close()
+        return base64.b64encode(img.getvalue()).decode('utf8')
     # endregion

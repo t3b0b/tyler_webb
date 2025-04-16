@@ -23,7 +23,7 @@ def goals():
                                   ['Streaks', 'Goals', 'Milestones'])
     start_activity = request.args.get('start_activity', None)
     mygoals = current_user.user_goals
-    
+
     if request.method == 'POST':
 
         if 'addGoal' in request.form['action']:

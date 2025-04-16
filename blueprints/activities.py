@@ -25,8 +25,12 @@ activities_bp = Blueprint('activities', __name__, template_folder='templates/pmg
 @activities_bp.route('/goal/<int:goal_id>/activities', methods=['GET', 'POST'])
 def goal_activities(goal_id):
     goal = Goals.query.get_or_404(goal_id)
-    user = current_user.id
     milestones = goal.milestones
+    userScores = UserScores(current_user.id)
+    tot = userScores.get_goal_scores(goal_id)
+
+    goal_scores=userScores.get_all_goal_scores()
+    
     deadlines = goal.deadlines
     shared_item = SharedItem.query.filter_by(item_id=goal_id, item_type='goal', status='active').first()
     start_activity = request.args.get('start_activity', None)
@@ -83,11 +87,12 @@ def goal_activities(goal_id):
             db.session.add(new_milestone)
             db.session.commit()
             return redirect(url_for('activities.goal_activities', goal_id=goal_id))
+        
         elif action == "addDeadline":
             deadline_name = request.form.get('deadline-name')
             deadline_description = request.form.get('deadline-description')
             deadline_due_date = request.form.get('deadline-date')
-            
+            deadline_est_time = request.form.get('deadline-est-time')
             new_deadline = Deadline(
                 name=deadline_name,
                 description=deadline_description,
@@ -97,7 +102,7 @@ def goal_activities(goal_id):
             db.session.add(new_deadline)
             db.session.commit()
             return redirect(url_for('activities.goal_activities', goal_id=goal_id))
-    # Hantera GET-begäran för att visa aktiviteterna
+
     activities = goal.activities
     
     return render_template('pmg/activities.html', goal=goal, start_activity=start_activity, activities=activities, deadlines=deadlines, milestones=milestones)

@@ -102,8 +102,8 @@
                     <textarea type="text" id="description" name="milestone-description" placeholder="Description (optional)"></textarea>
                 </div>
                 <div class="input-group-row" id="milestoneTime">
-                    <label for="milestone-time">Estimated Time (hours):</label>
-                    <input type="number" id="milestone-time" name="milestone-time">
+                    <label for="milestone-est-time">Estimated Time (hours):</label>
+                    <input type="number" id="milestone-est-time" name="milestone-est-time">
                 </div>
                 <button class="button-style" type="button" style="background-color: firebrick;" onclick="cancelForm('milestone')">Cancel</button>
                 <button class="button-style" type="submit" name="action" value="addMilestone" style="background-color: cornflowerblue;">Save</button>
@@ -170,7 +170,7 @@
             <form method="POST">
                 <div class="input-group-row" id=deadline-name>
                     <label for="deadlineName">Name:</label>
-                    <input type="text" placeholder="Deadline Name" name="deadlineName">    
+                    <input type="text" placeholder="Deadline Name" name="deadline-name">    
                 </div>
                 <div id="deadlineTime" class ="input-group-row">
                     <label for="deadTime">Time:</label>
@@ -179,6 +179,10 @@
                 <div id="deadlineDescription" style="display: none;">
                     <label for="description">Description:</label>
                     <textarea type="text" id="description" name="deadline-description" placeholder="Description (optional)"></textarea>
+                </div>
+                <div class="input-group-row" id="deadlineTime">
+                    <label for="deadline-est-time">Estimated Time (hours):</label>
+                    <input type="number" id="deadline-est-time" name="deadline-est-time">
                 </div>
                 <button class="button-style" type="button" style="background-color: firebrick;" onclick="cancelForm('deadline')">Cancel</button>
                 <button class="button-style" type="submit" name="action" value="addDeadline" style="background-color: cornflowerblue;">Save</button>

@@ -229,11 +229,19 @@ def month(year=None, month=None):
 
     return render_template('cal/month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida,
                            sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data)
-
+        
 
 @cal_bp.route('/week', methods=['GET', 'POST'])
 @login_required
 def week():
+    userCal = UserCalendar(current_user.id)
+    userScore = UserScores(current_user.id)
+
+    avarage_month = userScore.get_average_scores(period='month')
+    print(f"Månadens medel: {avarage_month['average']} min/dag")
+    avarage_week = userScore.get_average_scores(period='week')
+    print(f"Veckans medel: {avarage_week['average']} min/dag")
+
     week_offset = request.args.get('week_offset', 0, type=int)
     current_date = datetime.now() + timedelta(weeks=week_offset)
     year, week_num, weekday = current_date.isocalendar()
@@ -259,69 +267,20 @@ def week():
         Event.date <= end_week.date()
     ).all()
 
-    # Organize scores by day and hour
+    recurring_events = userCal.get_weekly_events(start_week)
+
     week_scores = {date: [] for date in week_dates}  # Initiera alla datum i veckan med tomma listor
-    
-    weekData = prepWeekData(scores,events)
+
+    weekData = Calendar.prepWeekData(scores,recurring_events)
 
     for score in scores:
         day_str = score.Date.strftime('%Y-%m-%d')
         week_scores[day_str].append(score)
-        if score.activity_score:
-            print(f"Added score: {score.activity_score.name} to {score.Date} from {score.Start} to {score.End}")
-        print(f"Added score: {score} to {score.Date} from {score.Start} to {score.End}")
-
 
     return render_template('cal/myWeek.html', sida='Veckoplanering', week_scores=weekData, header='Veckoplanering', 
                            total_score=0, sub_menu=sub_menu, timedelta=timedelta,week=week_num, 
                            week_dates=week_dates, current_date=current_date, week_offset=week_offset)
 
-def prepWeekData(scores, events):
-    """
-    Konverterar score-objekt till en struktur med 'start_hour' och 'duration_in_hours'.
-    """
-    processed = {}
-
-    for score in scores:
-        date_str = score.Date.strftime('%Y-%m-%d')
-        if date_str not in processed:
-            processed[date_str] = []
-
-        if score.activity_score:
-            start_hour = score.Start.hour + score.Start.minute / 60
-            duration = score.Time / 60  # omvandla till timmar
-
-            processed[date_str].append({
-                'id': score.id,
-                'type': 'score',
-                'activity_name': score.activity_score.name,
-                'Start': score.Start,
-                'End': score.End,
-                'duration_hours': duration,
-                'minutes': score.Time
-            })
-
-    for event in events:
-        date_str = event.date.strftime('%Y-%m-%d')
-        if date_str not in processed:
-            processed[date_str] = []
-
-        if event.start_time is not None:
-            start_hour = event.start_time.hour + event.start_time.minute / 60
-            end_hour = event.end_time.hour + event.end_time.minute / 60 if event.end_time else start_hour + 1
-            duration = end_hour - start_hour
-
-            processed[date_str].append({
-                'id': event.id,
-                'type': 'event',
-                'event_name': event.name,
-                'Start': event.start_time,
-                'End': event.end_time,
-                'duration_hours': duration,
-                'location': event.location
-            })
-
-    return processed
 
 @cal_bp.route('/edit_score/<int:score_id>', methods=['GET', 'POST'])
 @login_required

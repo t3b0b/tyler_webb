@@ -86,7 +86,6 @@ def myday():
     thisWeek = analyzer.sumDays(last_week_scores)
     actTime = analyzer.sumAct(last_week_scores)
 
-    
     goal_plot = datahand.create_grouped_bar_plot(
         data_dicts=[thisWeek,lastWeek],
         labels_list=['Denna vecka', 'Förra veckan'], 

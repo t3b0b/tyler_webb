@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from calendar import monthrange
-from models import Score, Goals, Activity
+from models import Score, Goals, Activity, User
 from extensions import db
 from models import MyWords
 
@@ -51,6 +51,7 @@ class UserScores(ScoreAnalyzer):
         self.user_id = user_id
     
     def get_weekly_scores(self):
+
         today = datetime.now()  # Byt från utcnow() till now()
         start_of_this_week = today - timedelta(days=today.weekday())  # Får måndag denna vecka (kl 00:00)
         start_of_last_week = start_of_this_week - timedelta(days=7)  # Måndag förra veckan
@@ -83,7 +84,89 @@ class UserScores(ScoreAnalyzer):
 
         return this_week_scores, last_week_scores, activity_times
 
+    def get_all_goal_scores(self,start_date=None,end_date=None):
+        result = db.session.query(
+            Goals.name.label('goal_name'),
+            db.func.sum(Score.Time).label('total_time')
+        ).join(Score, Goals.id == Score.goal_id
+        ).group_by(Goals.name
+        ).order_by(db.func.sum(Score.Time).desc()
+        ).all()
 
+        return result
+    
+    '''   if start_date is None and end_date is None :
+            goals = Goals.query.filter_by(user_id = self.user_id
+                    ).join(Score
+                    ).filter(Score.Date >= start_date,
+                            Score.Date <= end_date
+                    ).all()
+        else:
+            goals = Goals.query.filter_by(user_id=self.user_id)
+        
+        for goal s
+
+        if start_date:
+        goal_list = []
+        for goal in goals:
+            key = goal.name
+'''
+
+
+    def get_goal_scores(self, goal_id):
+        goal = Goals.query.get(goal_id)
+        goal_scores = goal.scores
+        tot = 0
+        for score in goal_scores:
+            tot += score.Time
+        
+        return tot
+    def get_average_scores(self, period='week', reference_date=None):
+        """
+        Beräknar medelvärdet av poäng per vecka eller månad.
+        :param period: 'week' eller 'month'
+        :param reference_date: Datum att basera beräkningen på (standard är idag)
+        :return: Medelvärde för perioden
+        """
+        today = datetime.now().date()
+
+        if reference_date is None:
+            reference_date = today
+        elif isinstance(reference_date, datetime):
+            reference_date = reference_date.date()
+
+        if period == 'week':
+            start_date = reference_date - timedelta(days=reference_date.weekday())
+            end_date = min(today, start_date + timedelta(days=6))  # Söndag denna vecka eller idag
+        elif period == 'month':
+            start_date = reference_date.replace(day=1)
+            last_day = monthrange(reference_date.year, reference_date.month)[1]
+            end_date = min(today, reference_date.replace(day=monthrange(reference_date.year, reference_date.month)[1]))  # Sista dagen i månaden eller idag
+        else:
+            raise ValueError("Ogiltig period. Välj 'week' eller 'month'.")
+
+        scores = db.session.query(
+            db.func.sum(Score.Time).label('total_time'),
+        ).filter(
+            Score.user_id == self.user_id,
+            Score.Date >= start_date,
+            Score.Date <= end_date
+        ).first()
+
+        total_time = scores.total_time or 0
+        days_count = (end_date - start_date).days + 1  # Antal dagar i perioden (inklusive idag)
+
+        # Beräkna medelvärde
+        average = total_time / days_count if days_count > 0 else 0
+
+        return {
+            "period": period,
+            "start_date": start_date,
+            "end_date": end_date,
+            "total_time": total_time,
+            "average": round(average)
+        }
+    
     def get_scores_by_period(self, period='week', reference_date=None):
         today = datetime.now().date()
 
@@ -159,7 +242,6 @@ class UserScores(ScoreAnalyzer):
         
         return scores, activity_times
     
-
     def myDayScore(self, day_offset=0):
         # Beräkna streaks-poäng
         date = datetime.now().date() - timedelta(days=day_offset)

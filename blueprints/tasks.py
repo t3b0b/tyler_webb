@@ -52,6 +52,7 @@ def update_task(activity_id, task_id):
 
     # Uppdatera task status
     task.completed = completed
+    task.date_completed = datetime.now().date()
     db.session.commit()
 
     # Omdirigera till rätt sida baserat på ursprungssidan
@@ -175,7 +176,12 @@ def add_subtask(task_id):
 @tasks_bp.route('/subtask/<int:subtask_id>/update', methods=['POST'])
 def update_subtask(subtask_id):
     subtask = SubTask.query.get_or_404(subtask_id)
+
     subtask.completed = not subtask.completed  # Växla status på subtask
+    if subtask.completed:
+        subtask.date_completed=datetime.now().date()
+    else: 
+        subtask.date_completed=datetime.now().date()
     db.session.commit()
 
     # 🟢 Hämta alla subtasks för denna task
@@ -185,8 +191,10 @@ def update_subtask(subtask_id):
     # 🔍 Kontrollera om alla subtasks är avklarade
     if all(sub.completed for sub in all_subtasks):  # Om alla subtasks är klara
         task.completed = True
+        task.date_completed = datetime.now().date() 
     else:
         task.completed = False  # Om minst en subtask är ofullständig
+        task.date_completed = None
 
     db.session.commit()  # Spara ändringar till databasen
 

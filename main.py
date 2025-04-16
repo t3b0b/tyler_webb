@@ -39,8 +39,7 @@ def home():
 @app.route('/blog')
 def blog():
     sida="Blogg"
-    render_template('blog.html',sida=sida,header=sida)
-    
+    render_template('blog.html',sida=sida,header=sida) 
 # endregion
 
 #region Login/Out
