@@ -93,6 +93,7 @@ def update_post(post_id):
     db.session.commit()
     return jsonify({'success': 'Inlägget uppdaterades!'})
 
+#txt_bp.route
 
 @txt_bp.route('/journal', methods=['GET', 'POST'])
 @login_required
@@ -210,9 +211,10 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     if request.method == 'POST':
         option = request.form.get('option')
         user = User.query.filter_by(id=current_user.id).first()
-        content_check = request.form['blogg-content']
+        content_check = request.form.get('blogg-content')
         if content_check:
             if option == "write-on-time":
+
                 goal_id = request.form.get('gID')
                 activity_id = request.form.get('aID')
                 actDate = request.form.get('aDate')

@@ -52,7 +52,7 @@ function stopActivity(event) {
         document.getElementById("end").classList.remove("hidden");
         document.getElementById("start").classList.remove("hidden");
         document.getElementById("time").classList.remove("hidden");
-        document.getElementById("aDate").classList.remove("hidden");
+        document.getElementById("date").classList.remove("hidden");
         document.getElementById("complete-form").classList.remove("hidden");
         document.getElementById("continueButton").classList.remove("hidden");
 

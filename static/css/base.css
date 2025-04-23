@@ -1,3 +1,26 @@
+.analagous-colors{
+    background-color: #F0BB62;
+    background-color: #EFDD6D;
+    background-color: #F0CD67;
+    background-color: #F0AF75;
+    background-color: #F0EF92;
+}
+/* /* Color Theme Swatches in Hex */
+.Complementary-1-hex { color: #898EF5; }
+.Complementary-2-hex { color: #B5AE93; }
+.Complementary-3-hex { color: #F5DF8A; }
+.Complementary-4-hex { color: #8F90A0; }
+.Complementary-5-hex { color: #756F57; }
+.Complementary-6-hex { color: #2B2C4B; }
+
+/*
+#EFEB95
+#B0AF99
+#B595F0
+#302446
+#8B839B
+*/
+
 html, body {
     height: 100%;
     width:100%;
@@ -6,6 +29,7 @@ html, body {
     font-size: 18px;
     display: flex;
     flex-direction: column;
+    background-color: #F5EDD2;
 }
 
 .main-container {
@@ -17,12 +41,8 @@ html, body {
 
 }
 
-.hidden {
-    display: none;
-}
-
 .top-header {
-    background-color: darkkhaki;
+    background-color: #EFDD6D;
     padding: 10px;
     display: flex;
     justify-content: center; /* Sprid ut ikonerna */
@@ -291,6 +311,10 @@ nav a.active {
     bottom: 20px; /* Flyttar tillbaka vid försvinnande */
 }
 .footer {
+    display: none;
+}
+
+.hidden {
     display: none;
 }
 @media (max-width: 720px) {
