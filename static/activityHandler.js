@@ -31,6 +31,9 @@ function stopActivity(event) {
     const start = document.getElementById('startValue');
     const score = document.getElementById('scoreValue');
 
+    var timeLessButton = document.getElementById("time-less");
+    var writeOnTimeButton = document.getElementById("write-on-time");
+
     if (startStored && endStored && activityId) {
         // Omvandla UNIX-tid till lokal tid
         const startTime = new Date(Number(startStored));  // Konvertera sträng till nummer
@@ -55,7 +58,12 @@ function stopActivity(event) {
         document.getElementById("date").classList.remove("hidden");
         document.getElementById("complete-form").classList.remove("hidden");
         document.getElementById("continueButton").classList.remove("hidden");
-
+        if(timeLessButton){
+            timeLessButton.classList.add("idden");
+        }
+        if(writeOnTimeButton){
+            writeOnTimeButton.classList.remove("hidden")
+        }
     }
     
     document.getElementById('stopButton').classList.add("hidden");
@@ -64,7 +72,6 @@ function stopActivity(event) {
     if (startStored) {
         const elapsedTimeMs = closeTime - new Date(Number(startStored));  // Se till att vi konverterar
         const elapsedTimeMin = Math.floor(elapsedTimeMs / 60000);
-        score.value = elapsedTimeMin;
         saveActivity(elapsedTimeMin);
     } else {
         console.error("Start time is missing in localStorage.");

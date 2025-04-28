@@ -88,7 +88,7 @@
             <div class="input-group">
                 <div class="button-center hidden" id="complete-form">
                     <button type="submit" id="time-less" class="button-style" name="option" value="timeless">Skicka</button>
-                    <button onclick="turnOff()" type="submit" id="write-on-time" class="button-style" name="option" value="write-on-time">Save</button>
+                    <button onclick="turnOff()" type="submit" id="write-on-time" class="button-style hidden" name="option" value="write-on-time">Save</button>
                 </div>
             </div>
         </div>
@@ -103,8 +103,6 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    console.log("Checking for active activity...");
-
     const savedActive = localStorage.getItem('active');
     const selectedAct = localStorage.getItem('selectedActivityId');
 
@@ -114,11 +112,9 @@ document.addEventListener("DOMContentLoaded", function() {
     const writeOnTimeButton = document.getElementById("write-on-time");
 
     if (savedActive === 'true' && selectedAct) {
-        console.log("Activity is active, showing Stop button.");
         if (stopButton) stopButton.classList.remove("hidden");
         if (completeForm) completeForm.classList.add("hidden");
     } else {
-        console.log("No active activity, hiding Stop button.");
         if (stopButton) stopButton.classList.add("hidden");
         if (completeForm) completeForm.classList.remove("hidden");
 
