@@ -38,7 +38,7 @@
         <button onclick="window.location.href='{{ url_for('cal.week', week_offset=week_offset - 1) }}'">
             <
         </button>
-        <h2 style="font-size: 14px;">Vecka {{ current_date.isocalendar()[1] }}</h2>
+            <h2 style="font-size: 14px;">Vecka {{ current_date.isocalendar()[1] }}</h2>
         <button onclick="window.location.href='{{ url_for('cal.week', week_offset=week_offset + 1) }}'">
             >
         </button>

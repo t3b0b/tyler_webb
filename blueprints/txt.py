@@ -94,6 +94,9 @@ def update_post(post_id):
     return jsonify({'success': 'Inlägget uppdaterades!'})
 
 #txt_bp.route
+@txt_bp.route('/my-words')
+def my_words():
+    pass
 
 @txt_bp.route('/journal', methods=['GET', 'POST'])
 @login_required
@@ -210,7 +213,6 @@ def journal_section(act_id, sida, sub_menu, my_posts):
 
     if request.method == 'POST':
         option = request.form.get('option')
-        user = User.query.filter_by(id=current_user.id).first()
         content_check = request.form.get('blogg-content')
         if content_check:
             if option == "write-on-time":
@@ -224,33 +226,29 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                 
                 NewScore = Score(
                     user_id=current_user.id,
-                    Goal=goal_id,
-                    Activity=activity_id,
+                    goal_id=goal_id,
+                    activity_id=activity_id,
                     Date=actDate,
                     Start=start,
                     End=end,
                     Time=score
                 )
                 db.session.add(NewScore)
-                print (NewScore)
+                db.session.commit()
             if sida == 'Dagbok':
-                add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+                add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], current_user)
             elif sida == 'Mina Ord':
                 nytt_ord = request.form.get('post-ord')
                 texthand.add_unique_word(nytt_ord)
-                add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], user)
+                add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], current_user)
 
             elif sida == 'Bullet':
                 theme = request.form['post-ord']
                 bullet_list = [request.form['#1'], request.form['#2'], request.form['#3'], request.form['#4'], request.form['#5']]
-                newBullet = Lists(theme=theme, author=f'{user.firstName} {user.lastName}', content=bullet_list, date=current_date, user_id=current_user.id)
+                newBullet = Lists(theme=theme, author=f'{current_user.firstName} {current_user.lastName}', content=bullet_list, date=current_date, user_id=current_user.id)
                 db.session.add(newBullet)
                 db.session.commit()
 
-            
-    #                elif sida == 'Mina Mål':
-    #                    add2db(WhyGoals,request,['post-ord','blogg-content','goal'],['title','text','goal'],user)
-        
 
     return render_template('txt/journal.html', goal=myGoals, activities=activities, side_options=titles, goal_id =activity.goal_id,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,

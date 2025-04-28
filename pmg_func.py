@@ -193,16 +193,12 @@ def add2db(db_model, request, form_fields, model_fields, user):
     if hasattr(new_entry, 'goal_id') and 'goalSelect' in request.form:
         goal_id_value = request.form.get('goalSelect')
         setattr(new_entry, 'goal_id', goal_id_value if goal_id_value else None)
-        if goal_id_value:  # Kontrollera om värdet inte är tomt
-            setattr(new_entry, 'goal_id', goal_id_value)
-        else:
-            setattr(new_entry, 'goal_id', None)
     try:
-    # Lägg till den nya posten i sessionen och committa
         db.session.add(new_entry)
         db.session.commit()
-    except:
-        db.session.rollback()  # Lägg till detta för att säkerställa rollback på fel
+    except Exception as e:
+        db.session.rollback()
+        print(f"Fel vid databas-commit: {e}")
 
 # endregion
 
