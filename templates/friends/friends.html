@@ -1,60 +1,111 @@
 {% extends 'base.html' %}
 
 {% block head %}
-
+    <style>
+        .friend{
+            height:50px;
+        }
+        #left { 
+            border-radius: 0;
+            border-top-left-radius: 20px; /* Rundar det övre vänstra hörnet */
+            border-bottom-left-radius: 20px; /* Rundar det nedre vänstra hörnet */
+            border-right: none;
+            width: 100%;
+        }
+        #middle {
+            border-radius: 0; /* Ingen rundning för mittencontainern */
+            border-left: #222c09 solid 1px; /* Lägger till en vänsterkant för att separera från vänster container */
+            border-right: #222c09 solid 1px; /* Lägger till en högerkant för att separera från höger container */
+            width: 100%;
+            flex-wrap: nowrap;
+            overflow: hidden;
+        }
+        #right {
+            width: 100%;
+            border-radius: 0;
+            border-top-right-radius: 20px; /* Rundar det övre vänstra hörnet */
+            border-bottom-right-radius: 20px; /* Rundar det nedre vänstra hörnet */
+            border-left: none;
+        }
+    </style>
 {% endblock head %}
 
 {% block body %}
+<div class="three-split-screen">
 
-{% if pending_users %}
-<div class="list-container">
-    <div class="list-header">
-        <h3>Friend Requests</h3>
+    <div class="list-container" id="left">
+        <div class="list-header">
+            <h3>Friend Requests</h3>
+        </div>
+        <div class="list-content">
+                {% for user in pending_users %}
+                <li class="list-item">
+                    {{ user.username }}
+                    <form method="POST" action="{{ url_for('friends.respond_friend_request', request_id=user.id, response='accept') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit">Accept</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('friends.respond_friend_request', request_id=user.id, response='decline') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit">Ignore</button>
+                    </form>
+                </li>
+                {% endfor %}
+        </div>
     </div>
-    <div class="list-content">
-            {% for user in pending_users %}
-            <li class="list-item">
-                {{ user.username }}
-                <form method="POST" action="{{ url_for('friends.respond_friend_request', request_id=user.id, response='accept') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit">Accept</button>
-                </form>
-                <form method="POST" action="{{ url_for('friends.respond_friend_request', request_id=user.id, response='decline') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit">Ignore</button>
-                </form>
-            </li>
+
+    <div class="list-container" id="middle">
+        <div class="list-header">
+            <h3>Friends</h3>
+        </div>
+        <div class="list-content">
+            {% for friend in friends %}
+                <div class="list-item friend" onclick="window.location.href = '/friends/friend_profile/{{ friend.id }}';">
+                    <label> {{ friend.firstname }} {{ friend.lastname }} {{ friend.username }} </label>
+                    <a href="{{ url_for('friends.send_message', recipient_id=(friend.id if friend.id == current_user.id else friend.id)) }}">Message</a>
+                </div>
             {% endfor %}
+        </div>
     </div>
-</div>
-{% endif %}
 
-<div class="list-container">
-    <div class="list-header">
-        <h3>Friends</h3>
-    </div>
-    <div class="list-content">
-        {% for friend in friends %}
-            <div class="list-item" onclick="window.location.href = '/friends/friend_profile/{{ friend.id }}';">
-                 <label> {{ friend.firstname }} {{ friend.lastname }} {{ friend.username }} </label>
-                <a href="{{ url_for('friends.send_message', recipient_id=(friend.id if friend.id == current_user.id else friend.id)) }}">Message</a>
-            </div>
-        {% endfor %}
-    </div>
-</div>
-<div class="list-container">
-    <div class="list-header">
-        <h3>Add Friends</h3>
-    </div>
-    <div class="list-content">
-        {% for user in users %}
-            <div class="list-item" onclick="window.location.href = '/friends/friend_profile/{{ user.id }}';">
-                <label>{{ user.firstname }} {{ user.lastname }} {{ user.username }}</label>
-                <form method="POST" action="{{ url_for('friends.add_friend', friend_id=user.id) }}">
-                    <button style="border-radius: 50%; width: 20px; height: 20px; font-size: 12px; font-weight: bold; color: #f0f0f0;background-color: #2ecc71" type="submit">+</button>
-                </form>
-            </div>
-        {% endfor %}
+    <div class="list-container" id="right">
+        <div class="list-header">
+            <h3>Add Friends</h3>
+        </div>
+        <div class="list-content">
+            {% for user in users %}
+                <div class="list-item friend" onclick="window.location.href = '/friends/friend_profile/{{ user.id }}';">
+
+                    <label>{{ user.firstname }} {{ user.lastname }} {{ user.username }}</label>
+                    <form method="POST" action="{{ url_for('friends.add_friend', friend_id=user.id) }}">
+                        <button style="border-radius: 50%; width: 20px; height: 20px; font-size: 12px; font-weight: bold; color: #f0f0f0;background-color: #2ecc71" type="submit">+</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+$(".list-container").hover(
+    function() {
+        var id = this.id;
+        switch (id) {
+            case "left":
+                $(".three-split-screen").css("grid-template-columns", "3fr 1fr 1fr");
+                break;
+            case "middle":
+                $(".three-split-screen").css("grid-template-columns", "1fr 3fr 1fr");
+                break;
+            case "right":
+                $(".three-split-screen").css("grid-template-columns", "1fr 1fr 3fr");
+                break;
+        }
+    },
+    function() {
+        $(".three-split-screen").css("grid-template-columns", "1fr 3fr 1fr");
+    }
+);
+
+</script>
 {% endblock body %}
