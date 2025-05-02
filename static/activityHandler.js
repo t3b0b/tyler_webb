@@ -72,6 +72,7 @@ function stopActivity(event) {
     if (startStored) {
         const elapsedTimeMs = closeTime - new Date(Number(startStored));  // Se till att vi konverterar
         const elapsedTimeMin = Math.floor(elapsedTimeMs / 60000);
+        score.value = elapsedTimeMin;
         saveActivity(elapsedTimeMin);
     } else {
         console.error("Start time is missing in localStorage.");
