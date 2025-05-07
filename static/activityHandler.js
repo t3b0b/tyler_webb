@@ -1,5 +1,40 @@
+const options = { 
+    year: 'numeric', 
+    month: '2-digit', 
+    day: '2-digit', 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    second: '2-digit',
+    hour12: false 
+};
+const locale = 'sv-SE';
+
+const hiddenIds = [
+    "end",
+    "start",
+    "time",
+    "date",
+    "complete-form",
+    "continueButton",
+    "write-on-time"
+];
+const visibleIds = [
+    "stopButton", 
+    "time-less"
+];
+
+const actId = document.getElementById("aID");
+const completeform = document.getElementById("complete-form");
+const end = document.getElementById('endValue');
+const start = document.getElementById('startValue');
+const score = document.getElementById('scoreValue');
+const stopBtn = document.getElementById('stopButton');
+const timeLessButton = document.getElementById("time-less");
+const writeOnTimeButton = document.getElementById("write-on-time");
+
+
 function startActivity(actId, actName, goalName) {
-    openTime = new Date(); // Spara starttiden
+    let openTime = new Date();
     localStorage.setItem('start', openTime.getTime());
     localStorage.setItem('active', 'true');
     localStorage.setItem('selectedActivityId', actId);
@@ -15,76 +50,41 @@ function stopActivity(event) {
     if (event) {
         event.preventDefault(); // Förhindra sidomladdning
     }
-    const savedActive = localStorage.getItem('active');
-    
-    const closeTime = new Date(); // Spara stopptiden
-    localStorage.setItem('active', false);
-    localStorage.setItem('end', closeTime.getTime()); // Spara UNIX-tid istället för UTC
 
-    // Hämta sparade tider från localStorage
-    const startStored = localStorage.getItem('start');
-    const endStored = localStorage.getItem('end');
-    const activityId = localStorage.getItem('selectedActivityId');
-    
-    const stopBtn = document.getElementById('stopBtn');
-    const end = document.getElementById('endValue');
-    const start = document.getElementById('startValue');
-    const score = document.getElementById('scoreValue');
+    let closeTime = new Date();
+    let startStored = localStorage.getItem('start');
+    let activityId = localStorage.getItem('selectedActivityId');
+    actId.value = activityId;
 
-    var timeLessButton = document.getElementById("time-less");
-    var writeOnTimeButton = document.getElementById("write-on-time");
-
-    if (startStored && endStored && activityId) {
-        // Omvandla UNIX-tid till lokal tid
-        const startTime = new Date(Number(startStored));  // Konvertera sträng till nummer
-        const endTime = new Date(Number(endStored));      // Konvertera sträng till nummer
-
-        // Formatera till 'YYYY-MM-DD HH:MM:SS' i lokal tid
-        const options = { year: 'numeric', month: '2-digit', day: '2-digit', 
-                          hour: '2-digit', minute: '2-digit', second: '2-digit',
-                          hour12: false };
-
-        const locale = 'sv-SE';
-
-        document.getElementById("startValue").value = new Intl.DateTimeFormat(locale, options)
-            .format(startTime).replace(',', '');
-        document.getElementById("endValue").value = new Intl.DateTimeFormat(locale, options)
-            .format(endTime).replace(',', '');
-
-        document.getElementById("aID").value = activityId;
-        document.getElementById("end").classList.remove("hidden");
-        document.getElementById("start").classList.remove("hidden");
-        document.getElementById("time").classList.remove("hidden");
-        document.getElementById("date").classList.remove("hidden");
-        document.getElementById("complete-form").classList.remove("hidden");
-        document.getElementById("continueButton").classList.remove("hidden");
-        if(timeLessButton){
-            timeLessButton.classList.add("idden");
-        }
-        if(writeOnTimeButton){
-            writeOnTimeButton.classList.remove("hidden")
-        }
-    }
-    
-    document.getElementById('stopButton').classList.add("hidden");
-
-    // **Beräkna elapsed time korrekt**
-    if (startStored) {
-        const elapsedTimeMs = closeTime - new Date(Number(startStored));  // Se till att vi konverterar
-        const elapsedTimeMin = Math.floor(elapsedTimeMs / 60000);
+    if (startStored && activityId) {
+    // Tidshantering
+        var startTime = new Date(Number(startStored)); 
+        var endTime = new Date(Number(closeTime));
+        let elapsedTimeMs = closeTime - new Date(Number(startTime));
+        let elapsedTimeMin = Math.floor(elapsedTimeMs / 60000);
+        start.value = new Intl.DateTimeFormat(locale, options).format(startTime).replace(',', '');
+        end.value = new Intl.DateTimeFormat(locale, options).format(endTime).replace(',', '');
         score.value = elapsedTimeMin;
-        saveActivity(elapsedTimeMin);
-    } else {
-        console.error("Start time is missing in localStorage.");
+    // Show hidden elements
+        for (id of hiddenIds) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.remove("hidden");
+            }
+        };
+    // Hide visible elements
+        for (id of visibleIds) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.add("hidden");
+            }
+        };
+        
+        localStorage.setItem('active', false);
     }
-}
+    
+    
 
-// Spara aktivitet
-function saveActivity(time) {
-    document.getElementById('complete-form').classlist.remove ("hidden");
-    document.getElementById('elapsedTime').classList.remove ("hidden");
-    document.getElementById("scoreValue").value = time; // Använd rätt element-ID
-    localStorage.setItem('active', false);
 }
 
 function toggleActivityForm() {
@@ -114,12 +114,6 @@ function handleActivityClick(element) {
 }
 
 function updateEndTime() {
-    const locale = 'sv-SE';
-    const options = {
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', second: '2-digit',
-        hour12: false
-    };
 
     const startTimeStr = startInput.value;
     const scoreMinutes = parseInt(scoreInput.value, 10) || 0; // Hämta score i minuter, standardvärde 0
@@ -128,10 +122,8 @@ function updateEndTime() {
 
     const startTime = new Date(startTimeStr.replace(" ", "T")); // Konvertera till Date-objekt
 
-    if (isNaN(startTime.getTime())) return; // Avbryt om startTime är ogiltigt
+    if (isNaN(startTime.getTime())) return;
 
-    startTime.setMinutes(startTime.getMinutes() + scoreMinutes); // Lägg till score-minuter
-
-    // Uppdatera End Time-fältet i format 'YYYY-MM-DD HH:MM:SS' i lokal tid
+    startTime.setMinutes(startTime.getMinutes() + scoreMinutes);
     endInput.value = new Intl.DateTimeFormat(locale, options).format(startTime).replace(",", "");
 }
