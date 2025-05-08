@@ -206,15 +206,6 @@ z-index: 1;
     <div class="list-header">
         <h3>Score</h3>
     </div>
-
-    {% if activity.name == "Springa " %}
-        <div class="run-tracker">
-            <button onclick="startTracking()">Starta</button>
-            <button onclick="stopTracking()">Stoppa</button>
-            <p id="status">Väntar på start...</p>
-            <p id="distance">Distans: 0 meter</p>
-        </div>
-    {% endif %}
     
     <div class="button-center">
         <button id="stopButton" class="button-style" style="background-color:red" onclick="stopActivity()">Stop</button>
@@ -252,12 +243,9 @@ z-index: 1;
     <button id="continueButton" class="button-style hidden" style="background-color: green" onclick="location.reload()">Continue</button>
 
 </div>
-<script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script src="{{ url_for('static', filename='activityHandler.js') }}"></script>
-<script src="{{ url_for('static', filename='Runner.js') }}"></script>
 
 <script>
-
     document.addEventListener("DOMContentLoaded", function() {
     const scoreInput = document.getElementById("scoreValue");
     const startInput = document.getElementById("startValue");
@@ -266,6 +254,7 @@ z-index: 1;
     scoreInput.addEventListener("input", function() {
         updateEndTime();
     });
+
     function updateEndTime() {
         const locale = 'sv-SE';
         const options = {
