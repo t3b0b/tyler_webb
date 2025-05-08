@@ -83,8 +83,6 @@ function stopActivity(event) {
         localStorage.setItem('active', false);
     }
     
-    
-
 }
 
 function toggleActivityForm() {
