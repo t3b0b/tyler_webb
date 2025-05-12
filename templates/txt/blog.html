@@ -3,9 +3,23 @@
 {% block head %}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 <style>
+    h3 {
+        margin: 0;
+        padding: 0;
+    }
+    .post-item > p {
+        line-height: 1.5;
+        margin: 0;
+        padding: 0;
+    }
+    .row {
+        padding: 10px 0 10px 0;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
     .edit-icon {
         cursor: pointer;
-        margin-right: 10px;
         color: #007BFF;
     }
     .editable {
@@ -13,6 +27,14 @@
         border: 1px solid #ddd;
         padding: 5px;
     }
+    .post-item {
+        border: 1px solid #353535;
+        background-color: white;
+        padding: 10px 25px;
+        margin: 10px 0;
+        border-radius: 20px;
+    }
+
 </style>
 {% endblock head %}
 
@@ -20,16 +42,19 @@
 <div class="blogg-container">
     {% if myPosts %}
         <div class="blogg-post">
-            <div class="view-toggle" style="background-color: white">
+            <div class="view-toggle">
                 <button class="active-view" type="button" onclick="window.location.href='/txt/blog'">Blog</button>
                 <button class="page-toggle-btn" type="button" onclick="window.location.href='/txt/journal?section_name=Mina+Ord'">Journal</button>
             </div>
                 {% for post in myPosts %}
                     <div class="post-item" id="post-{{ post.id }}">
-                        <i class="edit-icon fas fa-edit" onclick="makeEditable({{ post.id }})"></i>
-                        <h3 class="post-title" id="title-{{ post.id }}">{{ post.title }}</h3>
+                        <div class="flex row">
+                            <h3 id="title-{{ post.id }}">{{ post.title }}</h3>
+                            <i id="edit-{{post.id}}" class="edit-icon fas fa-edit" onclick="makeEditable({{ post.id }})"></i>
+                            <button id="delete-{{post.id}}" class="delete-btn hidden" onclick="deletePost({{ post.id }})">🗑️</button>
+                        </div>
                         <p class="post-content" id="content-{{ post.id }}">{{ post.content }}</p>
-                        <p class="post-author">{{ post.author }} {{ post.date }}</p>
+                        <p style="text-align: end;" style="margin: 0; padding:0; color: #353535;">{{ post.date }}</p>
                         <button id="save-{{ post.id }}" class="save-btn" style="display: none;" onclick="saveChanges({{ post.id }})">Spara</button>
                     </div>
                 {% endfor %}
@@ -44,9 +69,14 @@
         const title = document.getElementById(`title-${postId}`);
         const content = document.getElementById(`content-${postId}`);
         const saveBtn = document.getElementById(`save-${postId}`);
+        const deleteBtn = document.getElementById(`delete-${postId}`);
+        const editBtn = document.getElementById(`edit-${postId}`);
 
         title.contentEditable = true;
         content.contentEditable = true;
+
+        editBtn.style.display = 'none'; // Dölj redigeringsikonen
+        deleteBtn.classList.remove('hidden');
 
         title.classList.add('editable');
         content.classList.add('editable');
@@ -76,5 +106,28 @@
         })
         .catch(error => console.error('Error:', error));
     }
+
+    function deletePost(postId) {
+    if (confirm("Är du säker på att du vill radera detta inlägg?")) {
+        fetch(`/txt/delete_post/${postId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}' // Lägg till CSRF-token om det behövs
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // Ta bort inlägget från DOM
+                const postElement = document.getElementById(`post-${postId}`);
+                postElement.remove();
+                alert('Inlägget raderades!');
+            } else {
+                alert('Ett fel inträffade. Försök igen.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+}
 </script>
 {% endblock body %}

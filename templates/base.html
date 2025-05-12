@@ -42,7 +42,7 @@
             {% if total_score %}
                 <span>{{ total_score }}</span>
             {% else %}
-                <span>{{ header }}</span>
+                <span>P.M.G</span>
             {% endif %}
             
             <div class="right-icons">
@@ -84,9 +84,6 @@
             <p> {{ page_info }} </p>
         {% endif %}
     </div>
-
-<div class="main-container">
-
     {% if side_options %}
             <div class="side-menu">
                 <nav class="side-menu-nav">
@@ -99,63 +96,18 @@
             </div>
     {% endif %}
     {% block body %}{% endblock %}
-</div>
-    <footer class="footer">
-        <div class="header-icons">
-            <div class="left-icons">
-                <a href="/pmg/myday" class="icon-text">
-                    <img src="{{ url_for('static', filename='images/Home.png') }}" alt="Hem">
-                    <span class="icon-label">Hem</span>
-                </a>
-
-                <a href="/cal/month" class="icon-text">
-                    <img src="{{ url_for('static', filename='images/Calendar.png') }}" alt="Kalender">
-                    <span class="icon-label">Kalender</span>
-                </a>
-
-                <a href="/pmg/goals" class="icon-text">
-                    <img src="{{ url_for('static', filename='images/Goals.png') }}" alt="Mål">
-                    <span class="icon-label">Mål</span>
-                </a>
-
-                <a href="/pmg/streak" class="icon-text">
-                    <img src="{{ url_for('static', filename='images/Streak.png') }}" alt="Streak">
-                    <span class="icon-label">Streak</span>
-                </a>
-            </div>
-            {% if total_score %}
-                <span>{{ total_score }}</span>
-            {% else %}
-                <span>{{ header }}</span>
-            {% endif %}
-            <div class="right-icons">
-                <a href="/txt/journal" class="icon-text">
-                    <img src="{{ url_for('static', filename='images/Texts.png') }}" alt="Journal">
-                    <span class="icon-label">Journal</span>
-                </a>
-
-                <a href="/friends/users" class="icon-text">
-                    <img src="{{ url_for('static', filename='images/Friends.png') }}" alt="Friends">
-                    <span class="icon-label">Friends</span>
-                </a>
-                <a href="/auth/profile" class="icon-text">
-                    <img src="{{ url_for('static', filename='images/User.png') }}" alt="Profil">
-                    <span class="icon-label">Profil</span>
-                </a>
-                <a href="/auth/logout" class="icon-text">
-                    <img src="{{ url_for('static', filename='images/Search.png') }}" alt="Log Out">
-                    <span class="icon-label">Log Out</span>
-                </a>
-            </div>
-        </div>
-    </footer>
+            <footer>
+                <p> </p>
+            </footer>
 
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script src="{{ url_for('static', filename='activityHandler.js') }}"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
 <script>
  document.addEventListener('DOMContentLoaded', function () {
     const sideMenu = document.querySelector('.side-menu');
+    const year = new Date().getFullYear();
 
     // Hämta CSRF-token från <meta> taggen
     var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');

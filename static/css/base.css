@@ -21,25 +21,19 @@
 #8B839B
 */
 
-html, body {
-    position: absolute;
-    height: 100%;
-    width:100%;
-    margin: 0;
-    padding: 0;
-    font-size: 18px;
-    display: flex;
-    flex-direction: column;
-    background-color: #F5EDD2;
-}
 
-.main-container {
-    display: flex;             /* Lägg till detta! */
+html body {
+    position: absolute;
+    display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 90%;
-
+    height: 100%;
+    width:100%;
+    font-size: 14px;
+    margin: 0;
+    padding: 0;
+    background-color: #F5EDD2;
 }
 
 .top-header {
@@ -50,10 +44,14 @@ html, body {
     align-items: center;
     align-content:center;
     width: 100%; /* Se till att footern täcker hela skärmen */
-    max-height:50px;
+    max-height:40px;
     box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1);
     position: relative;
-    font-size: 1rem;
+}
+
+.flex {
+    display: flex;
+    width: 100%;
 }
 
 .header-icons {
@@ -61,7 +59,7 @@ html, body {
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    width: 90%; /* Gör så att alla ikoner täcker hela bredden av headern */
+    width: 90%;
 }
 
 .header-icons .left-icons, .header-icons .right-icons {
@@ -71,9 +69,9 @@ html, body {
     justify-content: space-around;
 }
 
-.header-icons img {
-    min-height: 35px;
-    min-width: 35px;
+.header-icons > img {
+    max-height: 35px;
+    max-width: 35px;
 }
 
 .header-icons a, .header-icons span {
@@ -82,42 +80,25 @@ html, body {
 }
 
 .header-icons span {
-    font-size: 18px;
+    font-size: 1,2rem;
     font-weight: bold;
 }
 
-/* Förhindra understrykning av texten och centrera innehållet */
-.icon-text {
-    text-decoration: none;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center; /* Centrera texten */
-}
-
-/* Dölj texten som standard */
 .icon-text .icon-label {
     display: none;
     font-size: 1rem;
     color: #333;
-    margin-top: 5px; /* Liten marginal ovanför texten för bättre visning */
+    margin-top: 5px;
 }
 
-/* När användaren hovrar, döljs bilden och texten visas */
 .icon-text:hover img {
     display: none;
 }
 
 .icon-text:hover .icon-label {
     display: inline-block;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: bold;
-}
-
-/* När användaren hovrar, döljs bilden och texten visas */
-.icon-text:hover img {
-    display: none;
 }
 
 .search-button {
@@ -131,6 +112,7 @@ html, body {
     width: 24px;
     height: 24px;
 }
+
 .side-menu {
     position: fixed;
     top: 0;
@@ -147,7 +129,7 @@ html, body {
 }
 
 .side-menu.expanded {
-    left: 0; /* Flyttar menyn in i synfältet */
+    left: 0;
 }
 
 .side-menu ul {
@@ -325,6 +307,7 @@ nav a.active {
     border-radius: 20px;
     transition: grid-template-columns 0.8s ease; /* Smidig övergång */
 }
+
 .form-box {
     display: flex;
     flex-direction: column;
@@ -338,10 +321,10 @@ nav a.active {
 }
 
 #milestones {
-border-radius: 0;
-border-top-left-radius: 20px; /* Rundar det övre vänstra hörnet */
-border-bottom-left-radius: 20px; /* Rundar det nedre vänstra hörnet */
-border-right: none;
+    border-radius: 0;
+    border-top-left-radius: 20px; /* Rundar det övre vänstra hörnet */
+    border-bottom-left-radius: 20px; /* Rundar det nedre vänstra hörnet */
+    border-right: none;
 }
 
 #activities {
@@ -356,9 +339,11 @@ border-right: none;
     border-bottom-right-radius: 20px; /* Rundar det nedre vänstra hörnet */
     border-left: none;
 }
+
 .hidden {
     display: none;
 }
+
 @media (max-width: 720px) {
     .body {
         font-size: 14px;
