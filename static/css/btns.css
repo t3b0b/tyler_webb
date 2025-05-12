@@ -2,7 +2,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #e3e0c5;
     font-size: 0.6rem;
     border-radius: 5px;  /* Tar bort rundade hörn */
 }

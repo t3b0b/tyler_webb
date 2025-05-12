@@ -6,7 +6,7 @@ from models import (User, Notes, Goals, Lists, TopFive,
 
 from pmg_func import (common_route,getInfo,add2db)
 
-from datetime import date
+from datetime import datetime, timedelta, date
 
 from flask_login import current_user, login_required
 
@@ -148,6 +148,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     page_url = 'txt.journal'
     activities = None
     ordet,ord_lista = texthand.getWord()
+    today = datetime.now().date()
 
     if ordet is None:
         for ord in ord_lista:
@@ -219,7 +220,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
 
                 goal_id = request.form.get('gID')
                 activity_id = request.form.get('aID')
-                actDate = request.form.get('aDate')
+                actDate = today
                 start = request.form.get('start')
                 end = request.form.get('end')
                 score = request.form.get('score')
@@ -235,6 +236,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                 )
                 db.session.add(NewScore)
                 db.session.commit()
+
             if sida == 'Dagbok':
                 add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], current_user)
             elif sida == 'Mina Ord':
@@ -293,5 +295,19 @@ def blog(section_name):
                            myPosts=my_posts,
                            sida=sida,
                            header=sida)
+
+
+@txt_bp.route('/delete_post/<int:post_id>', methods=['DELETE'])
+@login_required
+def delete_post(post_id):
+    note = Notes.query.get_or_404(post_id)
+
+    # Kontrollera att användaren äger anteckningen
+    if note.user_id != current_user.id:
+        return jsonify({'error': 'Inte behörig'}), 403
+
+    db.session.delete(note)
+    db.session.commit()
+    return jsonify({'success': 'Inlägget raderades!'})
 
 # endregion

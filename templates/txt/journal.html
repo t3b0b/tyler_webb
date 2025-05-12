@@ -45,7 +45,7 @@
 {% if act_id %}
 <div class="blogg-container">
     <form method="POST">
-        <div class="view-toggle" style="background-color: white">
+        <div class="view-toggle">
             <a href="{{ url_for('txt.blog', section_name=None) }}">
             <button class="page-toggle-btn" type="button">Blog</button></a>
             <button class="active-view" type="button" onclick="window.location.href='/txt/journal?section_name=Mina+Ord'">Journal</button>

@@ -30,7 +30,6 @@
     font-size: 0.9em;  /* Eventuellt minska textstorleken */
     color: #666;       /* Eventuellt en ljusare färg */
     margin-bottom: 12px;
-    border-bottom: gray solid 1px;
 }
 
 .blogg-container textarea {
