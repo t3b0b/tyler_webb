@@ -16,7 +16,7 @@
     {% block head %}{% endblock head %}
 </head>
 <body>
-    <header class="top-header">
+    <header>
         <div class="header-icons">
             <div class="left-icons">
                 <a href="/pmg/myday" class="icon-text">
@@ -66,6 +66,7 @@
             </div>
         </div>
     </header>
+    <div class="main">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         <ul class="flashes">
@@ -99,7 +100,7 @@
             <footer>
                 <p> </p>
             </footer>
-
+    </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script src="{{ url_for('static', filename='activityHandler.js') }}"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
