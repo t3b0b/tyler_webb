@@ -26,16 +26,17 @@ def create_app():
     app = Flask(__name__)
 
     # 🛠️ Ladda konfiguration a,dnam,dn.
-    app.config['SECRET_KEY'] = os.getenv("SECRET_KEY",'K6SM4x14')
-    app.config['MAIL_SERVER'] = os.getenv("MAIL_SERVER","smtp.gmail.com")
+    app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
+    app.config['MAIL_SERVER'] = os.getenv("MAIL_SERVER")
     app.config['MAIL_USE_SSL'] = True
     app.config['MAIL_PORT'] = os.getenv("MAIL_PORT",465)
-    app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME","pmg.automatic.services@gmail.com")
-    app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD","gygfvycgvmjybgse")
+    app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME")
+    app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_recycle': 280,
         'pool_pre_ping': True
     }
+    
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.permanent_session_lifetime = timedelta(days=2)
     migrate = Migrate(app, db)

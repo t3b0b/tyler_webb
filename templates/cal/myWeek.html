@@ -12,22 +12,54 @@
     box-sizing: border-box; /* Inkluderar padding i bredden så att den inte överstiger containern */
     margin-bottom: 15px; /* Lägger till mellanrum under varje input */
 }
-
-/* Om du vill lägga till extra utrymme inuti själva containern */
 .list-content {
-    padding: 20px; /* Ger lite extra padding inuti containern så att input-rutorna inte når kanten */
-    box-sizing: border-box; /* Inkluderar padding i elementets totala storlek */
+    padding: 20px;
+    box-sizing: border-box;
 }
-.cal-navigation-container {
+.cal-block {
+    display: flex;
+    border-radius: 5%;
+    justify-content: center;
+    align-items: center;
     position: absolute;
+    width: 95%;
+    left: 2.5%;
+    border: 1px solid #555;
+    box-shadow: 
+    0 3px 2px rgba(77, 77, 77, 0.6), 
+    0 2px 0 rgba(255, 255, 255, 0.728) inset;
+}
+
+.cal-block > a {
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: bold;
+    width: 90%;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #000;
+}
+
+#activity-block {
+    background: #add8e6;
+}
+#milestone-block {
+    background:#ffa07a;
+}
+#event-block {
+    background: #90ee90;
+}
+
+.cal-navigation-container {
+    position: relative;
     display: flex;
     flex-direction: row;
-    top:55px;
-    left:5%;
     width:90%;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 }
 </style>
 {% endblock head %}
@@ -76,9 +108,9 @@
                                             {% set relative_start = ((score.Start.hour - hour) * 60 + score.Start.minute) / 60 * 100 %}
                                             {% set height = score.duration_hours * 100 %}
                                             {% if 0 <= relative_start < 100 %}
-                                            <div style="position:absolute;top:{{relative_start}}%;height:{{height}}%;width:90%;left:5%;background:#add8e6;border:1px solid #555;font-size:11px;">
+                                            <div class="cal-block" id="activity-block" style="top:{{relative_start}}%;height:{{height}}%;">
                                                 <a href="{{ url_for('cal.edit_score', score_id=score.id) }}" style="color: inherit; text-decoration: none;">
-                                                    {{ score.activity_name }} - {{ score.minutes }} min
+                                                    {{ score.activity_name }} 
                                                 </a>
                                             </div>
                                             {% endif %}
@@ -88,8 +120,8 @@
                                             {% set relative_start = ((score.Start.hour - hour) * 60 + score.Start.minute) / 60 * 100 %}
                                             {% set height = score.duration_hours * 100 %}
                                             {% if 0 <= relative_start < 100 %}
-                                            <div style="position:absolute;top:{{relative_start}}%;height:{{height}}%;width:90%;left:5%;background:#90ee90;border:1px solid #555;font-size:11px;">
-                                                {{ score.event_name }}{% if score.location %} ({{ score.location }}){% endif %}
+                                            <div class="cal-block"  id="event-block" style="top:{{relative_start}}%;height:{{height}}%;">
+                                               <a> {{ score.event_name }}{% if score.location %} ({{ score.location }}){% endif %} </a>
                                             </div>
                                             {% endif %}
                                         {% endif %}
@@ -97,7 +129,7 @@
                                         {% set relative_start = ((score.Start.hour - hour) * 60 + score.Start.minute) / 60 * 100 %}
                                         {% set height = score.duration_hours * 100 %}
                                         {% if 0 <= relative_start < 100 %}
-                                        <div style="position:absolute;top:{{relative_start}}%;height:{{height}}%;width:90%;left:5%;background:#ffa07a;border:1px solid #555;font-size:11px;">
+                                        <div class="cal-block"  id ="milestone-block" style="top:{{relative_start}}%;height:{{height}}%;">
                                             {{ score.name }} - Milestone
                                         </div>
                                         {% endif %}

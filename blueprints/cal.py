@@ -230,49 +230,74 @@ def month(year=None, month=None):
     return render_template('cal/month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida,
                            sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data)
         
-
-@cal_bp.route('/week', methods=['GET', 'POST'])
+@cal_bp.route('/api/week_data')
 @login_required
-def week():
+def api_week_data():
     userCal = UserCalendar(current_user.id)
     userScore = UserScores(current_user.id)
-
-    avarage_month = userScore.get_average_scores(period='month')
-    print(f"Månadens medel: {avarage_month['average']} min/dag")
-    avarage_week = userScore.get_average_scores(period='week')
-    print(f"Veckans medel: {avarage_week['average']} min/dag")
-
     week_offset = request.args.get('week_offset', 0, type=int)
+
     current_date = datetime.now() + timedelta(weeks=week_offset)
-    year, week_num, weekday = current_date.isocalendar()
-    start_week = current_date - timedelta(days=current_date.weekday())  # Start of the current week
-    end_week = start_week + timedelta(days=6)  # End of the current week
+    start_week = current_date - timedelta(days=current_date.weekday())
+    end_week = start_week + timedelta(days=6)
     user_id = current_user.id
-    sida, sub_menu = common_route('Min Vecka', ['/cal/month', '/cal/week', '/cal/timebox'],
-                                  ['Min Månad', 'Min Vecka', 'Min Dag'])
 
-    # Generera alla datum för veckan som en lista av strängar
     week_dates = [(start_week + timedelta(days=day)).strftime('%Y-%m-%d') for day in range(7)]
-
-    # Fetch all scores for the user during the week
     scores = Score.query.filter(
         Score.user_id == user_id,
         Score.Date >= start_week.date(),
         Score.Date <= end_week.date()
     ).all()
 
+    recurring_events = userCal.get_weekly_events(start_week)
+    weekData = Calendar.prepWeekData(scores, recurring_events)
+
+    # Skicka även week_dates om du vill använda dem i JS
+    return jsonify({
+        "week_scores": weekData,
+        "week_dates": week_dates,
+        "week_num": current_date.isocalendar()[1],
+        "current_date": current_date.strftime('%Y-%m-%d')
+    })
+
+@cal_bp.route('/week', methods=['GET', 'POST'])
+@login_required
+def week():
+    week_offset = request.args.get('week_offset', 0, type=int)
+    current_date = datetime.now() + timedelta(weeks=week_offset)
+    userCal = UserCalendar(current_user.id)
+    userScore = UserScores(current_user.id)
+
+    weekStart = current_date - timedelta(days=current_date.weekday())
+    weekEnd = weekStart + timedelta(days=6)
+    year, week_num, weekday = current_date.isocalendar()
+    sida, sub_menu = common_route(
+        'Min Vecka',
+        ['/cal/month', '/cal/week', '/cal/timebox'],
+        ['Min Månad', 'Min Vecka', 'Min Dag']
+        )
+
+    avarage_month = userScore.get_average_scores(period='month')
+    avarage_week = userScore.get_average_scores(period='week')
+    
+    week_dates = [(weekStart + timedelta(days=day)).strftime('%Y-%m-%d') for day in range(7)]
+
+    scores = Score.query.filter(
+        Score.user_id == current_user.id,
+        Score.Date >= weekStart.date(),
+        Score.Date <= weekEnd.date()
+    ).all()
     events = Event.query.filter(
-        Event.user_id == user_id,
-        Event.date >= start_week.date(),
-        Event.date <= end_week.date()
+        Event.user_id == current_user.id,
+        Event.date >= weekStart.date(),
+        Event.date <= weekEnd.date()
     ).all()
 
-    recurring_events = userCal.get_weekly_events(start_week)
-
-    week_scores = {date: [] for date in week_dates}  # Initiera alla datum i veckan med tomma listor
+    recurring_events = userCal.get_weekly_events(weekStart)
 
     weekData = Calendar.prepWeekData(scores,recurring_events)
-
+    
+    week_scores = {date: [] for date in week_dates}  # Initiera alla datum i veckan med tomma listor
     for score in scores:
         day_str = score.Date.strftime('%Y-%m-%d')
         week_scores[day_str].append(score)

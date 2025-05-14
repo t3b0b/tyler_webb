@@ -230,8 +230,8 @@ class Streak(db.Model):
 class Score(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     Amount = db.Column(db.Integer, nullable=True)
-    Start = db.Column(db.DateTime, nullable=True)
-    End = db.Column(db.DateTime, nullable=True)
+    Start = db.Column(db.Time, nullable=True)
+    End = db.Column(db.Time, nullable=True)
     Date = db.Column(db.DateTime, nullable=False)
     Time = db.Column(db.Integer, nullable=False)
     #ForiegnKeys

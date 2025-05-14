@@ -1,9 +1,9 @@
 .scrollable {
     width: 100%;
     max-width: 100%;
-    max-height: 500px;
-    height: 500px;
+    max-height: 90%;
     overflow-y: scroll;
+    background-color: #f5f5f5;
 
 }
 
