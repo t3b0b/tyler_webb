@@ -14,6 +14,21 @@ datahand = PlotHandler()
 texthand = textHandler()
 
 goals_bp = Blueprint('goals', __name__, template_folder='templates/pmg')
+#Region API
+@goals_bp.route('/api/usergoals', methods=['GET'])
+@login_required
+def getGoals():
+    goals = Goals.query.filter_by(user_id=current_user.id).all()
+    goal_data = []
+    for goal in goals:
+        goal_data.append({
+        "id": goal.id,
+        "name":goal.name,
+        })
+
+    return jsonify(goal_data)
+
+#endregion API
 
 #region Goals
 @goals_bp.route('/goals', methods=['GET', 'POST'])

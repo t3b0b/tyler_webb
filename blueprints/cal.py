@@ -230,34 +230,52 @@ def month(year=None, month=None):
     return render_template('cal/month.html', weeks=weeks, month_name=month_name, year=year, sida=sida, header=sida,
                            sub_menu=sub_menu, month=month, today_date=today_date, dag_data=dag_data)
         
-@cal_bp.route('/api/week_data')
+@cal_bp.route('/api/weekdata')
 @login_required
 def api_week_data():
     userCal = UserCalendar(current_user.id)
-    userScore = UserScores(current_user.id)
     week_offset = request.args.get('week_offset', 0, type=int)
-
     current_date = datetime.now() + timedelta(weeks=week_offset)
-    start_week = current_date - timedelta(days=current_date.weekday())
-    end_week = start_week + timedelta(days=6)
+    weekStart = current_date - timedelta(days=current_date.weekday())
+    end_week = weekStart + timedelta(days=6)
     user_id = current_user.id
 
-    week_dates = [(start_week + timedelta(days=day)).strftime('%Y-%m-%d') for day in range(7)]
+    week_dates = [(weekStart + timedelta(days=day)).strftime('%Y-%m-%d') for day in range(7)]
+    recurring_events = userCal.get_weekly_events(weekStart)
+
     scores = Score.query.filter(
         Score.user_id == user_id,
-        Score.Date >= start_week.date(),
+        Score.Date >= weekStart.date(),
         Score.Date <= end_week.date()
     ).all()
 
-    recurring_events = userCal.get_weekly_events(start_week)
-    weekData = Calendar.prepWeekData(scores, recurring_events)
+    weekData = []
+    for score in scores:
+        if score.activity_score:
+            weekData.append({
+                'id': score.id,
+                'type': 'score',
+                'activityName': score.activity_score.name,
+                'goalName': score.goal_score.name if score.goal_score else None,
+                'date': score.Date.strftime('%Y-%m-%d') if score.Date else None,
+                'start': score.Start.strftime('%H:%M') if score.Start else None,
+                'end': score.End.strftime('%H:%M') if score.End else None,
+                'time': score.Time,
+            })
+    for event in recurring_events:
+        weekData.append({
+            'id': event.id,
+            'type': 'event',
+            'name': event.name,
+            'goalName': event.goal.name if event.goal else None,
+            'date': event.date.strftime('%Y-%m-%d') if event.date else None,
+            'start': event.start_time.strftime('%H:%M') if event.start_time else None,
+            'end': event.end_time.strftime('%H:%M') if event.end_time else None,
+        })
 
-    # Skicka även week_dates om du vill använda dem i JS
     return jsonify({
-        "week_scores": weekData,
-        "week_dates": week_dates,
-        "week_num": current_date.isocalendar()[1],
-        "current_date": current_date.strftime('%Y-%m-%d')
+        "weekData": weekData,
+        "week_dates": week_dates
     })
 
 @cal_bp.route('/week', methods=['GET', 'POST'])
@@ -279,18 +297,13 @@ def week():
 
     avarage_month = userScore.get_average_scores(period='month')
     avarage_week = userScore.get_average_scores(period='week')
-    
+    recurring_events = userCal.get_weekly_events(weekStart)
     week_dates = [(weekStart + timedelta(days=day)).strftime('%Y-%m-%d') for day in range(7)]
 
     scores = Score.query.filter(
         Score.user_id == current_user.id,
         Score.Date >= weekStart.date(),
         Score.Date <= weekEnd.date()
-    ).all()
-    events = Event.query.filter(
-        Event.user_id == current_user.id,
-        Event.date >= weekStart.date(),
-        Event.date <= weekEnd.date()
     ).all()
 
     recurring_events = userCal.get_weekly_events(weekStart)
