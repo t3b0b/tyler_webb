@@ -148,6 +148,11 @@ function RenderCalendar(data, dates) {
               div.style.height = `${height}%`;
 
               if (item.type === 'score') {
+                if (item.goalName === "Hälsa"){
+                    div.style.background = "#a6f6a2";
+                } else if (item.goalName === "PMG") {
+                    div.style.background = "#F5DF8A";
+                }
                 div.innerHTML = `<a href="/cal/edit_score/${item.id}" style="color: inherit; text-decoration: none;">${item.activityName}</a>`;
               } else if (item.type === 'event') {
                 div.innerHTML = `<a>${item.name}</a>`;
