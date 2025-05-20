@@ -27,30 +27,32 @@ tasks_bp = Blueprint('tasks', __name__, template_folder='templates/pmg')
 # region Tasks
 @tasks_bp.route('/activity/<int:activity_id>/tasks', methods=['GET'])
 def activity_tasks(activity_id):
-    # Hämta aktiviteten
+    userScores = UserScores(current_user.id)
     activity = Activity.query.get_or_404(activity_id)
+    totalMin = userScores.get_activity_scores(activity_id)
+    totalHours = round(totalMin/60,1)
 
-    # Kontrollera om användaren har åtkomst till aktiviteten
+    print (f'Activity name: {activity.name} Total minutes: {totalMin}')
+    print (f'Activity name: {activity.name} Total hours: {totalHours}')
+
     if activity.goal_id not in [goal.id for goal in get_user_goals(current_user.id)]:
         flash("Du har inte behörighet att visa denna aktivitet.", "danger")
-        return redirect(url_for('pmg.myday'))  # Omdirigera till en lämplig sida
+        return redirect(url_for('pmg.myday'))
 
-    # Hämta tasks och subtasks kopplade till aktiviteten
-    todos = get_user_tasks(current_user.id, Activity, activity_id)  # Använd den uppdaterade funktionen
+    todos = get_user_tasks(current_user.id, Activity, activity_id)
 
     sida = f"{activity.name} ToDos"
-    return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos, sida=sida, header=sida)
+    return render_template('pmg/activity_tasks.html', activity=activity, tasks=todos, sida=sida, header=sida, totalHours=totalHours)
 
 
 @tasks_bp.route('/activity/<int:activity_id>/update_task/<int:task_id>', methods=['GET', 'POST'])
 def update_task(activity_id, task_id):
     task = Tasks.query.get_or_404(task_id)
 
-    # Hämta den nya statusen från formuläret
-    completed = 'completed' in request.form  # Checkbox skickar bara värde om den är markerad
-    page = request.form.get('page')  # Hämta ursprungssidan
 
-    # Uppdatera task status
+    completed = 'completed' in request.form
+    page = request.form.get('page')
+
     task.completed = completed
     task.date_completed = datetime.now().date()
     db.session.commit()

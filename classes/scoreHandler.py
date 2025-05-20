@@ -119,8 +119,16 @@ class UserScores(ScoreAnalyzer):
         tot = 0
         for score in goal_scores:
             tot += score.Time
-        
         return tot
+    
+    def get_activity_scores(self, activity_id):
+        activity = Activity.query.get(activity_id)
+        activity_scores = activity.scores
+        tot = 0
+        for score in activity_scores:
+            tot += score.Time
+        return tot
+
     def get_average_scores(self, period='week', reference_date=None):
         """
         Beräknar medelvärdet av poäng per vecka eller månad.

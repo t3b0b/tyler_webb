@@ -27,13 +27,18 @@ def goal_activities(goal_id):
     goal = Goals.query.get_or_404(goal_id)
     milestones = goal.milestones
     userScores = UserScores(current_user.id)
-    tot = userScores.get_goal_scores(goal_id)
+    totalMin = userScores.get_goal_scores(goal_id)
+
+    totalHours = round(totalMin/60,1)
+    print (f'Goal name: {goal.name} Total minutes: {totalMin}')
+    print (f'Goal name: {goal.name} Total hours: {totalHours}')
 
     goal_scores=userScores.get_all_goal_scores()
     
     deadlines = goal.deadlines
     shared_item = SharedItem.query.filter_by(item_id=goal_id, item_type='goal', status='active').first()
     start_activity = request.args.get('start_activity', None)
+
 
     if request.method == 'POST':
         action = request.form.get('action', None)
@@ -105,8 +110,9 @@ def goal_activities(goal_id):
 
     activities = goal.activities
     
-    return render_template('pmg/activities.html', goal=goal, start_activity=start_activity, activities=activities, deadlines=deadlines, milestones=milestones)
-
+    return render_template('pmg/activities.html', goal=goal, start_activity=start_activity, 
+                           activities=activities, deadlines=deadlines, milestones=milestones,
+                           totalHours=totalHours)
 
 
 # region Activity
