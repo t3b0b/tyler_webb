@@ -97,27 +97,24 @@
             </div>
     {% endif %}
     {% block body %}{% endblock %}
-            <footer>
-                <p> </p>
-            </footer>
+    <footer> </footer>
     </div>
 <script src="{{ url_for('static', filename='common_functions.js') }}"></script>
 <script src="{{ url_for('static', filename='activityHandler.js') }}"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
 <script>
+
  document.addEventListener('DOMContentLoaded', function () {
     const sideMenu = document.querySelector('.side-menu');
     const year = new Date().getFullYear();
-
-    // Hämta CSRF-token från <meta> taggen
+    const footer = document.querySelector('footer');
+    footer.innerHTML = `<p>© ${year} Tyler O'Brien. All rights reserved.</p>`;
     var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-    // Lägg till CSRF-token till alla POST-formulär
     var forms = document.querySelectorAll('form');
     forms.forEach(function(form) {
         if (form.method.toLowerCase() === 'post') {
-            // Skapa en dold input för CSRF-token
             var input = document.createElement('input');
             input.type = 'hidden';
             input.name = 'csrf_token';  // Flask söker efter 'csrf_token'
@@ -134,6 +131,7 @@
         }
     });
 });
+
     function showTooltip() {
         document.getElementById('info-tooltip').style.display = 'block';
     }

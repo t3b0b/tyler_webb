@@ -117,8 +117,10 @@ class UserScores(ScoreAnalyzer):
         goal = Goals.query.get(goal_id)
         goal_scores = goal.scores
         tot = 0
+        
         for score in goal_scores:
-            tot += score.Time
+            if score.activity_id != None:
+                tot += score.Time
         return tot
     
     def get_activity_scores(self, activity_id):
