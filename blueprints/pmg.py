@@ -117,48 +117,9 @@ def myday():
 
     message, list_type, list_date = texthand.get_daily_question()
 
-    list_title = list_type.capitalize()
-    topFive = TopFive.query.filter_by(title=list_title, user_id=current_user.id, list_type=list_type, date=list_date).first()
-
-    if topFive and topFive.content:
-        topFiveList = topFive.content.split(',')
-        show = 0
-    else:
-        show = 1
-        if not topFive:
-            topFive = TopFive(user_id=current_user.id, list_type=list_type, title=list_title, date=list_date)
-            db.session.add(topFive)
-            db.session.commit()
-        topFiveList = []
-
-    # Hantera POST-begäran för att spara prioriteringar
-    if 'my_list' in request.form:
-        # Hämta användarens inmatningar
-        my_list = [request.form.get(f'Prio_{i}') for i in range(1, 6) if request.form.get(f'Prio_{i}')]
-        topFive = TopFive.query.filter_by(title=list_title, user_id=current_user.id, list_type=list_type, date=list_date).first()
-
-        if topFive:
-            topFive.content = ','.join(my_list)
-        else:
-            # Skapa en ny post om den inte finns
-            topFive = TopFive(title=list_title, content=','.join(my_list), user_id=current_user.id,
-                              list_type=list_type, date=list_date)
-            db.session.add(topFive)
-
-
-        # Spara ändringar i databasen
-        try:
-            db.session.commit()
-            flash("Dina prioriteringar har sparats!", "success")
-        except Exception as e:
-            db.session.rollback()
-            print("Fel vid sparning:", str(e))
-            flash("Ett fel inträffade vid sparningen.", "danger")
-
-
     return render_template('pmg/myday.html', sida=sida, header=sida, current_date=today,
-                           acts=myActs, total_score=total, aggregated_scores=aggregated_scores,show=show, my_streaks=valid_streaks,
-                           sub_menu=sub_menu, plot_url=goal_plot, message=message, topFiveList=topFiveList,topFive=topFive,title=list_title)
+                           acts=myActs, total_score=total, aggregated_scores=aggregated_scores, my_streaks=valid_streaks,
+                           sub_menu=sub_menu, plot_url=goal_plot, message=message)
     
 # endregion
 

@@ -17,7 +17,7 @@
     width: 50%;
     max-width: 100%;
     max-height: 80%;
-    border: 2px solid #333;
+    border: 1px solid #333;
     box-sizing: border-box;
     background-color: #f5f5f5;
     border-radius: 8px;
@@ -120,7 +120,6 @@
     padding: 5px 10px;
 }
 
-/* Scrollbarens utseende */
 .list-content::-webkit-scrollbar {
     width: 8px;
 }
@@ -138,7 +137,6 @@
 .list-content::-webkit-scrollbar-thumb:hover {
     background-color: #555;
 }
-
 .expanded .list-content {
     display: flex;
 }
@@ -166,13 +164,11 @@
     border-radius: 8px; /* Rundade hörn */
     box-sizing: border-box;
 }
-
 .checkbox {
     margin-left: 1rem; /* Mellanrum mellan texten och checkbox */
     transform: scale(1.2); /* Gör checkboxen större */
     cursor: pointer; /* Muspekaren ändras till en hand */
 }
-
 .striped-list li span {
     flex-grow: 1; /* Gör så att texten tar upp det utrymme som finns tillgängligt */
     text-align: left; /* Justera texten till vänster */
@@ -224,115 +220,48 @@
     color: gray;
     text-decoration: line-through;
 }
-.top-five {
-    display:flex;
-    width: 90%;
-    flex-direction: row;
-    height:30px;
-    padding: 2% 5% 2% 5%;
-    justify-content: space-between;
-    align-items: center;
-    justify-items: center;
-}
-.top5-container {
-    max-height: 50px;
-    max-width: 40vw;
-    margin-top: 5%;
-}
-.head-list {
-    background-color: #f4e4c1;
-    border: 2px solid #d1c097;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    padding: 5px;
-    cursor: pointer;
-    transition: all 0.5s ease-in-out;
-    text-align: center;
-    z-index: 1; /* Se till att den är ovanför andra element när inaktiv */
-}
-.tab-title {
-    font-size: 24px;
-    font-weight: bold;
-    min-height: fit-content;
-    height: 45px;
-    text-align: center;
-    background-color: #f4e4c1;
-    border-bottom: 2px solid #524021;
-    width: 100%;
-    line-height: 45px;
-}
 
-.five-list-content {
+.five-list {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     justify-items: center;
     margin-inline: auto;
-    width: 60%; /* Smalare bredd */
-    height: auto;
-    max-height: 80%; /* Begränsad höjd om listan blir lång */
-    overflow-y: auto; /* Scroll om för många objekt */
-    position: fixed;
-    top: 50%; /* Precis under rubriken */
-    left: 50%;
-    transform: translate(-50%, -50%);
+    margin-top: 5%;
+    width: 65%; 
+    max-height: 100%;
+    overflow-y: auto;
     background-color: #dcdcdc;
-    border: 2px solid #53461d;
+    border: 1px solid #53461d;
     border-radius: 6px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     text-align: center;
-    z-index: 200; /* Se till att den är ovanför andra element */
-    opacity: 0; /* Dold som standard */
-    pointer-events: none; /* Förhindra interaktion när dold */
-    transition: all 0.5s ease-in-out;
-}
-.five-list-content form {
-    display: flex;
-    text-align: center;
-    flex-direction: column; /* Vertikal layout */
-    align-items: center; /* Centrerar horisontellt */
-    justify-content: center; /* Centrerar vertikalt */
-    gap: 5px; /* Mellanrum mellan elementen */
-    width: 100%; /* Sträcker sig över hela förälderns bredd */
 }
 
-.five-list-content form input[type="text"] {
-    width: 75%; /* Bredd för inputfält */
-    margin: 10px 0 10px 0; /* Ta bort överflödiga marginaler */
+.five-list > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    min-height: fit-content;
+    height: 45px;
+    text-align: center;
+    background-color: #f4e4c1;
+    border-bottom: 1px solid #524021;
+    width: 100%;
+}
+
+.five-list > input[type="text"] {
+    width: 80%;
+    margin: 10px 0 10px 0;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 1rem;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
     text-align: left;
-}
-
-.five-list-content form button {
-    width: 90%; /* Bredd för knappen */
-    min-height: 2rem;
-    padding: 10px;
-    margin: 10px; /* Ta bort överflödiga marginaler */
-    background-color: #ffffd3;
-    color: #000;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    font-weight: bold;
-    text-align: center; /* Centrerar knapptexten */
-}
-.five-list-content form button:hover {
-    background-color: #e1ffbf; /* Mörkare beige vid hover */
-
-}
-
-/* När listan är aktiv */
-.head-list.active + .list-content {
-    opacity: 1;
-    pointer-events: auto; /* Tillåter interaktion när aktiv */
 }
 
 .frontPos {

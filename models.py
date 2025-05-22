@@ -294,14 +294,19 @@ class Deadline(db.Model):
 class TopFive(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=True)
-    content = db.Column(db.String(1200), nullable=True)
-    title = db.Column(db.String(100), nullable=False)
-    list_type = db.Column(db.String(50), nullable=False, default="top_five_today")
+    title = db.Column(db.String(200), nullable=True)
+    one = db.Column(db.String(300), nullable=True)
+    two = db.Column(db.String(300), nullable=True)
+    three = db.Column(db.String(300), nullable=True)
+    four = db.Column(db.String(300), nullable=True)
+    five = db.Column(db.String(300), nullable=True)
     #ForiegnKeys
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     #Relationships
+    
     def __repr__(self):
-        return f"<CalendarBullet {self.date}>"
+        return f"CalendarBullet {self.date}>"
+
 
 class Lists(db.Model):
     id = db.Column(db.Integer, primary_key=True)

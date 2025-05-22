@@ -19,24 +19,6 @@
         display: none;
     }
 
-    .top5-form{
-        display: flex;
-        width: 100%;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        background-color: wheat;
-    }
-    
-    .top5-content{
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 15px;
-        align-items: center;
-        margin-top: 20px;
-        width: 70%;
-    }
 
     </style>
 {% endblock head %}
@@ -50,6 +32,18 @@
             <button class="page-toggle-btn" type="button">Blog</button></a>
             <button class="active-view" type="button" onclick="window.location.href='/txt/journal?section_name=Mina+Ord'">Journal</button>
         </div>
+        {% if sida == "Bullet" %}
+            <div class="five-list">
+                <div>{{ordet}}</div>
+                <input type="text" name="title" class="hidden">
+                <input type="text" name="one" placeholder="1:">
+                <input type="text" name="two" placeholder="2:">
+                <input type="text" name="three" placeholder="3:">
+                <input type="text" name="four" placeholder="4:">
+                <input type="text" name="five" placeholder="5:">
+            </div>
+        {% endif %}
+        {% if sida == "Mina Ord" or sida == "Dagbok" or sida == "Mina Mål" %}
         <div class="ordet">
             <button name="option" style="width: 60px; margin-left: 3%" onclick="fetchNewWord()">New</button>
             <label id="ordet-label" name="post-ord">{{ ordet }}</label>
@@ -59,10 +53,10 @@
                 <img src="{{ url_for('static', filename='images/plus-icon-större.png') }}" class="edit-icon" onclick="editTitle()" alt="Redigera" />
             </div>
         </div>
-        {% if sida == "Mina Ord" or sida == "Dagbok" or sida == "Mina Mål" %}
-            <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
+        <textarea id="text" name="blogg-content" placeholder="Skriv här"></textarea>
         {% endif %}
-        <div id="completed-form" style=" display: flex; flex-direction: column;">
+
+        <div id="completed-form" style="margin-inline:auto; display: flex; flex-direction: column;">
             <input type="number" id ="activeAct" class="hidden">
             <input type="text" class="hidden" id="gID" name="gID" value="{{ goal_id }}">
             <input type="text" class="hidden" id="aID" name="aID">
