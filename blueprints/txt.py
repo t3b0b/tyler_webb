@@ -1,6 +1,6 @@
 from random import choice
 from extensions import db
-from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
+from flask import Blueprint, abort, render_template, redirect, url_for, request, jsonify, flash
 from models import (User, Notes, Goals, Lists, TopFive,
                     Activity, Score, MyWords)
 
@@ -98,6 +98,47 @@ def update_post(post_id):
 def my_words():
     pass
 
+#region TopFive
+@txt_bp.route('/update_topfive/<int:topfive_id>', methods=['POST'])
+@login_required
+def update_topfive(topfive_id):
+    topfive = TopFive.query.get_or_404(topfive_id)
+    if topfive.user_id != current_user.id:
+        abort(403)
+
+    # Hämta fält från formuläret, tillåt tomma fält
+    topfive.one = request.form.get('one', '').strip()
+    topfive.two = request.form.get('two', '').strip()
+    topfive.three = request.form.get('three', '').strip()
+    topfive.four = request.form.get('four', '').strip()
+    topfive.five = request.form.get('five', '').strip()
+
+    db.session.commit()
+    flash("Listan uppdaterades!", "success")
+    return redirect(url_for('txt.topfive'))  # Ändra till rätt vy
+
+@txt_bp.route('/topfive', methods=['GET', 'POST'])
+@login_required
+def topfive():
+    texthand = userText(current_user.id)
+    question, ordet, list_date = texthand.get_daily_question()
+    topFive = TopFive.query.filter_by(user_id=current_user.id,title=ordet).first()
+    page_url = 'txt.journal'
+    titles = TopFive.query.filter_by(user_id=current_user.id).all()
+    sida = "Top Five"
+    myGoals = Goals.query.filter_by(name="Skriva", user_id=current_user.id).first()
+    if myGoals:
+        activities = Activity.query.filter_by(goal_id=myGoals.id,user_id=current_user.id).all()
+        titles_list = Activity.query.filter_by(goal_id=myGoals.id,user_id=current_user.id).all()
+        titles = [item.name for item in titles_list]
+    if not topFive:
+            topFive = TopFive(title=ordet, user_id=current_user.id)
+            db.session.add(topFive)
+            db.session.commit()
+
+    return render_template('txt/topfive.html', side_options=titles, question=question, 
+                           ordet=ordet, topFive=topFive, titles=titles, sida=sida, page_url=page_url)
+#endregion
 @txt_bp.route('/journal', methods=['GET', 'POST'])
 @login_required
 def journal():
@@ -121,17 +162,13 @@ def journal():
         return journal_section(act_id, sida, sub_menu,None)
 
     elif section_name == "Bullet" or section_name == "Lista":
-        act_id = texthand.section_content(Activity, section_name)
-        sida, sub_menu = common_route("Bullet", [url_for('txt.journal', section_name='skriva'),
-                                                 url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
-        return journal_section(act_id, sida, sub_menu, None)
+        return topfive()
 
     elif section_name in activity_names:
         act_id = texthand.section_content(Activity, section_name)
         sida, sub_menu = common_route(section_name, [url_for('txt.journal', section_name='skriva'),
                                                      url_for('txt.journal', section_name='blogg')], ['Skriv', 'Blogg'])
         return journal_section(act_id, sida, sub_menu, None)
-
 
 @txt_bp.route('/journal/<section_name>', methods=['GET', 'POST'])
 @login_required
@@ -144,7 +181,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
     why_G = ""
     page_url = 'txt.journal'
     activities = None
-    ordet,ord_lista = texthand.getWord()
+    ordet, ord_lista = texthand.getWord()
     today = datetime.now().date()
 
     if ordet is None:
@@ -169,11 +206,6 @@ def journal_section(act_id, sida, sub_menu, my_posts):
             ordet = f'Varför är detta mål viktigt för dig? ({goal})'
 #           why_G = goal
             break
-
-    elif sida == "Bullet":
-        ordet, list_type, list_date = texthand.get_daily_question()
-
-        titles = TopFive.query.filter_by(user_id=current_user.id).all()
 
     if act_id is not None:
         print(act_id)
@@ -207,7 +239,6 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                 )
                 db.session.add(NewScore)
                 db.session.commit()
-
             if sida == 'Dagbok':
                 add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], current_user)
             elif sida == 'Mina Ord':
@@ -215,17 +246,7 @@ def journal_section(act_id, sida, sub_menu, my_posts):
                 texthand.add_unique_word(nytt_ord)
                 add2db(Notes, request, ['post-ord', 'blogg-content'], ['title', 'content'], current_user)
             elif sida == 'Bullet':
-                title = request.form['post-ord']
-                one = request.form['one']
-                two = request.form['two']
-                three = request.form['three']
-                four = request.form['four']
-                five = request.form['five']
-
-                newBullet = TopFive(date=current_date, title=title, user_id=current_user.id)
-                db.session.add(newBullet)
-                db.session.commit()
-
+                print("Bullet section")
 
     return render_template('txt/journal.html', goal=myGoals, activities=activities, side_options=titles, goal_id =activity.goal_id,
                            ordet=ordet, sida=sida, header=sida, orden=ord_lista, sub_menu=sub_menu,

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{% endblock head %}
+
+{% block body %}
+<div class="flex column ">
+    <form class="flex center" method="POST" action="{{ url_for('txt.update_topfive', topfive_id=topFive.id) }}">
+        <div class="five-list">
+            <div>{{ question }}</div>
+            <input type="text" name="title" class="hidden">
+            <input type="text" name="one" value="{{ topFive.one or '' }}" placeholder="1:">
+            <input type="text" name="two" value="{{ topFive.two or '' }}" placeholder="2:">
+            <input type="text" name="three" value="{{ topFive.three or '' }}" placeholder="3:">
+            <input type="text" name="four" value="{{ topFive.four or '' }}" placeholder="4:">
+            <input type="text" name="five" value="{{ topFive.five or '' }}" placeholder="5:">
+            <button class="button-style" type="submit">Spara</button>
+        </div>
+    </form>
+</div>
+{% endblock body %}
